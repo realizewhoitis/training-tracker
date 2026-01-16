@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { User, BookOpen, Award, CheckCircle } from 'lucide-react';
+import { User, BookOpen, Award, CheckCircle, Package } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function EmployeeDetailPage({ params }: { params: { id: string } }) {
     const employeeId = parseInt(params.id);
@@ -19,6 +20,10 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
             },
             policyAcknowledgments: {
                 include: { policy: true }
+            },
+            assetAssignments: {
+                where: { returnedAt: null },
+                include: { asset: true }
             }
         }
     });
@@ -85,10 +90,36 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                             {employee.policyAcknowledgments.length === 0 ? (
                                 <p className="text-sm text-slate-500 italic">No policies acknowledged.</p>
                             ) : (
-                                employee.policyAcknowledgments.map(ack => (
+                                employee.policyAcknowledgments.map((ack: any) => (
                                     <div key={ack.id} className="flex justify-between items-center text-sm">
                                         <span className="text-slate-700 truncate w-32">{ack.policy.title}</span>
                                         <span className="text-green-600 text-xs">{ack.acknowledgedAt.toLocaleDateString()}</span>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 className="font-semibold text-slate-800 mb-4 flex items-center">
+                            <Package size={18} className="mr-2 text-blue-500" /> Assigned Equipment
+                        </h3>
+                        <div className="space-y-3">
+                            {employee.assetAssignments.length === 0 ? (
+                                <p className="text-sm text-slate-500 italic">No assets assigned.</p>
+                            ) : (
+                                employee.assetAssignments.map((assign: any) => (
+                                    <div key={assign.id} className="flex justify-between items-center text-sm border-b border-slate-50 pb-2 last:border-0 last:pb-0">
+                                        <div>
+                                            <p className="font-medium text-slate-800">{assign.asset.name}</p>
+                                            <p className="text-xs text-slate-500">{assign.asset.assetTag || 'No Tag'}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-xs text-slate-400 block">{assign.assignedAt.toLocaleDateString()}</span>
+                                            <Link href={`/inventory/${assign.assetId}`} className="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                                                View
+                                            </Link>
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -114,7 +145,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm divide-y divide-slate-50">
-                                    {employee.expirations.map(exp => (
+                                    {employee.expirations.map((exp: any) => (
                                         <tr key={exp.expirationID}>
                                             <td className="py-2 text-slate-800 font-medium">{exp.certificate.certificateName}</td>
                                             <td className="py-2">
@@ -143,7 +174,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <h3 className="font-semibold text-slate-800 mb-4">Recent Training Activity</h3>
                         <div className="space-y-4">
-                            {employee.attendances.slice(0, 5).map(log => (
+                            {employee.attendances.slice(0, 5).map((log: any) => (
                                 <div key={log.attendanceID} className="flex items-center justify-between pb-3 border-b border-slate-50 last:border-0 last:pb-0">
                                     <div>
                                         <p className="font-medium text-slate-800">{log.training.TrainingName}</p>

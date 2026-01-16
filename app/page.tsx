@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { Users, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
@@ -84,7 +85,7 @@ export default async function Home() {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {recentTraining.map((log) => (
+              {recentTraining.map((log: any) => (
                 <div key={log.attendanceID} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <div>
                     <p className="font-medium text-slate-800">{log.training?.TrainingName}</p>
@@ -111,7 +112,7 @@ export default async function Home() {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {upcomingExpirations.map((exp) => (
+              {upcomingExpirations.map((exp: any) => (
                 <div key={exp.expirationID} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                   <div>
                     <p className="font-medium text-slate-800">{exp.certificate.certificateName}</p>

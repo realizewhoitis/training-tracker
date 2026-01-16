@@ -15,7 +15,50 @@ model Employee {
   attendances Attendance[]
   expirations Expiration[]
   policyAcknowledgments PolicyAcknowledgment[]
+  assetAssignments AssetAssignment[]
   user        User?
+}
+
+model AssetCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "Radio", "Firearm", "Vehicle"
+  description String?
+  
+  assets      Asset[]
+}
+
+model Asset {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "Motorola APX 6000"
+  serialNumber String? @unique
+  assetTag    String?  @unique // Internal barcode/tag
+  
+  categoryId  Int
+  category    AssetCategory @relation(fields: [categoryId], references: [id])
+  
+  status      String   @default("AVAILABLE") // AVAILABLE, ASSIGNED, MAINTENANCE, RETIRED, LOST
+  condition   String   @default("GOOD")      // NEW, GOOD, FAIR, POOR, DAMAGED
+  
+  purchaseDate DateTime?
+  cost         Float?
+  
+  assignments AssetAssignment[]
+}
+
+model AssetAssignment {
+  id          Int      @id @default(autoincrement())
+  assetId     Int
+  employeeId  Int
+  
+  assignedAt  DateTime @default(now())
+  returnedAt  DateTime?
+  
+  assignedByUserId Int? 
+  
+  notes       String?
+  
+  asset       Asset    @relation(fields: [assetId], references: [id])
+  employee    Employee @relation(fields: [employeeId], references: [empId])
 }
 
 model User {

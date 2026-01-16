@@ -1,4 +1,5 @@
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { User, Search, Filter, UserPlus as UserSize } from 'lucide-react';
 import Link from 'next/link';
@@ -59,7 +60,7 @@ export default async function EmployeesPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {employees.map((employee) => (
+                            {employees.map((employee: any) => (
                                 <tr key={employee.empId} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center space-x-3">

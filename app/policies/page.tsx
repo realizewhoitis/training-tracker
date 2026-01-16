@@ -1,4 +1,5 @@
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
@@ -44,8 +45,8 @@ export default async function PoliciesPage() {
                     <div className="p-8 text-center bg-white rounded-xl border border-dashed border-slate-300">
                         <p className="text-slate-500">No policies found.</p>
                     </div>
-                ) : policies.map((policy) => {
-                    const isAcknowledged = policy.acknowledgments.some(ack => ack.employeeId === currentUserId);
+                ) : policies.map((policy: any) => {
+                    const isAcknowledged = policy.acknowledgments.some((ack: any) => ack.employeeId === currentUserId);
 
                     return (
                         <div key={policy.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">

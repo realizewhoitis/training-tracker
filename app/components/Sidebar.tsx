@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, Users, BookOpen, FileText } from 'lucide-react';
+import { Home, Users, BookOpen, FileText, Package } from 'lucide-react';
 
 const Sidebar = () => {
     return (
@@ -30,6 +30,13 @@ const Sidebar = () => {
                 >
                     <BookOpen className="w-5 h-5 text-gray-400 group-hover:text-white" />
                     <span className="font-medium">Training</span>
+                </Link>
+                <Link
+                    href="/inventory"
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                >
+                    <Package className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                    <span className="font-medium">Inventory</span>
                 </Link>
                 <Link
                     href="/reports"

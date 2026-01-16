@@ -1,4 +1,5 @@
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { BookOpen, Save, X, Tag } from 'lucide-react';
@@ -83,7 +84,7 @@ export default async function NewTrainingPage() {
                             className="pl-10 w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <datalist id="category-suggestions">
-                            {existingCategories.map((c, i) => (
+                            {existingCategories.map((c: any, i: number) => (
                                 c.category ? <option key={i} value={c.category} /> : null
                             ))}
                         </datalist>
