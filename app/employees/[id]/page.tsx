@@ -2,8 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { User, BookOpen, Award, CheckCircle, Package } from 'lucide-react';
+import { User, BookOpen, Award, CheckCircle, Package, FileText, Upload } from 'lucide-react';
 import Link from 'next/link';
+import { saveFile } from '@/lib/storage';
+import { revalidatePath } from 'next/cache';
 
 export default async function EmployeeDetailPage({ params }: { params: { id: string } }) {
     const employeeId = parseInt(params.id);
@@ -37,10 +39,26 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
 
     async function handleCertUpload(formData: FormData) {
         'use server';
-        // Logic for uploading certificate would go here
-        // For MVP we just log it
-        console.log("Uploaded file for employee " + employeeId);
-        console.log(formData);
+
+        const expirationId = parseInt(formData.get('expirationId') as string);
+        const file = formData.get('file') as File;
+
+        if (!file || file.size === 0) return;
+
+        try {
+            // Save file to 'certificates' folder
+            const relativePath = await saveFile(file, 'certificates');
+
+            // Update database
+            await prisma.expiration.update({
+                where: { expirationID: expirationId },
+                data: { documentPath: relativePath }
+            });
+
+            revalidatePath(`/employees/${employeeId}`);
+        } catch (error) {
+            console.error('Upload failed:', error);
+        }
     }
 
     return (
@@ -156,12 +174,44 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                                 ) : 'N/A'}
                                             </td>
                                             <td className="py-2 text-right">
-                                                <form action={handleCertUpload}>
-                                                    <input type="hidden" name="expirationId" value={exp.expirationID.toString()} />
-                                                    <button type="submit" className="text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">
-                                                        Upload
-                                                    </button>
-                                                </form>
+                                                {exp.documentPath ? (
+                                                    <a
+                                                        href={`/api/files/${exp.documentPath}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex justify-end items-center text-blue-600 hover:text-blue-800 text-xs font-medium"
+                                                    >
+                                                        <FileText size={16} className="mr-1" />
+                                                        View
+                                                    </a>
+                                                ) : (
+                                                    <form action={handleCertUpload} className="flex justify-end items-center space-x-2">
+                                                        <input type="hidden" name="expirationId" value={exp.expirationID.toString()} />
+                                                        <div className="relative">
+                                                            <input
+                                                                type="file"
+                                                                name="file"
+                                                                id={`file-${exp.expirationID}`}
+                                                                className="hidden"
+                                                                onChange={() => {
+                                                                    // Auto-submit on selection or just show file name? 
+                                                                    // For simplicity in this server component approach, we might need a client wrapper or just a submit button.
+                                                                    // Since we can't add client-side valid event handlers easily in this server component without a client wrapper,
+                                                                    // we'll stick to a standard input + button approach.
+                                                                }}
+                                                            />
+                                                            <label
+                                                                htmlFor={`file-${exp.expirationID}`}
+                                                                className="cursor-pointer text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200 flex items-center"
+                                                            >
+                                                                <Upload size={12} className="mr-1" /> Choose
+                                                            </label>
+                                                        </div>
+                                                        <button type="submit" className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">
+                                                            Upload
+                                                        </button>
+                                                    </form>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

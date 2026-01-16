@@ -144,6 +144,7 @@ model Expiration {
   CertificateID Int
   EmployeeID    Int
   Expiration    DateTime?
+  documentPath  String?
 
   certificate Certificate @relation(fields: [CertificateID], references: [CertificateID])
   employee    Employee    @relation(fields: [EmployeeID], references: [empId])
