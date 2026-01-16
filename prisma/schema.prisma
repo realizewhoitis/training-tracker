@@ -16,6 +16,7 @@ model Employee {
   expirations Expiration[]
   policyAcknowledgments PolicyAcknowledgment[]
   assetAssignments AssetAssignment[]
+  formResponses FormResponse[] @relation("Trainee")
   user        User?
 }
 
@@ -69,6 +70,7 @@ model User {
   role      String   @default("TRAINEE") // 'TRAINEE', 'FTO', 'ADMIN'
   employee  Employee? @relation(fields: [empId], references: [empId])
   empId     Int?     @unique
+  authoredResponses FormResponse[]
 }
 
 model Training {
@@ -148,4 +150,56 @@ model Expiration {
 
   certificate Certificate @relation(fields: [CertificateID], references: [CertificateID])
   employee    Employee    @relation(fields: [EmployeeID], references: [empId])
+}
+
+model FormTemplate {
+  id          Int      @id @default(autoincrement())
+  title       String
+  version     Int      @default(1)
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  sections    FormSection[]
+  responses   FormResponse[]
+}
+
+model FormSection {
+  id          Int      @id @default(autoincrement())
+  title       String
+  order       Int
+  
+  templateId  Int
+  template    FormTemplate @relation(fields: [templateId], references: [id])
+  
+  fields      FormField[]
+}
+
+model FormField {
+  id          Int      @id @default(autoincrement())
+  label       String
+  type        String   // "RATING", "TEXT", "BOOLEAN"
+  order       Int
+  required    Boolean  @default(true)
+  
+  sectionId   Int
+  section     FormSection @relation(fields: [sectionId], references: [id])
+}
+
+model FormResponse {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @default(now())
+  
+  traineeId   Int
+  trainee     Employee @relation("Trainee", fields: [traineeId], references: [empId])
+  
+  ftoId       Int
+  fto         User     @relation(fields: [ftoId], references: [id]) 
+
+  templateId  Int
+  template    FormTemplate @relation(fields: [templateId], references: [id])
+  
+  responseData String // JSON string storing { fieldId: value }
+  
+  status      String   @default("DRAFT") // DRAFT, SUBMITTED, REVIEWED
 }
