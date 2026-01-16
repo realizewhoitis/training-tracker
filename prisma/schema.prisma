@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  empId    Int     @id @default(autoincrement())
+  empName  String?
+  departed Boolean @default(false)
+
+  attendances Attendance[]
+  expirations Expiration[]
+  policyAcknowledgments PolicyAcknowledgment[]
+  user        User?
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("TRAINEE") // 'TRAINEE', 'FTO', 'ADMIN'
+  employee  Employee? @relation(fields: [empId], references: [empId])
+  empId     Int?     @unique
+}
+
+model Training {
+  TrainingID   Int     @id @default(autoincrement())
+  TrainingName String?
+  category     String? // CEU Bucket (e.g. "Medical", "Fire", "Law")
+  filePath     String? // Path to syllabus or training materials
+
+  attendances Attendance[]
+  exclusions  CertificateTrainingExclusion[]
+}
+
+model Attendance {
+  attendanceID    Int       @id @default(autoincrement())
+  attendanceDate  DateTime?
+  attendanceHealth Boolean?
+  attendanceHours Float?
+  attendanceNote  String? // Note: Access text fields can be long
+  
+  employeeID      Int
+  trainingID      Int
+
+  employee Employee @relation(fields: [employeeID], references: [empId])
+  training Training @relation(fields: [trainingID], references: [TrainingID])
+}
+
+model Certificate {
+  CertificateID   Int     @id @default(autoincrement())
+  certificateName String?
+  neededHours     Float?
+  yearsValid      Float?
+  filePath        String? // Path to uploaded certificate template or reference
+
+  exclusions  CertificateTrainingExclusion[]
+  expirations Expiration[]
+}
+
+model Policy {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  version     String   @default("1.0")
+  createdAt   DateTime @default(now())
+  
+  acknowledgments PolicyAcknowledgment[]
+}
+
+model PolicyAcknowledgment {
+  id          Int      @id @default(autoincrement())
+  policyId    Int
+  employeeId  Int
+  acknowledgedAt DateTime @default(now())
+
+  policy      Policy   @relation(fields: [policyId], references: [id])
+  employee    Employee @relation(fields: [employeeId], references: [empId])
+
+  @@unique([policyId, employeeId])
+}
+
+model CertificateTrainingExclusion {
+  exclusionID   Int @id @default(autoincrement()) // Synthetic ID as Access likely used composite key or no key
+  certificateID Int
+  trainingID    Int
+
+  certificate Certificate @relation(fields: [certificateID], references: [CertificateID])
+  training    Training    @relation(fields: [trainingID], references: [TrainingID])
+
+  @@unique([certificateID, trainingID])
+}
+
+model Expiration {
+  expirationID Int       @id @default(autoincrement()) // Synthetic ID
+  CertificateID Int
+  EmployeeID    Int
+  Expiration    DateTime?
+
+  certificate Certificate @relation(fields: [CertificateID], references: [CertificateID])
+  employee    Employee    @relation(fields: [EmployeeID], references: [empId])
+}
