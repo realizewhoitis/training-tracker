@@ -202,4 +202,5 @@ model FormResponse {
   responseData String // JSON string storing { fieldId: value }
   
   status      String   @default("DRAFT") // DRAFT, SUBMITTED, REVIEWED
+  traineeSignatureAt DateTime?
 }

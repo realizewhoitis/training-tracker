@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
-import { Users, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Users, AlertTriangle, CheckCircle, Clock, FileSignature } from 'lucide-react';
+import { auth } from '@/auth';
+import Link from 'next/link';
 
 export default async function Home() {
   const totalEmployees = await prisma.employee.count({
@@ -39,9 +41,60 @@ export default async function Home() {
     }
   });
 
+  // Check for pending DORs for the current user
+  const session = await auth();
+  let pendingDORs: any[] = [];
+
+  if (session?.user?.email) {
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (currentUser?.empId) {
+      pendingDORs = await prisma.formResponse.findMany({
+        where: {
+          traineeId: currentUser.empId,
+          status: 'SUBMITTED'
+        },
+        include: {
+          template: true,
+          fto: true
+        },
+        orderBy: { date: 'desc' }
+      });
+    }
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
+
+      {pendingDORs.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-bold text-blue-900 flex items-center mb-4">
+            <FileSignature className="w-5 h-5 mr-2" />
+            Action Required: Pending DOR Signatures
+          </h2>
+          <div className="space-y-3">
+            {pendingDORs.map(dor => (
+              <div key={dor.id} className="flex items-center justify-between bg-white p-4 rounded-lg border border-blue-100 shadow-sm">
+                <div>
+                  <p className="font-semibold text-slate-800">{dor.template.title}</p>
+                  <p className="text-sm text-slate-500">
+                    Date: {dor.date.toLocaleDateString()} • FTO: {dor.fto.name}
+                  </p>
+                </div>
+                <Link
+                  href={`/dor/${dor.id}`}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Review & Sign
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center space-x-4">
