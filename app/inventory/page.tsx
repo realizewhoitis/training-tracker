@@ -59,28 +59,33 @@ export default async function InventoryPage({
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center">
+            <form className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                    <form>
-                        <input
-                            name="q"
-                            defaultValue={query}
-                            placeholder="Search by name, serial, or tag..."
-                            className="pl-10 pr-4 py-2 w-full border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        />
-                    </form>
+                    <input
+                        name="q"
+                        defaultValue={query}
+                        placeholder="Search by name, serial, or tag..."
+                        className="pl-10 pr-4 py-2 w-full border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    />
                 </div>
                 <div className="flex items-center space-x-2">
                     <Filter size={16} className="text-slate-400" />
-                    <select className="border-none bg-transparent text-sm font-medium text-slate-600 focus:ring-0">
+                    <select
+                        name="status"
+                        defaultValue={statusFilter}
+                        className="border-none bg-transparent text-sm font-medium text-slate-600 focus:ring-0"
+                    >
                         <option value="">All Statuses</option>
                         <option value="AVAILABLE">Available</option>
                         <option value="ASSIGNED">Assigned</option>
                         <option value="MAINTENANCE">Maintenance</option>
                     </select>
                 </div>
-            </div>
+                <button type="submit" className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200">
+                    Filter
+                </button>
+            </form>
 
             {/* Asset Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

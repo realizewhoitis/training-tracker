@@ -3,7 +3,7 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Package, Clock, ArrowRightLeft } from 'lucide-react';
-import { revalidatePath } from 'next/cache';
+import { assignAsset, returnAsset } from '../actions';
 
 export default async function AssetDetailPage({ params }: { params: { id: string } }) {
     const assetId = parseInt(params.id);
@@ -22,54 +22,6 @@ export default async function AssetDetailPage({ params }: { params: { id: string
 
     const currentAssignment = asset.assignments.find((a: any) => !a.returnedAt);
     const employees = await prisma.employee.findMany({ where: { departed: false }, orderBy: { empName: 'asc' } });
-
-    async function assignAsset(formData: FormData) {
-        'use server';
-        const employeeId = parseInt(formData.get('employeeId') as string);
-        if (!employeeId) return;
-
-        // Check if already assigned to prevent race condition
-        const freshAsset = await prisma.asset.findUnique({ where: { id: assetId } });
-        if (freshAsset?.status === 'ASSIGNED') return;
-
-        await prisma.$transaction([
-            prisma.assetAssignment.create({
-                data: {
-                    assetId: assetId,
-                    employeeId: employeeId,
-                    notes: formData.get('notes') as string
-                }
-            }),
-            prisma.asset.update({
-                where: { id: assetId },
-                data: { status: 'ASSIGNED' }
-            })
-        ]);
-        revalidatePath(`/inventory/${assetId}`);
-        revalidatePath('/inventory');
-    }
-
-    async function returnAsset(formData: FormData) {
-        'use server';
-        const assignmentId = parseInt(formData.get('assignmentId') as string);
-        const condition = formData.get('condition') as string;
-
-        await prisma.$transaction([
-            prisma.assetAssignment.update({
-                where: { id: assignmentId },
-                data: { returnedAt: new Date() }
-            }),
-            prisma.asset.update({
-                where: { id: assetId },
-                data: {
-                    status: 'AVAILABLE',
-                    condition: condition
-                }
-            })
-        ]);
-        revalidatePath(`/inventory/${assetId}`);
-        revalidatePath('/inventory');
-    }
 
     return (
         <div className="space-y-6">
@@ -109,6 +61,7 @@ export default async function AssetDetailPage({ params }: { params: { id: string
 
                         {asset.status === 'AVAILABLE' ? (
                             <form action={assignAsset} className="space-y-4">
+                                <input type="hidden" name="assetId" value={asset.id} />
                                 <div>
                                     <label className="block text-xs font-medium text-slate-500 mb-1">Assign to Employee</label>
                                     <select name="employeeId" required className="w-full text-sm border-slate-300 rounded-lg">
@@ -126,6 +79,7 @@ export default async function AssetDetailPage({ params }: { params: { id: string
                             </form>
                         ) : currentAssignment ? (
                             <form action={returnAsset} className="space-y-4">
+                                <input type="hidden" name="assetId" value={asset.id} />
                                 <input type="hidden" name="assignmentId" value={currentAssignment.id} />
                                 <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
                                     <p className="text-xs text-blue-600 mb-1">Currently assigned to:</p>

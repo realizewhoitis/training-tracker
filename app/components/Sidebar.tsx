@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { Home, Users, BookOpen, FileText, Package, PenTool, Settings } from 'lucide-react';
 
-const Sidebar = () => {
+import { auth } from '@/auth';
+
+const Sidebar = async () => {
+    const session = await auth();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userRole = (session?.user as any)?.role;
+
     return (
         <div className="h-screen w-64 bg-slate-900 text-white flex flex-col shadow-xl">
             <div className="p-6 border-b border-slate-700">
@@ -45,25 +51,27 @@ const Sidebar = () => {
                     <FileText className="w-5 h-5 text-gray-400 group-hover:text-white" />
                     <span className="font-medium">Reports</span>
                 </Link>
-                <div className="pt-4 mt-4 border-t border-slate-700">
-                    <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                        FTO Tools
-                    </p>
-                    <Link
-                        href="/dor/new"
-                        className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                    >
-                        <PenTool className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                        <span className="font-medium">Write DOR</span>
-                    </Link>
-                    <Link
-                        href="/admin/forms"
-                        className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                    >
-                        <Settings className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                        <span className="font-medium">Form Builder</span>
-                    </Link>
-                </div>
+                {(userRole === 'ADMIN' || userRole === 'FTO') && (
+                    <div className="pt-4 mt-4 border-t border-slate-700">
+                        <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                            FTO Tools
+                        </p>
+                        <Link
+                            href="/dor/new"
+                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                        >
+                            <PenTool className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                            <span className="font-medium">Write DOR</span>
+                        </Link>
+                        <Link
+                            href="/admin/forms"
+                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                        >
+                            <Settings className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                            <span className="font-medium">Form Builder</span>
+                        </Link>
+                    </div>
+                )}
             </nav>
             <div className="p-4 border-t border-slate-700 text-xs text-gray-500">
                 v1.0.0

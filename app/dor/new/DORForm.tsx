@@ -4,21 +4,39 @@
 
 import { useState } from 'react';
 import { Save, User as UserIcon } from 'lucide-react';
-import { submitDOR } from '@/app/actions/dor-submission';
+import { submitDOR, updateDOR } from '@/app/actions/dor-submission';
 
-export default function DORForm({ template, trainees }: { template: any, trainees: any[] }) {
+interface DORFormProps {
+    template: any;
+    trainees: any[];
+    initialData?: any; // FormResponse object if editing
+}
+
+export default function DORForm({ template, trainees, initialData }: DORFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Parse initial scores if they exist
+    const initialScores = initialData ? JSON.parse(initialData.responseData) : {};
+
     return (
-        <form action={submitDOR} className="max-w-4xl mx-auto space-y-8 pb-20" onSubmit={() => setIsSubmitting(true)}>
+        <form
+            action={initialData ? updateDOR : submitDOR}
+            className="max-w-4xl mx-auto space-y-8 pb-20"
+            onSubmit={() => setIsSubmitting(true)}
+        >
             <input type="hidden" name="templateId" value={template.id} />
+            {initialData && <input type="hidden" name="dorId" value={initialData.id} />}
 
             {/* Header & Trainee Selection */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-800">{template.title}</h1>
-                        <p className="text-slate-500">Daily Observation Report • Version {template.version}</p>
+                        <h1 className="text-3xl font-bold text-slate-800">
+                            {initialData ? `Edit Report #${initialData.id}` : template.title}
+                        </h1>
+                        <p className="text-slate-500">
+                            {initialData ? `Editing Record • ${new Date(initialData.date).toLocaleDateString()}` : `Daily Observation Report • Version ${template.version}`}
+                        </p>
                     </div>
                 </div>
 
@@ -31,6 +49,7 @@ export default function DORForm({ template, trainees }: { template: any, trainee
                         <select
                             name="traineeId"
                             required
+                            defaultValue={initialData ? initialData.traineeId : ""}
                             className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         >
                             <option value="">-- Choose Employee --</option>
@@ -64,6 +83,7 @@ export default function DORForm({ template, trainees }: { template: any, trainee
                                                     type="radio"
                                                     name={`field-${field.id}`}
                                                     value={num}
+                                                    defaultChecked={parseInt(initialScores[field.id]) === num}
                                                     className="peer sr-only"
                                                     required={field.required}
                                                 />
@@ -78,6 +98,7 @@ export default function DORForm({ template, trainees }: { template: any, trainee
                                                 type="radio"
                                                 name={`field-${field.id}`}
                                                 value="N.O."
+                                                defaultChecked={initialScores[field.id] === 'N.O.'}
                                                 className="peer sr-only"
                                             />
                                             <div className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 font-medium hover:bg-slate-50 peer-checked:bg-slate-500 peer-checked:text-white peer-checked:border-slate-500 transition-colors text-xs">
@@ -90,6 +111,7 @@ export default function DORForm({ template, trainees }: { template: any, trainee
                                 {field.type === 'TEXT' && (
                                     <textarea
                                         name={`field-${field.id}`}
+                                        defaultValue={initialScores[field.id] || ''}
                                         rows={3}
                                         className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         placeholder="Enter comments..."
@@ -111,7 +133,7 @@ export default function DORForm({ template, trainees }: { template: any, trainee
                         className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium shadow-sm disabled:opacity-50 disabled:cursor-wait"
                     >
                         <Save className="mr-2" size={20} />
-                        {isSubmitting ? 'Submitting...' : 'Submit DOR'}
+                        {isSubmitting ? 'Saving...' : (initialData ? 'Update Report' : 'Submit DOR')}
                     </button>
                 </div>
             </div>

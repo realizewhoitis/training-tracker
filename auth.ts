@@ -39,4 +39,22 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
             },
         }),
     ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                // @ts-ignore
+                token.role = user.role;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.id as string;
+                // @ts-ignore // Role is not in default type but we need it
+                session.user.role = token.role as string;
+            }
+            return session;
+        }
+    }
 });

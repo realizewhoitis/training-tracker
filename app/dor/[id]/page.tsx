@@ -2,33 +2,52 @@
 import { auth } from '@/auth';
 import { getDOR, signDOR } from '@/app/actions/dor-submission';
 import { notFound, redirect } from 'next/navigation';
-import { CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle, Clock, Edit } from 'lucide-react';
 import prisma from '@/lib/prisma';
+import ExportDORButton from '@/app/components/ExportDORButton';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export default async function DORViewPage({ params }: { params: { id: string } }) {
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 
-    const dor = await getDOR(parseInt(params.id));
+    const dor: any = await getDOR(parseInt(params.id));
     if (!dor) notFound();
 
     const responseData = JSON.parse(dor.responseData);
 
     // Determine if current user is the trainee
-    // We need to fetch the User record for the trainee to compare IDs effectively, 
-    // or rely on the relation if User matches session email
     const currentUser = await prisma.user.findUnique({ where: { email: session.user.email! } });
     const isTrainee = currentUser?.empId === dor.traineeId;
     const canSign = isTrainee && dor.status === 'SUBMITTED';
+    const isAdmin = (currentUser as any)?.role === 'ADMIN';
 
     return (
         <div className="max-w-4xl mx-auto py-8 px-4">
             <div className="mb-8 flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">{dor.template.title}</h1>
-                    <p className="text-slate-500">
-                        Date: {dor.date.toLocaleDateString()} • FTO: {dor.fto.name}
+                    <p className="text-slate-500 mb-2">
+                        Date: {new Date(dor.date).toLocaleDateString()} • FTO: {dor.fto.name}
                     </p>
+                    <div className="flex space-x-2">
+                        <ExportDORButton
+                            dor={dor}
+                            traineeName={dor.trainee.empName || 'Trainee'}
+                            ftoName={dor.fto.name}
+                        />
+
+                        {isAdmin && (
+                            <a
+                                href={`/dor/${dor.id}/edit`}
+                                className="flex items-center space-x-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 transition-colors shadow-sm text-sm font-medium"
+                            >
+                                <Edit size={16} />
+                                <span>Edit Report</span>
+                            </a>
+                        )}
+                    </div>
                 </div>
                 <div className="text-right">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${dor.status === 'REVIEWED' ? 'bg-green-100 text-green-800' :
@@ -39,18 +58,18 @@ export default async function DORViewPage({ params }: { params: { id: string } }
                     {dor.traineeSignatureAt && (
                         <p className="text-xs text-green-600 mt-1 flex items-center justify-end">
                             <CheckCircle size={12} className="mr-1" />
-                            Signed {dor.traineeSignatureAt.toLocaleDateString()}
+                            Signed {new Date(dor.traineeSignatureAt).toLocaleDateString()}
                         </p>
                     )}
                 </div>
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-8">
-                {dor.template.sections.map(section => (
+                {dor.template.sections.map((section: any) => (
                     <div key={section.id} className="p-6 border-b border-slate-100 last:border-0">
                         <h3 className="font-bold text-lg text-slate-800 mb-4">{section.title}</h3>
                         <div className="space-y-4">
-                            {section.fields.map(field => {
+                            {section.fields.map((field: any) => {
                                 const val = responseData[field.id.toString()];
                                 return (
                                     <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-4">
