@@ -9,10 +9,11 @@ import { submitDOR, updateDOR } from '@/app/actions/dor-submission';
 interface DORFormProps {
     template: any;
     trainees: any[];
+    trainers?: any[];
     initialData?: any; // FormResponse object if editing
 }
 
-export default function DORForm({ template, trainees, initialData }: DORFormProps) {
+export default function DORForm({ template, trainees, trainers = [], initialData }: DORFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Parse initial scores if they exist
@@ -40,23 +41,44 @@ export default function DORForm({ template, trainees, initialData }: DORFormProp
                     </div>
                 </div>
 
-                <div className="flex items-center space-x-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
-                    <div className="bg-blue-100 p-2 rounded-full text-blue-600">
-                        <UserIcon size={24} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                        <div className="bg-blue-100 p-2 rounded-full text-blue-600">
+                            <UserIcon size={24} />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Select Trainee</label>
+                            <select
+                                name="traineeId"
+                                required
+                                defaultValue={initialData ? initialData.traineeId : ""}
+                                className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            >
+                                <option value="">-- Choose Employee --</option>
+                                {trainees.map(t => (
+                                    <option key={t.empId} value={t.empId}>{t.empName}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                    <div className="flex-1">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Select Trainee</label>
-                        <select
-                            name="traineeId"
-                            required
-                            defaultValue={initialData ? initialData.traineeId : ""}
-                            className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        >
-                            <option value="">-- Choose Employee --</option>
-                            {trainees.map(t => (
-                                <option key={t.empId} value={t.empId}>{t.empName}</option>
-                            ))}
-                        </select>
+
+                    <div className="flex items-center space-x-4 p-4 bg-slate-50 rounded-lg border border-slate-100">
+                        <div className="bg-green-100 p-2 rounded-full text-green-600">
+                            <UserIcon size={24} />
+                        </div>
+                        <div className="flex-1">
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Trainer (Observer)</label>
+                            <select
+                                name="trainerId"
+                                className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                defaultValue={initialData ? initialData.trainerId : ""}
+                            >
+                                <option value="">-- Current User --</option>
+                                {trainers.map(t => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>

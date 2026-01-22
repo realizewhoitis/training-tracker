@@ -69,6 +69,15 @@ export async function getTrainees() {
     });
 }
 
+export async function getTrainers() {
+    return await prisma.user.findMany({
+        where: {
+            role: { in: ['TRAINER', 'SUPERVISOR', 'ADMIN'] }
+        },
+        orderBy: { name: 'asc' }
+    });
+}
+
 export async function submitDOR(formData: FormData) {
     const session = await auth();
     if (!session?.user?.id) {
@@ -77,6 +86,7 @@ export async function submitDOR(formData: FormData) {
 
     const templateId = parseInt(formData.get('templateId') as string);
     const traineeId = parseInt(formData.get('traineeId') as string);
+    const formTrainerId = formData.get('trainerId') ? parseInt(formData.get('trainerId') as string) : parseInt(session.user.id);
 
     // Collect all field data
     const responseData: Record<string, any> = {};
@@ -91,7 +101,7 @@ export async function submitDOR(formData: FormData) {
         data: {
             templateId,
             traineeId,
-            trainerId: parseInt(session.user.id),
+            trainerId: formTrainerId,
             responseData: JSON.stringify(responseData),
             status: 'SUBMITTED'
         }

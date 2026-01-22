@@ -1,10 +1,11 @@
 
-import { getLatestPublishedTemplate, getTrainees } from '@/app/actions/dor-submission';
+import { getLatestPublishedTemplate, getTrainees, getTrainers } from '@/app/actions/dor-submission';
 import DORForm from './DORForm';
 
 export default async function NewDORPage() {
     const template = await getLatestPublishedTemplate();
     const trainees = await getTrainees();
+    const trainers = await getTrainers();
 
     if (!template) {
         return (
@@ -17,7 +18,7 @@ export default async function NewDORPage() {
 
     return (
         <div className="bg-slate-50 min-h-screen py-8 px-4">
-            <DORForm template={template} trainees={trainees} />
+            <DORForm template={template} trainees={trainees} trainers={trainers} />
         </div>
     );
 }

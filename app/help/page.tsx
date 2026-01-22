@@ -79,10 +79,17 @@ export default function HelpPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div className="border border-gray-200 rounded-xl p-4">
                         <h3 className="font-semibold text-gray-800 mb-2">For Trainers</h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 mb-3">
                             Create new reports from the top navigation. Standardized templates ensure consistency.
-                            You can save drafts or submit for review.
                         </p>
+                        <h4 className="text-xs font-bold uppercase text-gray-500 mb-2">Creating a DOR:</h4>
+                        <ul className="space-y-1 text-sm text-gray-600 list-disc list-inside">
+                            <li><strong>Select Trainee:</strong> Choose the employee you are evaluating.</li>
+                            <li><strong>Select Trainer:</strong> Identify who is performing the evaluation (defaults to you).</li>
+                            <li><strong>Rate Performance:</strong> Score all categories (1-7 scale). Use 'N.O.' for Not Observed.</li>
+                            <li><strong>Narrative:</strong> Complete the "Most/Least Satisfactory" and "Incident" text areas.</li>
+                            <li><strong>Submit:</strong> Click to save. The trainee will be notified to sign.</li>
+                        </ul>
                     </div>
                     <div className="border border-gray-200 rounded-xl p-4">
                         <h3 className="font-semibold text-gray-800 mb-2">For Trainees</h3>
