@@ -23,6 +23,18 @@ export const PERMISSIONS = {
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
 
+export const PERMISSION_LABELS: Record<Permission, { label: string; description: string }> = {
+    [PERMISSIONS.MANAGE_USERS]: { label: 'Manage Users', description: 'Create, edit, and delete user accounts' },
+    [PERMISSIONS.MANAGE_ROLES]: { label: 'Manage Roles', description: 'Modify permission templates for roles' },
+    [PERMISSIONS.VIEW_REPORTS]: { label: 'View Reports', description: 'Read-only access to DORs' },
+    [PERMISSIONS.EXPORT_REPORTS]: { label: 'Export Reports', description: 'Download reports as PDF' },
+    [PERMISSIONS.MANAGE_FORMS]: { label: 'Manage Forms', description: 'Create and edit evaluation templates' },
+    [PERMISSIONS.MANAGE_INVENTORY]: { label: 'Manage Inventory', description: 'Create and assign assets' },
+    [PERMISSIONS.VIEW_EIS]: { label: 'View EIS', description: 'View Early Intervention System flags' },
+    [PERMISSIONS.MANAGE_EIS]: { label: 'Manage EIS', description: 'Resolve and dismiss EIS alerts' },
+    [PERMISSIONS.MANAGE_BRANDING]: { label: 'Manage Branding', description: 'Update logos and organization name' },
+};
+
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
@@ -36,10 +48,6 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'TRAINER': [
         PERMISSIONS.VIEW_REPORTS,
         PERMISSIONS.EXPORT_REPORTS
-    ],
-    'FTO': [
-        PERMISSIONS.VIEW_REPORTS
-        // FTOs also have innate ability to WRITE reports which is app logic, not just permission
     ],
     'TRAINEE': []
 };

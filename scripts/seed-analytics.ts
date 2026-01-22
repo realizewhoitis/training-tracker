@@ -9,7 +9,7 @@ async function main() {
 
     // 1. Create Users
     const traineeEmail = 'analytics.trainee@example.com';
-    const ftoEmail = 'analytics.fto@example.com';
+    const trainerEmail = 'analytics.trainer@example.com';
 
     const trainee = await prisma.user.upsert({
         where: { email: traineeEmail },
@@ -26,20 +26,24 @@ async function main() {
         include: { employee: true }
     });
 
-    const fto = await prisma.user.upsert({
-        where: { email: ftoEmail },
+    const trainer = await prisma.user.upsert({
+        where: { email: trainerEmail },
         update: {},
         create: {
-            email: ftoEmail,
-            name: 'Frank FTO',
+            email: trainerEmail,
+            name: 'Frank Trainer',
             password: await hash('password123', 12),
-            role: 'FTO',
+            role: 'TRAINER',
             employee: {
-                create: { empName: 'Frank FTO' }
+                create: { empName: 'Frank Trainer' }
             }
         },
         include: { employee: true }
     });
+
+    // ... (template creation skipped for brevity in replace, context match handles it)
+
+    // ...
 
     // 2. Create Template
     const template = await prisma.formTemplate.create({
@@ -49,7 +53,7 @@ async function main() {
             sections: {
                 create: [
                     {
-                        title: 'Officer Safety',
+                        title: 'Telecommunicator Safety',
                         order: 1,
                         fields: {
                             create: [
@@ -99,7 +103,7 @@ async function main() {
             data: {
                 date: date,
                 traineeId: trainee.employee!.empId,
-                ftoId: fto.id,
+                trainerId: trainer.id,
                 templateId: template.id,
                 responseData: JSON.stringify(responseData),
                 status: 'REVIEWED',

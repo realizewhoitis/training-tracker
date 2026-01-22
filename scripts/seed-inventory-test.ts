@@ -18,20 +18,20 @@ async function main() {
     }
 
     // 3. Create Employees if not exist
-    let officerA = await prisma.employee.findFirst({ where: { empName: 'Officer A' } });
-    if (!officerA) {
-        officerA = await prisma.employee.create({
-            data: { empName: 'Officer A', departed: false }
+    let commA = await prisma.employee.findFirst({ where: { empName: 'Comm A' } });
+    if (!commA) {
+        commA = await prisma.employee.create({
+            data: { empName: 'Comm A', departed: false }
         });
-        console.log('Created Officer A');
+        console.log('Created Comm A');
     }
 
-    let officerB = await prisma.employee.findFirst({ where: { empName: 'Officer B' } });
-    if (!officerB) {
-        officerB = await prisma.employee.create({
-            data: { empName: 'Officer B', departed: false }
+    let commB = await prisma.employee.findFirst({ where: { empName: 'Comm B' } });
+    if (!commB) {
+        commB = await prisma.employee.create({
+            data: { empName: 'Comm B', departed: false }
         });
-        console.log('Created Officer B');
+        console.log('Created Comm B');
     }
 
     // 4. Create an Asset
@@ -48,11 +48,11 @@ async function main() {
     console.log(`Created Asset: ${asset.name} (${asset.assetTag})`);
 
     // 5. Assign to Officer A (lifecycle test)
-    console.log('Assigning to Officer A...');
+    console.log('Assigning to Comm A...');
     const assignment1 = await prisma.assetAssignment.create({
         data: {
             assetId: asset.id,
-            employeeId: officerA.empId,
+            employeeId: commA.empId,
             notes: 'Initial issue'
         }
     });
@@ -83,11 +83,11 @@ async function main() {
     console.log('Asset status Verified: AVAILABLE');
 
     // 7. Assign to Officer B
-    console.log('Assigning to Officer B...');
+    console.log('Assigning to Comm B...');
     await prisma.assetAssignment.create({
         data: {
             assetId: asset.id,
-            employeeId: officerB.empId,
+            employeeId: commB.empId,
             notes: 'Re-issue'
         }
     });

@@ -53,8 +53,8 @@ export default function HelpPage() {
                     <Users className="mr-3 text-blue-600" /> Employee Profiles
                 </h2>
                 <p className="text-gray-600 mb-4">
-                    The Employee Detail view is the central hub for an officer's data. It aggregates training hours,
-                    certifications, policy acknowledgments, and assigned inventory.
+                    The Employee Detail view is the central hub for an employee's data. It aggregates training hours,
+                    inventory assignments (`Radio 123`, `Headset 45`), and DOR performance trends.
                 </p>
                 <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
                     <h3 className="font-semibold text-blue-900 mb-2">Key Features:</h3>

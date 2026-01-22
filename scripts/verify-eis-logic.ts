@@ -18,12 +18,12 @@ async function main() {
         // 2. Create Low Score DOR
         // Need a template first or catch if fails?
         // We'll trust there is a template or just create raw formResponse.
-        // FormResponse needs templateId, ftoId.
-        const fto = await prisma.user.findFirst();
+        // FormResponse needs templateId, trainerId.
+        const trainer = await prisma.user.findFirst();
         const template = await prisma.formTemplate.findFirst();
 
-        if (!fto || !template) {
-            console.error("No FTO or Template found to create DOR.");
+        if (!trainer || !template) {
+            console.error("No Trainer or Template found to create DOR.");
             return;
         }
 
@@ -34,7 +34,7 @@ async function main() {
         await prisma.formResponse.create({
             data: {
                 traineeId: emp.empId,
-                ftoId: fto.id,
+                trainerId: trainer.id,
                 templateId: template.id,
                 date: new Date(),
                 status: "REVIEWED",

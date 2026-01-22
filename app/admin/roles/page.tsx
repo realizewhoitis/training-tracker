@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
 import { ShieldCheck, Save, Info } from 'lucide-react';
-import { PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, Permission, ALL_PERMISSIONS } from '@/lib/permissions';
+import { PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, Permission, ALL_PERMISSIONS, PERMISSION_LABELS } from '@/lib/permissions';
 import { updateRoleTemplate } from './actions';
 
 export default async function RoleManagerPage() {
@@ -59,8 +59,8 @@ export default async function RoleManagerPage() {
                                                 />
                                             </div>
                                             <div className="text-sm">
-                                                <span className="font-medium text-gray-900 block font-mono text-xs">{perm}</span>
-                                                {/* We could add descriptions map here later */}
+                                                <span className="font-medium text-gray-900 block">{PERMISSION_LABELS[perm]?.label || perm}</span>
+                                                <span className="text-xs text-gray-500">{PERMISSION_LABELS[perm]?.description}</span>
                                             </div>
                                         </label>
                                     ))}
