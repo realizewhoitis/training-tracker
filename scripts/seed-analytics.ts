@@ -53,7 +53,7 @@ async function main() {
             sections: {
                 create: [
                     {
-                        title: 'Telecommunicator Safety',
+                        title: 'Officer Safety',
                         order: 1,
                         fields: {
                             create: [
