@@ -1,43 +1,46 @@
-
+import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
 import { getDOR, signDOR } from '@/app/actions/dor-submission';
+import ExportDORButton from '@/app/components/ExportDORButton';
 import { notFound, redirect } from 'next/navigation';
 import { CheckCircle, Clock, Edit } from 'lucide-react';
-import prisma from '@/lib/prisma';
-import ExportDORButton from '@/app/components/ExportDORButton';
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getSettings } from '@/app/admin/settings/actions';
 
 export default async function DORViewPage({ params }: { params: { id: string } }) {
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 
-    const dor: any = await getDOR(parseInt(params.id));
+    const dorId = parseInt(params.id);
+    if (isNaN(dorId)) notFound();
+
+    const dor: any = await getDOR(dorId);
     if (!dor) notFound();
 
-    const responseData = JSON.parse(dor.responseData);
+    const isAdmin = session.user.role === 'ADMIN';
+    const isTrainee = session.user.role === 'TRAINEE';
+    const canSign = isTrainee && dor.traineeId === session.user.empId && !dor.traineeSignatureAt;
 
-    // Determine if current user is the trainee
-    const currentUser = await prisma.user.findUnique({ where: { email: session.user.email! } });
-    const isTrainee = currentUser?.empId === dor.traineeId;
-    const canSign = isTrainee && dor.status === 'SUBMITTED';
-    const isAdmin = (currentUser as any)?.role === 'ADMIN';
+    const responseData = JSON.parse(dor.responseData);
+    const settings = await getSettings();
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4">
-            <div className="mb-8 flex justify-between items-start">
+        <div className="max-w-5xl mx-auto p-6 md:p-10">
+            <div className="flex justify-between items-start mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">{dor.template.title}</h1>
-                    <p className="text-slate-500 mb-2">
-                        Date: {new Date(dor.date).toLocaleDateString()} • FTO: {dor.fto.name}
+                    <h1 className="text-3xl font-bold text-slate-800 mb-2">Daily Observation Report</h1>
+                    <p className="text-slate-500">
+                        {new Date(dor.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
-                    <div className="flex space-x-2">
+                    <p className="text-sm font-medium text-slate-400 mt-1">
+                        Trainee: {dor.trainee.empName} • Trainer: {dor.trainer.name}
+                    </p>
+                    <div className="mt-4 flex gap-2">
                         <ExportDORButton
                             dor={dor}
                             traineeName={dor.trainee.empName || 'Trainee'}
-                            ftoName={dor.fto.name}
+                            trainerName={dor.trainer.name}
+                            brandingSettings={settings}
                         />
-
                         {isAdmin && (
                             <a
                                 href={`/dor/${dor.id}/edit`}
@@ -49,6 +52,7 @@ export default async function DORViewPage({ params }: { params: { id: string } }
                         )}
                     </div>
                 </div>
+
                 <div className="text-right">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${dor.status === 'REVIEWED' ? 'bg-green-100 text-green-800' :
                         dor.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-800'
@@ -102,7 +106,7 @@ export default async function DORViewPage({ params }: { params: { id: string } }
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
                         <h4 className="font-bold text-blue-900">Trainee Acknowledgement</h4>
-                        <p className="text-sm text-blue-700">By signing, you acknowledge that you have reviewed this report with your FTO.</p>
+                        <p className="text-sm text-blue-700">By signing, you acknowledge that you have reviewed this report with your Trainer.</p>
                     </div>
                     <form action={async () => {
                         'use server';

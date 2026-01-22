@@ -26,6 +26,10 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
             assetAssignments: {
                 where: { returnedAt: null },
                 include: { asset: true }
+            },
+            // @ts-ignore
+            flags: {
+                where: { status: 'OPEN' }
             }
         }
     });
@@ -63,6 +67,30 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
 
     return (
         <div className="space-y-6">
+            {/* @ts-ignore */}
+            {employee.flags && employee.flags.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-bold text-red-800 mb-2 flex items-center">
+                        Intervention Required
+                    </h3>
+                    <div className="space-y-2">
+                        {/* @ts-ignore */}
+                        {employee.flags.map((flag: any) => (
+                            <div key={flag.id} className="flex gap-3 items-start bg-white p-3 rounded-lg border border-red-100">
+                                <span className={`px-2 py-0.5 text-xs font-bold rounded uppercase mt-0.5 ${flag.severity === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                                    }`}>
+                                    {flag.severity}
+                                </span>
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-900">{flag.type}</p>
+                                    <p className="text-sm text-gray-600">{flag.description}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -193,12 +221,8 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                                                 name="file"
                                                                 id={`file-${exp.expirationID}`}
                                                                 className="hidden"
-                                                                onChange={() => {
-                                                                    // Auto-submit on selection or just show file name? 
-                                                                    // For simplicity in this server component approach, we might need a client wrapper or just a submit button.
-                                                                    // Since we can't add client-side valid event handlers easily in this server component without a client wrapper,
-                                                                    // we'll stick to a standard input + button approach.
-                                                                }}
+                                                                id={`file-${exp.expirationID}`}
+                                                                className="hidden"
                                                             />
                                                             <label
                                                                 htmlFor={`file-${exp.expirationID}`}

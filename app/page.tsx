@@ -6,6 +6,8 @@ import Link from 'next/link';
 import DailyScoreChart from './components/charts/DailyScoreChart';
 import CategoryRadarChart from './components/charts/CategoryRadarChart';
 
+import EISWidget from '@/components/eis/EISWidget';
+
 export default async function Home() {
   const totalEmployees = await prisma.employee.count({
     where: { departed: false }
@@ -52,8 +54,10 @@ export default async function Home() {
   const categoryScores: Record<string, { total: number; count: number }> = {};
   const radarData: { category: string; score: number }[] = [];
 
+  let currentUser: any = null; // Declare currentUser here
+
   if (session?.user?.email) {
-    const currentUser = await prisma.user.findUnique({
+    currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
 
@@ -66,7 +70,7 @@ export default async function Home() {
         },
         include: {
           template: true,
-          fto: true
+          trainer: true
         },
         orderBy: { date: 'desc' }
       });
@@ -135,8 +139,24 @@ export default async function Home() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800">Dashboard</h1>
+    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+          <p className="text-slate-500 mt-2 text-lg">
+            Welcome back, {session?.user?.name || 'User'}.
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-medium text-slate-500">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+      </div>
+
+      {currentUser?.role === 'ADMIN' && (
+        <section className="mb-6">
+          <EISWidget />
+        </section>
+      )}
 
       {pendingDORs.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
@@ -150,7 +170,7 @@ export default async function Home() {
                 <div>
                   <p className="font-semibold text-slate-800">{dor.template.title}</p>
                   <p className="text-sm text-slate-500">
-                    Date: {dor.date.toLocaleDateString()} • FTO: {dor.fto.name}
+                    Date: {dor.date.toLocaleDateString()} • Trainer: {dor.trainer.name}
                   </p>
                 </div>
                 <Link

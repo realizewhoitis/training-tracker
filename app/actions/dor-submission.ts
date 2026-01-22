@@ -25,7 +25,7 @@ export async function getDOR(id: number) {
                 }
             },
             trainee: true,
-            fto: true
+            trainer: true
         }
     });
 }
@@ -91,7 +91,7 @@ export async function submitDOR(formData: FormData) {
         data: {
             templateId,
             traineeId,
-            ftoId: parseInt(session.user.id),
+            trainerId: parseInt(session.user.id),
             responseData: JSON.stringify(responseData),
             status: 'SUBMITTED'
         }

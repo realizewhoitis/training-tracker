@@ -17,6 +17,7 @@ model Employee {
   policyAcknowledgments PolicyAcknowledgment[]
   assetAssignments AssetAssignment[]
   formResponses FormResponse[] @relation("Trainee")
+  flags       EISFlag[]
   user        User?
 }
 
@@ -67,10 +68,19 @@ model User {
   email     String   @unique
   password  String
   name      String
-  role      String   @default("TRAINEE") // 'TRAINEE', 'FTO', 'ADMIN'
+  role      String   @default("TRAINEE") // 'TRAINEE', 'ADMIN', 'SUPERVISOR', 'TRAINER'
+  customPermissions String?  // JSON array of strings
   employee  Employee? @relation(fields: [empId], references: [empId])
   empId     Int?     @unique
-  authoredResponses FormResponse[]
+  authoredTrainerResponses FormResponse[] @relation("Trainer")
+}
+
+model RoleTemplate {
+  id          Int      @id @default(autoincrement())
+  roleName    String   @unique // 'SUPERVISOR', 'TRAINER'
+  permissions String   // JSON array of strings: ["view_reports", "manage_inventory"]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Training {
@@ -193,8 +203,8 @@ model FormResponse {
   traineeId   Int
   trainee     Employee @relation("Trainee", fields: [traineeId], references: [empId])
   
-  ftoId       Int
-  fto         User     @relation(fields: [ftoId], references: [id]) 
+  trainerId   Int
+  trainer     User     @relation("Trainer", fields: [trainerId], references: [id]) 
 
   templateId  Int
   template    FormTemplate @relation(fields: [templateId], references: [id])
@@ -203,4 +213,26 @@ model FormResponse {
   
   status      String   @default("DRAFT") // DRAFT, SUBMITTED, REVIEWED
   traineeSignatureAt DateTime?
+}
+
+model EISFlag {
+  id          Int      @id @default(autoincrement())
+  employeeId  Int
+  type        String   // PERFORMANCE, ASSET, COMPLIANCE
+  severity    String   // LOW, MEDIUM, HIGH
+  description String   // "Avg Score 2.1 over last 5 days"
+  
+  status      String   @default("OPEN") // OPEN, RESOLVED, DISMISSED
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+  resolutionNotes String?
+
+  employee    Employee @relation(fields: [employeeId], references: [empId])
+}
+
+model OrganizationSettings {
+  id          Int      @id @default(autoincrement())
+  orgName     String   @default("Orbit 911 Center")
+  logoPath    String?  // Path to uploaded logo file
+  updatedAt   DateTime @updatedAt
 }
