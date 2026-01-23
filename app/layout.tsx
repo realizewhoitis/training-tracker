@@ -19,20 +19,31 @@ export const metadata: Metadata = {
 };
 
 import Sidebar from './components/Sidebar';
+import { headers } from 'next/headers';
+import { verifyLicense } from '@/lib/license';
+import LicenseLockScreen from '@/components/LicenseLockScreen';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const license = await verifyLicense();
+  const headersList = headers();
+  const pathname = headersList.get('x-pathname') || '';
+
+  // Allow access to admin validation pages even if license is invalid
+  const isAdminPath = pathname.startsWith('/admin');
+  const showLockScreen = !license.valid && !isAdminPath;
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex bg-slate-50`}
       >
-        <Sidebar />
-        <main className="flex-1 p-8 overflow-y-auto w-full">
-          {children}
+        {!showLockScreen && <Sidebar />}
+        <main className={`flex-1 p-8 overflow-y-auto w-full ${showLockScreen ? 'flex items-center justify-center' : ''}`}>
+          {showLockScreen ? <LicenseLockScreen /> : children}
         </main>
       </body>
     </html>

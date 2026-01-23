@@ -15,7 +15,20 @@
     cd static-cluster
     ```
 
-2. **Install Dependencies**
+2. **Run with Docker (Recommended)**
+    This is the simplest way to run the application for production or testing.
+
+    ```bash
+    # Build the image
+    docker build -t orbit911 .
+
+    # Run the container (Mapping port 3000 to local port 3000)
+    docker run -p 3000:3000 orbit911
+    ```
+
+    *See `.env.example` to pass credentials via `-e` flags if needed.*
+
+3. **Manual Installation (Dev/Legacy)**
 
     ```bash
     npm install
@@ -36,6 +49,8 @@
     AUTH_SECRET="your-secret-key-here" # Generate with: openssl rand -base64 32
     AUTH_URL="http://localhost:3000" # URL of your deployment
     ```
+
+    *Note: An initial License Key can be set in the Admin Settings UI after first login.*
 
 ## Database Setup
 

@@ -73,6 +73,7 @@ model User {
   employee  Employee? @relation(fields: [empId], references: [empId])
   empId     Int?     @unique
   authoredTrainerResponses FormResponse[] @relation("Trainer")
+  auditLogs AuditLog[]
 }
 
 model RoleTemplate {
@@ -234,5 +235,21 @@ model OrganizationSettings {
   id          Int      @id @default(autoincrement())
   orgName     String   @default("Orbit 911 Center")
   logoPath    String?  // Path to uploaded logo file
+  
+  licenseKey    String?
+  licenseStatus String @default("ACTIVE") // ACTIVE, EXPIRED, INVALID
+  licenseExpiry DateTime?
+  
   updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  timestamp   DateTime @default(now())
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String   // "VIEW", "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT"
+  resource    String   // "Employee", "DOR", "Inventory"
+  details     String?  // JSON details
+  severity    String   @default("INFO") // "INFO", "WARN", "CRITICAL"
 }

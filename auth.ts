@@ -7,6 +7,8 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 
 import { DEFAULT_ROLE_PERMISSIONS, Permission } from '@/lib/permissions';
+import { logAudit } from '@/lib/audit';
+
 
 async function getUser(email: string) {
     try {
@@ -84,6 +86,39 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 session.user.permissions = token.permissions as string[];
             }
             return session;
+        }
+    },
+    events: {
+        async signIn({ user }) {
+            if (user.id) {
+                try {
+                    await logAudit({
+                        userId: parseInt(user.id),
+                        action: 'LOGIN',
+                        resource: 'Auth',
+                        details: 'User logged in',
+                        severity: 'INFO'
+                    });
+                } catch (e) {
+                    console.error('Audit log failed', e);
+                }
+            }
+        },
+        async signOut(message) {
+            const token = 'token' in message ? message.token : null;
+            if (token?.id) {
+                try {
+                    await logAudit({
+                        userId: parseInt(token.id as string),
+                        action: 'LOGOUT',
+                        resource: 'Auth',
+                        details: 'User logged out',
+                        severity: 'INFO'
+                    });
+                } catch (e) {
+                    console.error('Audit log failed', e);
+                }
+            }
         }
     }
 });

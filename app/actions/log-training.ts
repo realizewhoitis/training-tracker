@@ -1,8 +1,8 @@
-
 'use server';
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { logAudit } from "@/lib/audit";
 
 export type TrainingLogEntry = {
     employeeId: number;

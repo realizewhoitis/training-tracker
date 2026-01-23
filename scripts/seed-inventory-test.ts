@@ -47,7 +47,7 @@ async function main() {
     });
     console.log(`Created Asset: ${asset.name} (${asset.assetTag})`);
 
-    // 5. Assign to Officer A (lifecycle test)
+    // 5. Assign to Comm A (lifecycle test)
     console.log('Assigning to Comm A...');
     const assignment1 = await prisma.assetAssignment.create({
         data: {
@@ -82,7 +82,7 @@ async function main() {
     if (assetAfterReturn.status !== 'AVAILABLE') throw new Error('Status failed to update to AVAILABLE');
     console.log('Asset status Verified: AVAILABLE');
 
-    // 7. Assign to Officer B
+    // 7. Assign to Comm B
     console.log('Assigning to Comm B...');
     await prisma.assetAssignment.create({
         data: {

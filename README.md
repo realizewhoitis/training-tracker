@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orbit 911 - Training Tracker
+
+Orbit 911 is a comprehensive training and asset management system designed for 911 dispatch centers. It tracks training hours, daily observation reports (DORs), inventory, and employee performance.
+
+## Core Features
+
+* **Training Tracking**: Log and categorize training hours (APCO, NENA, Local).
+* **Daily Observation Reports (DOR)**: Digital grading system for trainees with specialized forms.
+* **Asset Management**: Track radios, headsets, and lockers assignments.
+* **Early Intervention System (EIS)**: Automated flagging of performance or asset issues.
+* **Audit Logging**: CJIS-compliant logging of all critical system actions.
+* **Licensing**: Built-in commercial licensing enforcement.
+
+## Documentation
+
+* **[Deployment Guide](./DEPLOYMENT.md)**: Complete installation and setup instructions (Docker & Manual).
+* **[Commercialization Roadmap](./COMMERCIALIZATION_ROADMAP.md)**: Strategy for packaging and selling the software.
+* **[User Manual](./app/help/page.tsx)**: Built-in help page source (View at `/help` in app).
+
+## Tech Stack
+
+* **Framework**: Next.js 14 (App Router)
+* **Database**: SQLite (Development/Small Deploy) or PostgreSQL (Production)
+* **ORM**: Prisma
+* **Authentication**: NextAuth.js v5
+* **Styling**: Tailwind CSS
+* **Containerization**: Docker
 
 ## Getting Started
 
-First, run the development server:
+1. **Install Dependencies**:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+    ```bash
+    npm install
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Setup Database**:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    ```bash
+    npx prisma migrate dev
+    npx prisma db seed
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Run Development Server**:
 
-## Learn More
+    ```bash
+    npm run dev
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Visit**: [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Copyright (c) 2026 Orbit 911 Solutions. All rights reserved.
+Commercial license required for production use.

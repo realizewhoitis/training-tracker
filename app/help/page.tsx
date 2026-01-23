@@ -162,6 +162,36 @@ export default function HelpPage() {
                 </div>
             </section>
 
+            {/* 6. Security & Licensing */}
+            <section id="security" className="scroll-mt-20">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
+                    <Settings className="mr-3 text-slate-600" /> Security & Settings (Admin)
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Audit Logs</h3>
+                        <p className="text-gray-600 text-sm mb-4">
+                            For CJIS compliance, critical system actions are logged in the <strong>Audit Log</strong> viewer (`Admin &gt; Audit Logs`).
+                        </p>
+                        <ul className="text-sm text-gray-600 list-disc list-inside">
+                            <li>Logins/Logouts</li>
+                            <li>Creating/Deleting Users</li>
+                            <li>Updating Settings</li>
+                            <li>Critical Data Changes</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-gray-900 mb-2">Licensing</h3>
+                        <p className="text-gray-600 text-sm mb-4">
+                            Orbit 911 requires a valid license key. Manage your license in `Admin &gt; Settings`.
+                        </p>
+                        <div className="p-3 bg-slate-100 rounded-md text-xs text-slate-600">
+                            <strong>Note:</strong> If your license expires, the system will lock out all non-admin users until a new key is provided.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </div>
     );
 }

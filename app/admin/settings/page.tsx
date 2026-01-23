@@ -34,6 +34,29 @@ export default async function SettingsPage() {
                     <p className="text-xs text-gray-500">This name appears in report headers and the browser title.</p>
                 </div>
 
+                {/* License Management */}
+                <div className="space-y-2 pt-4 border-t border-gray-100">
+                    <h2 className="text-lg font-medium text-gray-900">License Information</h2>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label htmlFor="licenseKey" className="block text-sm font-medium text-gray-700">License Key</label>
+                            <input
+                                name="licenseKey"
+                                type="text"
+                                defaultValue={settings?.licenseKey || ""}
+                                placeholder="ORBIT-XXXX-XXXX-XXXX"
+                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                            />
+                        </div>
+                        <div className="flex items-end pb-2">
+                            <span className="text-sm text-gray-500 mr-2">Status:</span>
+                            <span className={`text-sm font-bold ${settings?.licenseStatus === 'ACTIVE' ? 'text-green-600' : 'text-red-600'}`}>
+                                {settings?.licenseStatus || "UNKNOWN"}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Logo Upload */}
                 <div className="space-y-4">
                     <label className="block text-sm font-medium text-gray-700">
