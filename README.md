@@ -11,6 +11,18 @@ Orbit 911 is a comprehensive training and asset management system designed for 9
 * **Audit Logging**: CJIS-compliant logging of all critical system actions.
 * **Licensing**: Built-in commercial licensing enforcement.
 
+## Gallery
+
+| Main Dashboard | Inventory System |
+| :---: | :---: |
+| <img src="public/help-images/main_dashboard.png" width="400" /> | <img src="public/help-images/inventory_dashboard.png" width="400" /> |
+| **Comprehensive Overview** | **Asset Tracking** |
+
+| Analytics | Asset History |
+| :---: | :---: |
+| <img src="public/help-images/dashboard_analytics.png" width="400" /> | <img src="public/help-images/asset_history.png" width="400" /> |
+| **Performance Metrics** | **Chain of Custody** |
+
 ## Documentation
 
 * **[Deployment Guide](./DEPLOYMENT.md)**: Complete installation and setup instructions (Docker & Manual).

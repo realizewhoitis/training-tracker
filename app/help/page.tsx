@@ -42,9 +42,29 @@ export default function HelpPage() {
                 </div>
                 <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
                     <li><strong>Pending DORs:</strong> Trainees see reports waiting for their signature here.</li>
-                    <li><strong>Analytics:</strong> Graphs showing daily performance trends and category breakdowns.</li>
                     <li><strong>Expirations:</strong> Alerts for certifications expiring within 30 days.</li>
                 </ul>
+            </section>
+
+            <section id="analytics" className="scroll-mt-20">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
+                    <LayoutDashboard className="mr-3 text-purple-600" /> Performance Analytics
+                </h2>
+                <p className="text-gray-600 mb-6">
+                    Visual insights into agency training progress and DOR scores.
+                </p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow-sm mb-6">
+                    <Image
+                        src="/help-images/dashboard_analytics.png"
+                        alt="Analytics Dashboard"
+                        width={1200}
+                        height={675}
+                        className="w-full h-auto"
+                    />
+                    <div className="p-4 text-sm text-gray-500 italic bg-gray-100 border-t border-gray-200">
+                        Figure 2: Radar charts and trend lines help identify areas for improvement.
+                    </div>
+                </div>
             </section>
 
             {/* 2. Employee Management */}
