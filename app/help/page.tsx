@@ -85,6 +85,19 @@ export default function HelpPage() {
                         <li>• <strong>EIS Flags:</strong> (Admin Only) Active risk alerts.</li>
                     </ul>
                 </div>
+
+                <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs mr-2">1</div>
+                        How to Add a New Employee
+                    </h3>
+                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 ml-2">
+                        <li>Navigate to the <strong>Employees</strong> page via the sidebar.</li>
+                        <li>Click the <strong>"Add Employee"</strong> button in the top right corner.</li>
+                        <li>Enter the employee's <strong>Full Name</strong> (e.g., "Jane Doe").</li>
+                        <li>Click <strong>"Create Employee"</strong>. They will immediately appear in the roster.</li>
+                    </ol>
+                </div>
             </section>
 
             {/* 3. Daily Observation Reports (DORs) */}
@@ -187,7 +200,7 @@ export default function HelpPage() {
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
                     <Settings className="mr-3 text-slate-600" /> Security & Settings (Admin)
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div>
                         <h3 className="font-semibold text-gray-900 mb-2">Audit Logs</h3>
                         <p className="text-gray-600 text-sm mb-4">
@@ -209,6 +222,23 @@ export default function HelpPage() {
                             <strong>Note:</strong> If your license expires, the system will lock out all non-admin users until a new key is provided.
                         </div>
                     </div>
+                </div>
+
+                <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
+                    <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                        <div className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs mr-2">2</div>
+                        How to Create a System User (Trainer/Admin)
+                    </h3>
+                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600 ml-2">
+                        <li>Go to <strong>Admin &gt; Users</strong> in the sidebar.</li>
+                        <li>Locate the <strong>"Create New User"</strong> form at the top.</li>
+                        <li>Fill in the <strong>Name</strong>, <strong>Email</strong>, and temporary <strong>Password</strong>.</li>
+                        <li>Select the appropriate <strong>Role</strong> (e.g., 'Trainer' for FTOs).</li>
+                        <li>Click <strong>"Add User"</strong>.</li>
+                    </ol>
+                    <p className="mt-3 text-xs text-gray-500 italic">
+                        Note: This creates a login account. To track their training, ensure they also have an Employee Profile.
+                    </p>
                 </div>
             </section>
 

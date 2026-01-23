@@ -30,6 +30,13 @@ The Employee Detail view is the central hub for an employee's data. It aggregate
 * **Assets:** See currently assigned equipment.
 * **EIS Flags:** (Admin Only) Active risk alerts.
 
+### How to Add a New Employee
+
+1. Navigate to the **Employees** page via the sidebar.
+2. Click the **"Add Employee"** button in the top right corner.
+3. Enter the employee's **Full Name** (e.g., "Jane Doe").
+4. Click **"Create Employee"**. They will immediately appear in the roster.
+
 ## 3. Daily Observation Reports (DOR)
 
 Trainers use this system to grade trainees. Reports follow a standardized 1-7 scale across multiple categories (Safety, Knowledge, Performance).
@@ -79,6 +86,15 @@ For CJIS compliance, critical system actions are logged in the **Audit Log** vie
 * Creating/Deleting Users
 * Updating Settings
 * Critical Data Changes
+
+### How to Create a System User (Trainer/Admin)
+
+1. Go to **Admin > Users** in the sidebar.
+2. Locate the **"Create New User"** form at the top.
+3. Fill in the **Name**, **Email**, and temporary **Password**.
+4. Select the appropriate **Role** (e.g., 'Trainer' for FTOs).
+5. Click **"Add User"**.
+*Note: This creates a login account. To track their training, ensure they also have an Employee Profile.*
 
 ### Licensing
 
