@@ -73,6 +73,8 @@ Manage high-value assets like Radios, Vehicles, and Firearms. Track who has what
 
 For CJIS compliance, critical system actions are logged in the **Audit Log** viewer (`Admin > Audit Logs`).
 
+![Audit Log Viewer](public/help-images/admin_audit_log.png)
+
 * Logins/Logouts
 * Creating/Deleting Users
 * Updating Settings
@@ -80,6 +82,8 @@ For CJIS compliance, critical system actions are logged in the **Audit Log** vie
 
 ### Licensing
 
-Orbit 911 requires a valid license key. Manage your license in `Admin > Settings`.
+Orbit 911 requires a valid license key. Manage your license and branding in `Admin > Settings`.
+
+![Admin Settings](public/help-images/admin_settings.png)
 
 > **Note:** If your license expires, the system will lock out all non-admin users until a new key is provided.
