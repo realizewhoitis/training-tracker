@@ -85,9 +85,9 @@ export default async function TrainingPage() {
                                     {training._count.attendances} sessions
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    <Link href={`/training/${training.TrainingID}`} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                                         View Logs
-                                    </button>
+                                    </Link>
                                 </td>
                             </tr>
                         ))}
