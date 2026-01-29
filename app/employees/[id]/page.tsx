@@ -224,6 +224,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                                                 id={`file-${exp.expirationID}`}
                                                                 className="hidden"
                                                             />
+                                                            />
                                                             <label
                                                                 htmlFor={`file-${exp.expirationID}`}
                                                                 className="cursor-pointer text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200 flex items-center"
