@@ -65,4 +65,4 @@ Orbit 911 is a comprehensive training and asset management system designed for 9
 
 Copyright (c) 2026 Orbit 911 Solutions. All rights reserved.
 Commercial license required for production use.
-<!-- Vercel Trigger: Force Redeploy (Attempt 3 - Identity Fixed) -->
+<!-- Vercel Trigger: Force Redeploy (Attempt 4 - Public Repo Verification) -->
