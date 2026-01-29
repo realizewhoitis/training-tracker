@@ -23,9 +23,9 @@ export default async function ReportsPage() {
                     <p className="text-sm text-slate-500 mb-4">
                         Complete list of all active employees and their current status.
                     </p>
-                    <button className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                    <a href="/api/reports?type=roster" className="text-blue-600 text-sm font-medium flex items-center hover:underline">
                         <Download size={16} className="mr-1" /> Download CSV
-                    </button>
+                    </a>
                 </div>
 
                 {/* Report Card 2 */}
@@ -39,9 +39,9 @@ export default async function ReportsPage() {
                     <p className="text-sm text-slate-500 mb-4">
                         List of all certificates expiring within the next 90 days.
                     </p>
-                    <button className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                    <a href="/api/reports?type=expirations" className="text-blue-600 text-sm font-medium flex items-center hover:underline">
                         <Download size={16} className="mr-1" /> Download CSV
-                    </button>
+                    </a>
                 </div>
 
                 {/* Report Card 3 */}
@@ -55,17 +55,13 @@ export default async function ReportsPage() {
                     <p className="text-sm text-slate-500 mb-4">
                         Total training hours logged per employee for the current year.
                     </p>
-                    <button className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                    <a href="/api/reports?type=training" className="text-blue-600 text-sm font-medium flex items-center hover:underline">
                         <Download size={16} className="mr-1" /> Download CSV
-                    </button>
+                    </a>
                 </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> Report generation functionality is currently being implemented. These are placeholder actions.
-                </p>
-            </div>
+
         </div>
     );
 }
