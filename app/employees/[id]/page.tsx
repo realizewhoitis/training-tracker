@@ -7,15 +7,23 @@ import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import ExpirationRow from './ExpirationRow';
 
-export default async function EmployeeDetailPage({ params }: { params: { id: string } }) {
+export default async function EmployeeDetailPage({
+    params,
+    searchParams
+}: {
+    params: { id: string },
+    searchParams?: { history?: string }
+}) {
     const employeeId = parseInt(params.id);
+    const showAllHistory = searchParams?.history === 'all';
 
     const employee = await prisma.employee.findUnique({
         where: { empId: employeeId },
         include: {
             attendances: {
                 include: { training: true },
-                orderBy: { attendanceDate: 'desc' }
+                // We'll sort in JS to handle nulls reliably
+                // orderBy: { attendanceDate: 'desc' } 
             },
             expirations: {
                 include: { certificate: true }
@@ -37,6 +45,15 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
     if (!employee) {
         notFound();
     }
+
+    // Sort: Newest first, NULLs last
+    const sortedAttendances = [...employee.attendances].sort((a, b) => {
+        if (!a.attendanceDate) return 1;
+        if (!b.attendanceDate) return -1;
+        return new Date(b.attendanceDate).getTime() - new Date(a.attendanceDate).getTime();
+    });
+
+    const displayedAttendances = showAllHistory ? sortedAttendances : sortedAttendances.slice(0, 5);
 
     // Calculate training hours
     const totalHours = employee.attendances.reduce((acc: number, curr: any) => acc + (curr.attendanceHours || 0), 0);
@@ -177,9 +194,11 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
 
                     {/* Recent Training Log */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 className="font-semibold text-slate-800 mb-4">Recent Training Activity</h3>
+                        <h3 className="font-semibold text-slate-800 mb-4">
+                            {showAllHistory ? 'Training History' : 'Recent Training Activity'}
+                        </h3>
                         <div className="space-y-4">
-                            {employee.attendances.slice(0, 5).map((log: any) => (
+                            {displayedAttendances.map((log: any) => (
                                 <div key={log.attendanceID} className="flex items-center justify-between pb-3 border-b border-slate-50 last:border-0 last:pb-0">
                                     <div>
                                         <p className="font-medium text-slate-800">{log.training.TrainingName}</p>
@@ -192,7 +211,23 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                             ))}
                         </div>
                         <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                            <button className="text-blue-600 text-sm font-medium hover:underline">View All History</button>
+                            {showAllHistory ? (
+                                <Link
+                                    href={`/employees/${employeeId}`}
+                                    className="text-slate-500 text-sm font-medium hover:underline"
+                                    scroll={false}
+                                >
+                                    Show Less
+                                </Link>
+                            ) : (
+                                <Link
+                                    href={`/employees/${employeeId}?history=all`}
+                                    className="text-blue-600 text-sm font-medium hover:underline"
+                                    scroll={false}
+                                >
+                                    View All History
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>
