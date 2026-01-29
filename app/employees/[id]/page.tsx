@@ -221,9 +221,6 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                                                 name="file"
                                                                 id={`file-${exp.expirationID}`}
                                                                 className="hidden"
-                                                                id={`file-${exp.expirationID}`}
-                                                                className="hidden"
-                                                            />
                                                             />
                                                             <label
                                                                 htmlFor={`file-${exp.expirationID}`}
