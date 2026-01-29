@@ -166,37 +166,37 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                         <th className="pb-2 text-right">Document</th>
                                     </tr>
                                 </thead>
-                                {employee.expirations.map((exp: any) => (
-                                    <ExpirationRow key={exp.expirationID} expiration={exp} />
-                                ))}
-                            </tbody>
-                        </table>
+                                <tbody className="text-sm divide-y divide-slate-50">
+                                    {employee.expirations.map((exp: any) => (
+                                        <ExpirationRow key={exp.expirationID} expiration={exp} />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Recent Training Log */}
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h3 className="font-semibold text-slate-800 mb-4">Recent Training Activity</h3>
+                        <div className="space-y-4">
+                            {employee.attendances.slice(0, 5).map((log: any) => (
+                                <div key={log.attendanceID} className="flex items-center justify-between pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                                    <div>
+                                        <p className="font-medium text-slate-800">{log.training.TrainingName}</p>
+                                        <p className="text-xs text-slate-400">{log.attendanceDate ? log.attendanceDate.toLocaleDateString() : 'No Date'}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="font-bold text-slate-700">{log.attendanceHours} hrs</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                            <button className="text-blue-600 text-sm font-medium hover:underline">View All History</button>
+                        </div>
                     </div>
                 </div>
-
-                {/* Recent Training Log */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <h3 className="font-semibold text-slate-800 mb-4">Recent Training Activity</h3>
-                    <div className="space-y-4">
-                        {employee.attendances.slice(0, 5).map((log: any) => (
-                            <div key={log.attendanceID} className="flex items-center justify-between pb-3 border-b border-slate-50 last:border-0 last:pb-0">
-                                <div>
-                                    <p className="font-medium text-slate-800">{log.training.TrainingName}</p>
-                                    <p className="text-xs text-slate-400">{log.attendanceDate ? log.attendanceDate.toLocaleDateString() : 'No Date'}</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="font-bold text-slate-700">{log.attendanceHours} hrs</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                        <button className="text-blue-600 text-sm font-medium hover:underline">View All History</button>
-                    </div>
-                </div>
-
             </div>
         </div>
-        </div >
     );
 }
