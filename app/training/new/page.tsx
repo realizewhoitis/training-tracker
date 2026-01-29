@@ -19,13 +19,29 @@ export default async function NewTrainingPage() {
 
         const trainingName = formData.get('trainingName') as string;
         const category = formData.get('category') as string;
+        const createCertificate = formData.get('createCertificate') === 'true';
 
         if (!trainingName) return;
 
-        await prisma.training.create({
-            data: {
-                TrainingName: trainingName,
-                category: category || null
+        // Transaction to ensure data consistency
+        await prisma.$transaction(async (tx) => {
+            // 1. Create Training
+            await tx.training.create({
+                data: {
+                    TrainingName: trainingName,
+                    category: category || null
+                }
+            });
+
+            // 2. Create Certificate (if requested)
+            if (createCertificate) {
+                await tx.certificate.create({
+                    data: {
+                        certificateName: trainingName,
+                        neededHours: 0, // Default to 0 or could try to parse from name/input if we had one
+                        yearsValid: 2,  // Default to 2 years (standard renewal cycle)
+                    }
+                });
             }
         });
 
@@ -89,9 +105,25 @@ export default async function NewTrainingPage() {
                             ))}
                         </datalist>
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">
-                        Group trainings by type (e.g., Medical, Fire, Law Enforcement) for reporting.
-                    </p>
+                </div>
+
+                {/* Auto-Create Certificate Checkbox */}
+                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-start space-x-3">
+                    <div className="flex items-center h-5">
+                        <input
+                            id="createCertificate"
+                            name="createCertificate"
+                            type="checkbox"
+                            value="true"
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        />
+                    </div>
+                    <div className="ml-3 text-sm">
+                        <label htmlFor="createCertificate" className="font-medium text-slate-700">Make it also a Certificate</label>
+                        <p className="text-slate-500">
+                            Automatically create a corresponding Certificate for tracking expirations.
+                        </p>
+                    </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex justify-end space-x-3">

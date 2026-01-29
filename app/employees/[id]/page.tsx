@@ -4,8 +4,8 @@ import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { User, BookOpen, Award, CheckCircle, Package, FileText, Upload } from 'lucide-react';
 import Link from 'next/link';
-import { saveFile } from '@/lib/storage';
 import { revalidatePath } from 'next/cache';
+import ExpirationRow from './ExpirationRow';
 
 export default async function EmployeeDetailPage({ params }: { params: { id: string } }) {
     const employeeId = parseInt(params.id);
@@ -40,30 +40,6 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
 
     // Calculate training hours
     const totalHours = employee.attendances.reduce((acc: number, curr: any) => acc + (curr.attendanceHours || 0), 0);
-
-    async function handleCertUpload(formData: FormData) {
-        'use server';
-
-        const expirationId = parseInt(formData.get('expirationId') as string);
-        const file = formData.get('file') as File;
-
-        if (!file || file.size === 0) return;
-
-        try {
-            // Save file to 'certificates' folder
-            const relativePath = await saveFile(file, 'certificates');
-
-            // Update database
-            await prisma.expiration.update({
-                where: { expirationID: expirationId },
-                data: { documentPath: relativePath }
-            });
-
-            revalidatePath(`/employees/${employeeId}`);
-        } catch (error) {
-            console.error('Upload failed:', error);
-        }
-    }
 
     return (
         <div className="space-y-6">
@@ -190,81 +166,37 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                                         <th className="pb-2 text-right">Document</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-sm divide-y divide-slate-50">
-                                    {employee.expirations.map((exp: any) => (
-                                        <tr key={exp.expirationID}>
-                                            <td className="py-2 text-slate-800 font-medium">{exp.certificate.certificateName}</td>
-                                            <td className="py-2">
-                                                {exp.Expiration ? (
-                                                    <span className={new Date(exp.Expiration) < new Date() ? 'text-red-500 font-bold' : 'text-slate-600'}>
-                                                        {exp.Expiration.toLocaleDateString()}
-                                                    </span>
-                                                ) : 'N/A'}
-                                            </td>
-                                            <td className="py-2 text-right">
-                                                {exp.documentPath ? (
-                                                    <a
-                                                        href={`/api/files/${exp.documentPath}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex justify-end items-center text-blue-600 hover:text-blue-800 text-xs font-medium"
-                                                    >
-                                                        <FileText size={16} className="mr-1" />
-                                                        View
-                                                    </a>
-                                                ) : (
-                                                    <form action={handleCertUpload} className="flex justify-end items-center space-x-2">
-                                                        <input type="hidden" name="expirationId" value={exp.expirationID.toString()} />
-                                                        <div className="relative">
-                                                            <input
-                                                                type="file"
-                                                                name="file"
-                                                                id={`file-${exp.expirationID}`}
-                                                                className="hidden"
-                                                            />
-                                                            <label
-                                                                htmlFor={`file-${exp.expirationID}`}
-                                                                className="cursor-pointer text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200 flex items-center"
-                                                            >
-                                                                <Upload size={12} className="mr-1" /> Choose
-                                                            </label>
-                                                        </div>
-                                                        <button type="submit" className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">
-                                                            Upload
-                                                        </button>
-                                                    </form>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                {employee.expirations.map((exp: any) => (
+                                    <ExpirationRow key={exp.expirationID} expiration={exp} />
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-
-                    {/* Recent Training Log */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 className="font-semibold text-slate-800 mb-4">Recent Training Activity</h3>
-                        <div className="space-y-4">
-                            {employee.attendances.slice(0, 5).map((log: any) => (
-                                <div key={log.attendanceID} className="flex items-center justify-between pb-3 border-b border-slate-50 last:border-0 last:pb-0">
-                                    <div>
-                                        <p className="font-medium text-slate-800">{log.training.TrainingName}</p>
-                                        <p className="text-xs text-slate-400">{log.attendanceDate ? log.attendanceDate.toLocaleDateString() : 'No Date'}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="font-bold text-slate-700">{log.attendanceHours} hrs</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                            <button className="text-blue-600 text-sm font-medium hover:underline">View All History</button>
-                        </div>
-                    </div>
-
                 </div>
+
+                {/* Recent Training Log */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="font-semibold text-slate-800 mb-4">Recent Training Activity</h3>
+                    <div className="space-y-4">
+                        {employee.attendances.slice(0, 5).map((log: any) => (
+                            <div key={log.attendanceID} className="flex items-center justify-between pb-3 border-b border-slate-50 last:border-0 last:pb-0">
+                                <div>
+                                    <p className="font-medium text-slate-800">{log.training.TrainingName}</p>
+                                    <p className="text-xs text-slate-400">{log.attendanceDate ? log.attendanceDate.toLocaleDateString() : 'No Date'}</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="font-bold text-slate-700">{log.attendanceHours} hrs</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                        <button className="text-blue-600 text-sm font-medium hover:underline">View All History</button>
+                    </div>
+                </div>
+
             </div>
         </div>
+        </div >
     );
 }
