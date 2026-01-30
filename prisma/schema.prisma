@@ -70,6 +70,10 @@ model User {
   name      String
   role      String   @default("TRAINEE") // 'TRAINEE', 'ADMIN', 'SUPERVISOR', 'TRAINER'
   customPermissions String?  // JSON array of strings
+  
+  twoFactorSecret String?
+  twoFactorEnabled Boolean @default(false)
+
   employee  Employee? @relation(fields: [empId], references: [empId])
   empId     Int?     @unique
   authoredTrainerResponses FormResponse[] @relation("Trainer")

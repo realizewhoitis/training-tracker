@@ -45,16 +45,38 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         Credentials({
             async authorize(credentials) {
                 const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .object({
+                        email: z.string().email(),
+                        password: z.string().min(6),
+                        twoFactorCode: z.string().optional()
+                    })
                     .safeParse(credentials);
 
                 if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
+                    const { email, password, twoFactorCode } = parsedCredentials.data;
                     const user = await getUser(email);
                     if (!user) return null;
 
                     const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return { ...user, id: user.id.toString() };
+                    if (!passwordsMatch) return null;
+
+                    // MFA Check
+                    if (user.twoFactorEnabled && user.twoFactorSecret) {
+                        if (!twoFactorCode) {
+                            throw new Error('2FA_REQUIRED');
+                        }
+
+                        // Dynamic import to handle potential missing dependency in dev environment
+                        // In production, this package is required.
+                        const { authenticator } = await import('otplib');
+                        const isValid = authenticator.check(twoFactorCode, user.twoFactorSecret);
+
+                        if (!isValid) {
+                            throw new Error('2FA_INVALID');
+                        }
+                    }
+
+                    return { ...user, id: user.id.toString() };
                 }
 
                 console.log('Invalid credentials');
