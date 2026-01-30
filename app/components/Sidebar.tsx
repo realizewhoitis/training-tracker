@@ -1,7 +1,8 @@
+```
 import { getSettings } from '@/app/admin/settings/actions';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Home, Users, BookOpen, FileText, Package, PenTool, Settings, ShieldCheck } from 'lucide-react';
+import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, Shield } from 'lucide-react';
 import { auth } from '@/auth';
 
 // ...
@@ -18,7 +19,7 @@ const Sidebar = async () => {
                 {settings.logoPath ? (
                     <div className="flex flex-col items-start">
                         <Image
-                            src={`/api/files/${settings.logoPath}`}
+                            src={`/ api / files / ${ settings.logoPath } `}
                             alt={settings.orgName}
                             width={150}
                             height={50}
@@ -75,13 +76,6 @@ const Sidebar = async () => {
                     <span className="font-medium">Reports</span>
                 </Link>
                 {(userRole === 'ADMIN' || userRole === 'TRAINER') && (
-                    <div className="pt-4 mt-4 border-t border-slate-700">
-                        <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                            Trainer Tools
-                        </p>
-                        <Link
-                            href="/dor/new"
-                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
                         >
                             <PenTool className="w-5 h-5 text-gray-400 group-hover:text-white" />
                             <span className="font-medium">Write DOR</span>
