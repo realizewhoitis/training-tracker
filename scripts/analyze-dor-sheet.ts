@@ -1,25 +1,34 @@
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import path from 'path';
 
-function main() {
+async function main() {
     const filePath = path.join(process.cwd(), 'data/Daily Observation Report.xlsx');
     console.log(`Reading: ${filePath}`);
 
-    const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
+    const workbook = new ExcelJS.Workbook();
+    try {
+        await workbook.xlsx.readFile(filePath);
+    } catch (error) {
+        console.error("Error reading file:", error);
+        return;
+    }
 
-    // Convert to JSON
-    const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+        console.error("No worksheet found");
+        return;
+    }
 
-    // Parse into structure (Debug Mode: Dump all strings)
+    console.log(`Sheet Name: ${worksheet.name}`);
     console.log("--- RAW STRING CONTENT ---");
-    data.forEach((row: any, i) => {
-        if (!row || row.length === 0) return;
-        const firstCell = row[0];
-        if (typeof firstCell === 'string') {
-            console.log(`Row ${i}: ${firstCell.trim()}`);
+
+    worksheet.eachRow((row, rowNumber) => {
+        // ExcelJS rows are 1-indexed
+        const firstCell = row.getCell(1);
+        if (firstCell && firstCell.value) {
+            const val = firstCell.value.toString();
+            console.log(`Row ${rowNumber - 1}: ${val.trim()}`);
         }
     });
 }
