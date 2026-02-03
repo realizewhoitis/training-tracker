@@ -1,8 +1,7 @@
-```
 import { getSettings } from '@/app/admin/settings/actions';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, Shield } from 'lucide-react';
+import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, FileText } from 'lucide-react';
 import { auth } from '@/auth';
 
 // ...
@@ -19,7 +18,7 @@ const Sidebar = async () => {
                 {settings.logoPath ? (
                     <div className="flex flex-col items-start">
                         <Image
-                            src={`/ api / files / ${ settings.logoPath } `}
+                            src={`/api/files/${settings.logoPath}`}
                             alt={settings.orgName}
                             width={150}
                             height={50}
