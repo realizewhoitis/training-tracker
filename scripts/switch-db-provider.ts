@@ -9,8 +9,8 @@ const SQLITE_CONFIG = `datasource db {
 
 const POSTGRES_CONFIG = `datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }`;
 
 const SCHEMA_PATH = path.join(process.cwd(), 'prisma', 'schema.prisma');
