@@ -76,8 +76,12 @@ const Sidebar = async () => {
                     <span className="font-medium">Reports</span>
                 </Link>
                 {(userRole === 'ADMIN' || userRole === 'TRAINER') && (
+                    <div className="space-y-2 pt-2 border-t border-slate-700">
+                        <Link
+                            href="/dor/new"
+                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
                         >
-                            <PenTool className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                            <ClipboardList className="w-5 h-5 text-gray-400 group-hover:text-white" />
                             <span className="font-medium">Write DOR</span>
                         </Link>
                         <Link
@@ -92,7 +96,7 @@ const Sidebar = async () => {
                                 href="/admin/users"
                                 className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
                             >
-                                <Users className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
+                                <UserPlus className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
                                 <span className="font-medium text-purple-100">Manage Users</span>
                             </Link>
                         )}
