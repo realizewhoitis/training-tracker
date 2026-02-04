@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx tsx scripts/switch-db-provider.ts prod && npx prisma generate && next build",
+    "build": "npx tsx scripts/switch-db-provider.ts prod && npx prisma db push && npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "db:switch:local": "npx tsx scripts/switch-db-provider.ts local && npx prisma generate",
