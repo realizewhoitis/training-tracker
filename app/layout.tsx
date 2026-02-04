@@ -29,7 +29,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const license = await verifyLicense();
-  const headersList = headers();
+  const headersList = await headers();
   const pathname = headersList.get('x-pathname') || '';
 
   // Allow access to admin validation pages even if license is invalid
