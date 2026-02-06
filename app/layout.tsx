@@ -23,6 +23,8 @@ import { headers } from 'next/headers';
 import { verifyLicense } from '@/lib/license';
 import LicenseLockScreen from '@/components/LicenseLockScreen';
 
+import { Analytics } from "@vercel/analytics/next";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -44,6 +46,7 @@ export default async function RootLayout({
         {!showLockScreen && <Sidebar />}
         <main className={`flex-1 p-8 overflow-y-auto w-full ${showLockScreen ? 'flex items-center justify-center' : ''}`}>
           {showLockScreen ? <LicenseLockScreen /> : children}
+          <Analytics />
         </main>
       </body>
     </html>
