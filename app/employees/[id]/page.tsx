@@ -7,13 +7,12 @@ import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import ExpirationRow from './ExpirationRow';
 
-export default async function EmployeeDetailPage({
-    params,
-    searchParams
-}: {
-    params: { id: string },
-    searchParams?: { history?: string }
+export default async function EmployeeDetailPage(props: {
+    params: Promise<{ id: string }>,
+    searchParams?: Promise<{ history?: string }>
 }) {
+    const params = await props.params;
+    const searchParams = await props.searchParams;
     const employeeId = parseInt(params.id);
     const showAllHistory = searchParams?.history === 'all';
 

@@ -6,7 +6,8 @@ import { notFound, redirect } from 'next/navigation';
 import { CheckCircle, Clock, Edit } from 'lucide-react';
 import { getSettings } from '@/app/admin/settings/actions';
 
-export default async function DORViewPage({ params }: { params: { id: string } }) {
+export default async function DORViewPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 

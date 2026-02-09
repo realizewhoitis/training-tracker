@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { addAttendee, removeAttendee } from '@/app/actions/training';
 import LogAttendanceSidebar from '@/app/components/training/LogAttendanceSidebar';
 
-export default async function TrainingDetailPage({ params }: { params: { id: string } }) {
+export default async function TrainingDetailPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const trainingId = parseInt(params.id);
     if (isNaN(trainingId)) return notFound();
 

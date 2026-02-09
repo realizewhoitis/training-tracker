@@ -7,7 +7,8 @@ import DORForm from '@/app/dor/new/DORForm';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export default async function DOREditPage({ params }: { params: { id: string } }) {
+export default async function DOREditPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 

@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, Permission } from '@/lib/permissions';
 import { updateUserPermissions } from './actions';
 
-export default async function UserPermissionsPage({ params }: { params: { id: string } }) {
+export default async function UserPermissionsPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const userId = parseInt(params.id);
     const user = await prisma.user.findUnique({
         where: { id: userId }

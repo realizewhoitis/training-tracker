@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 import { Package, Clock, ArrowRightLeft } from 'lucide-react';
 import { assignAsset, returnAsset } from '../actions';
 
-export default async function AssetDetailPage({ params }: { params: { id: string } }) {
+export default async function AssetDetailPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const assetId = parseInt(params.id);
     const asset = await prisma.asset.findUnique({
         where: { id: assetId },

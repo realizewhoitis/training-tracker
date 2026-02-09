@@ -98,7 +98,7 @@ export default async function EISAdminPage({ searchParams }: { searchParams: { q
                                                 </div>
                                                 <h4 className="font-medium text-gray-900">
                                                     <Link href={`/employees/${flag.employeeId}`} className="hover:underline text-indigo-600">
-                                                        {flag.employee.lastName}, {flag.employee.firstName}
+                                                        {flag.employee.empName}
                                                     </Link>
                                                 </h4>
                                                 <p className="text-sm text-gray-600 mt-1">{flag.description}</p>
