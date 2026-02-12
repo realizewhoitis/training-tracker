@@ -10,15 +10,26 @@ export default function NewEmployeePage() {
         'use server';
 
         const empName = formData.get('empName') as string;
+        const empIdRaw = formData.get('empId') as string;
+        const empId = empIdRaw ? parseInt(empIdRaw) : undefined;
+
         // Simple validation
         if (!empName) return;
 
-        await prisma.employee.create({
-            data: {
-                empName: empName,
-                departed: false
-            }
-        });
+        try {
+            await prisma.employee.create({
+                data: {
+                    empName: empName,
+                    departed: false,
+                    ...(empId && { empId: empId })
+                }
+            });
+        } catch (error) {
+            console.error('Failed to create employee:', error);
+            // In a real app we'd return an error to the form, but for now just redirect
+            // or maybe throw to show error boundary?
+            throw new Error('Failed to create employee. ID might be taken.');
+        }
 
         redirect('/employees');
     }
@@ -54,8 +65,26 @@ export default function NewEmployeePage() {
                             className="pl-10 w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
+                </div>
+
+                <div>
+                    <label htmlFor="empId" className="block text-sm font-medium text-slate-700 mb-1">
+                        Employee ID <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <span className="text-xs font-bold">#</span>
+                        </div>
+                        <input
+                            type="number"
+                            id="empId"
+                            name="empId"
+                            placeholder="Auto-assigned if left blank"
+                            className="pl-10 w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                    </div>
                     <p className="mt-1 text-xs text-slate-500">
-                        The Employee ID will be automatically assigned.
+                        Leave blank to automatically assign the next available ID.
                     </p>
                 </div>
 

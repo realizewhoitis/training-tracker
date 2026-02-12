@@ -60,7 +60,7 @@ model AssetAssignment {
   notes       String?
   
   asset       Asset    @relation(fields: [assetId], references: [id])
-  employee    Employee @relation(fields: [employeeId], references: [empId])
+  employee    Employee @relation(fields: [employeeId], references: [empId], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model User {
@@ -74,7 +74,7 @@ model User {
   twoFactorSecret String?
   twoFactorEnabled Boolean @default(false)
 
-  employee  Employee? @relation(fields: [empId], references: [empId])
+  employee  Employee? @relation(fields: [empId], references: [empId], onDelete: SetNull, onUpdate: Cascade)
   empId     Int?     @unique
   authoredTrainerResponses FormResponse[] @relation("Trainer")
   auditLogs AuditLog[]
@@ -108,7 +108,7 @@ model Attendance {
   employeeID      Int
   trainingID      Int
 
-  employee Employee @relation(fields: [employeeID], references: [empId])
+  employee Employee @relation(fields: [employeeID], references: [empId], onDelete: Cascade, onUpdate: Cascade)
   training Training @relation(fields: [trainingID], references: [TrainingID])
 }
 
@@ -140,7 +140,7 @@ model PolicyAcknowledgment {
   acknowledgedAt DateTime @default(now())
 
   policy      Policy   @relation(fields: [policyId], references: [id])
-  employee    Employee @relation(fields: [employeeId], references: [empId])
+  employee    Employee @relation(fields: [employeeId], references: [empId], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([policyId, employeeId])
 }
@@ -164,7 +164,7 @@ model Expiration {
   documentPath  String?
 
   certificate Certificate @relation(fields: [CertificateID], references: [CertificateID])
-  employee    Employee    @relation(fields: [EmployeeID], references: [empId])
+  employee    Employee    @relation(fields: [EmployeeID], references: [empId], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model FormTemplate {
@@ -206,7 +206,7 @@ model FormResponse {
   date        DateTime @default(now())
   
   traineeId   Int
-  trainee     Employee @relation("Trainee", fields: [traineeId], references: [empId])
+  trainee     Employee @relation("Trainee", fields: [traineeId], references: [empId], onDelete: Cascade, onUpdate: Cascade)
   
   trainerId   Int
   trainer     User     @relation("Trainer", fields: [trainerId], references: [id]) 
@@ -232,7 +232,7 @@ model EISFlag {
   resolvedAt  DateTime?
   resolutionNotes String?
 
-  employee    Employee @relation(fields: [employeeId], references: [empId])
+  employee    Employee @relation(fields: [employeeId], references: [empId], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model OrganizationSettings {

@@ -113,11 +113,17 @@ export default async function EmployeeDetailPage(props: {
                         <CategoryRadarChart data={radarData} />
                     </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex flex-col items-end gap-2">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${!employee.departed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                         {!employee.departed ? 'Active Status' : 'Departed'}
                     </span>
+                    <Link
+                        href={`/employees/${employee.empId}/edit`}
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                    >
+                        Edit Profile
+                    </Link>
                 </div>
             </div>
 
