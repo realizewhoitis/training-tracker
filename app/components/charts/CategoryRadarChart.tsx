@@ -19,12 +19,38 @@ export default function CategoryRadarChart({ data }: CategoryRadarProps) {
         );
     }
 
+    // Custom tick to wrap text
+    const renderCustomTick = (props: any) => {
+        const { payload, x, y, cx, cy, ...rest } = props;
+        const words = payload.value.split(' ');
+
+        return (
+            <text
+                {...rest}
+                y={y + (y - cy) / 10}
+                x={x + (x - cx) / 10}
+                fontFamily="sans-serif"
+                fontSize={11}
+                textAnchor="middle"
+            >
+                {words.map((word: string, i: number) => (
+                    <tspan key={i} x={x + (x - cx) / 10} dy={i === 0 ? 0 : 12}>
+                        {word}
+                    </tspan>
+                ))}
+            </text>
+        );
+    };
+
     return (
         <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
                     <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="category" tick={{ fill: '#475569', fontSize: 12 }} />
+                    <PolarAngleAxis
+                        dataKey="category"
+                        tick={renderCustomTick}
+                    />
                     <PolarRadiusAxis angle={30} domain={[0, 7]} tick={false} axisLine={false} />
                     <Radar
                         name="Average Score"
