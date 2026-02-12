@@ -38,118 +38,101 @@ export async function GET(request: NextRequest) {
             dor: false
         };
 
+        // Helper for bulk operations
+        const chunkArray = (arr: any[], size: number) => {
+            return Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+                arr.slice(i * size, i * size + size)
+            );
+        };
+
         // 1. Employee
-        for (const emp of employeesData) {
-            await prisma.employee.upsert({
-                where: { empId: emp.empId },
-                update: {},
-                create: {
-                    empId: emp.empId,
-                    empName: emp.empName,
-                    departed: emp.departed,
-                },
-            });
-        }
+        // optimize: Use createMany with skipDuplicates
+        await prisma.employee.createMany({
+            data: employeesData.map(e => ({
+                empId: e.empId,
+                empName: e.empName,
+                departed: e.departed,
+            })),
+            skipDuplicates: true
+        });
         results.employees = employeesData.length;
 
         // 2. Training
-        for (const t of trainingsData) {
-            await prisma.training.upsert({
-                where: { TrainingID: t.TrainingID },
-                update: {},
-                create: {
-                    TrainingID: t.TrainingID,
-                    TrainingName: t.TrainingName,
-                },
-            });
-        }
+        await prisma.training.createMany({
+            data: trainingsData.map(t => ({
+                TrainingID: t.TrainingID,
+                TrainingName: t.TrainingName,
+            })),
+            skipDuplicates: true
+        });
         results.trainings = trainingsData.length;
 
         // 3. Certificate
-        for (const c of certificatesData) {
-            await prisma.certificate.upsert({
-                where: { CertificateID: c.CertificateID },
-                update: {},
-                create: {
-                    CertificateID: c.CertificateID,
-                    certificateName: c.certificateName,
-                    neededHours: c.neededHours,
-                    yearsValid: c.yearsValid,
-                },
-            });
-        }
+        await prisma.certificate.createMany({
+            data: certificatesData.map(c => ({
+                CertificateID: c.CertificateID,
+                certificateName: c.certificateName,
+                neededHours: c.neededHours,
+                yearsValid: c.yearsValid,
+            })),
+            skipDuplicates: true
+        });
         results.certificates = certificatesData.length;
 
-        // 4. Attendance
-        for (const a of attendanceData) {
-            // @ts-ignore
-            let date = parseDate(a.attendanceDate);
-            try {
-                await prisma.attendance.upsert({
-                    where: { attendanceID: a.attendanceID },
-                    update: {
-                        attendanceDate: date,
-                        attendanceHealth: a.attendanceHealth,
-                        attendanceHours: a.attendanceHours,
-                        attendanceNote: a.attendanceNote,
-                        employeeID: a.employeeID,
-                        trainingID: a.trainingID,
-                    },
-                    create: {
-                        attendanceID: a.attendanceID,
-                        attendanceDate: date,
-                        attendanceHealth: a.attendanceHealth,
-                        attendanceHours: a.attendanceHours,
-                        attendanceNote: a.attendanceNote,
-                        employeeID: a.employeeID,
-                        trainingID: a.trainingID,
-                    },
-                });
-            } catch (e) {
-                console.warn(`Failed to seed attendance ${a.attendanceID}`, e);
-            }
+        // 4. Attendance (The big one!)
+        // Delete existing to avoid conflicts and ensure clean state (optional, but faster than upsert)
+        // For safety, we'll try createMany with skipDuplicates first.
+
+        const attendanceChunks = chunkArray(attendanceData, 500);
+        let attendanceCount = 0;
+
+        for (const chunk of attendanceChunks) {
+            const formatted = chunk.map((a: any) => ({
+                attendanceID: a.attendanceID,
+                attendanceDate: parseDate(a.attendanceDate),
+                attendanceHealth: a.attendanceHealth,
+                attendanceHours: a.attendanceHours,
+                attendanceNote: a.attendanceNote,
+                employeeID: a.employeeID,
+                trainingID: a.trainingID,
+            }));
+
+            await prisma.attendance.createMany({
+                data: formatted,
+                skipDuplicates: true
+            });
+            attendanceCount += chunk.length;
         }
-        results.attendance = attendanceData.length;
+        results.attendance = attendanceCount;
 
         // 5. Exclusions
-        for (const e of exclusionsData) {
-            try {
-                await prisma.certificateTrainingExclusion.upsert({
-                    where: {
-                        certificateID_trainingID: {
-                            certificateID: e.certificateID,
-                            trainingID: e.trainingID
-                        }
-                    },
-                    update: {},
-                    create: {
-                        certificateID: e.certificateID,
-                        trainingID: e.trainingID,
-                    }
-                });
-            } catch (err) { }
-        }
+        await prisma.certificateTrainingExclusion.createMany({
+            data: exclusionsData.map(e => ({
+                certificateID: e.certificateID,
+                trainingID: e.trainingID,
+            })),
+            skipDuplicates: true
+        });
         results.exclusions = exclusionsData.length;
 
         // 6. Expiration
-        // Delete all first to avoid dupe issues since no unique ID
-        await prisma.expiration.deleteMany({});
-        for (const e of expirationsData) {
-            // @ts-ignore
-            let date = parseDate(e.Expiration);
-            try {
-                await prisma.expiration.create({
-                    data: {
-                        CertificateID: e.CertificateID,
-                        EmployeeID: e.EmployeeID,
-                        Expiration: date
-                    }
-                });
-            } catch (err) { }
+        await prisma.expiration.deleteMany({}); // Delete all first as per original logic
+        const expirationChunks = chunkArray(expirationsData, 500);
+        for (const chunk of expirationChunks) {
+            const formatted = chunk.map((e: any) => ({
+                CertificateID: e.CertificateID,
+                EmployeeID: e.EmployeeID,
+                Expiration: parseDate(e.Expiration)
+            }));
+            await prisma.expiration.createMany({
+                data: formatted,
+                skipDuplicates: true
+            });
         }
         results.expirations = expirationsData.length;
 
         // 7. DOR Data
+        // ... (Keep existing DOR logic as it is complex and small volume)
         const template = await prisma.formTemplate.upsert({
             where: { id: 1 },
             update: {},
