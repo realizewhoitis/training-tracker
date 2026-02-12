@@ -2,6 +2,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
+import { getTraineeProgress, getCategoryStrengths } from '@/app/actions/analytics';
+import ScoreTrendChart from '@/app/components/charts/ScoreTrendChart';
+import CategoryRadarChart from '@/app/components/charts/CategoryRadarChart';
 import { User, BookOpen, Award, CheckCircle, Package, FileText, Upload } from 'lucide-react';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
@@ -44,6 +47,10 @@ export default async function EmployeeDetailPage(props: {
     if (!employee) {
         notFound();
     }
+
+    // Fetch Analytics Data
+    const progressData = await getTraineeProgress(employee.empId);
+    const radarData = await getCategoryStrengths(employee.empId);
 
     // Sort: Newest first, NULLs last
     const sortedAttendances = [...employee.attendances].sort((a, b) => {
@@ -92,6 +99,18 @@ export default async function EmployeeDetailPage(props: {
                     <div>
                         <h1 className="text-2xl font-bold text-slate-800">{employee.empName}</h1>
                         <p className="text-slate-500">Employee ID: #{employee.empId}</p>
+                    </div>
+                </div>
+
+                {/* Analytics Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h2 className="text-lg font-bold text-slate-800 mb-4">Performance Trend</h2>
+                        <ScoreTrendChart data={progressData} />
+                    </div>
+                    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h2 className="text-lg font-bold text-slate-800 mb-4">Category Breakdown</h2>
+                        <CategoryRadarChart data={radarData} />
                     </div>
                 </div>
                 <div className="text-right">
@@ -171,7 +190,7 @@ export default async function EmployeeDetailPage(props: {
                     {/* Certificate Expirations */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <h3 className="font-semibold text-slate-800 mb-4 flex items-center">
-                            <Award size={18} className="mr-2 text-amber-500" /> Certificates & Expirations
+                            <Award size={18} className="mr-2 text-amber-500" /> Certificates & Expirations ({employee.expirations.length})
                         </h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
@@ -183,9 +202,17 @@ export default async function EmployeeDetailPage(props: {
                                     </tr>
                                 </thead>
                                 <tbody className="text-sm divide-y divide-slate-50">
-                                    {employee.expirations.map((exp: any) => (
-                                        <ExpirationRow key={exp.expirationID} expiration={exp} />
-                                    ))}
+                                    {employee.expirations.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={3} className="py-4 text-center text-slate-500 italic block">
+                                                No certificates on file.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        employee.expirations.map((exp: any) => (
+                                            <ExpirationRow key={exp.expirationID} expiration={exp} />
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>

@@ -147,6 +147,117 @@ async function main() {
         }
     }
     console.log(`Seeded ${expirationsData.length} expirations`);
+
+    // 7. DOR Data (Templates & Responses for Analytics)
+    console.log("Seeding DOR data for analytics...");
+
+    // Create a Standard Template
+    const template = await prisma.formTemplate.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            title: "Daily Observation Report (Standard)",
+            isPublished: true,
+            version: 1,
+            sections: {
+                create: [
+                    {
+                        title: "Officer Safety",
+                        order: 1,
+                        fields: {
+                            create: [
+                                { label: "General Safety", type: "RATING", order: 1 },
+                                { label: "Suspect Control", type: "RATING", order: 2 }
+                            ]
+                        }
+                    },
+                    {
+                        title: "Driving",
+                        order: 2,
+                        fields: {
+                            create: [
+                                { label: "Normal driving", type: "RATING", order: 1 },
+                                { label: "Emergency response", type: "RATING", order: 2 }
+                            ]
+                        }
+                    },
+                    {
+                        title: "Report Writing",
+                        order: 3,
+                        fields: {
+                            create: [
+                                { label: "Grammar/Spelling", type: "RATING", order: 1 },
+                                { label: "Timeliness", type: "RATING", order: 2 }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        include: { sections: { include: { fields: true } } }
+    });
+
+    // Seed DORs for the first employee found
+    const trainee = await prisma.employee.findFirst();
+    // find a trainer (user)
+    let trainer = await prisma.user.findFirst({ where: { role: 'TRAINER' } });
+
+    // If no trainer exists, create one
+    if (!trainer) {
+        trainer = await prisma.user.create({
+            data: {
+                email: "trainer@example.com",
+                name: "FTO Trainer",
+                password: "hashedpassword123", // dummy
+                role: "TRAINER"
+            }
+        });
+    }
+
+    if (trainee && trainer) {
+        // Create a trend: Improving scores over 5 days
+        const dates = [
+            new Date(Date.now() - 5 * 86400000), // 5 days ago
+            new Date(Date.now() - 4 * 86400000),
+            new Date(Date.now() - 3 * 86400000),
+            new Date(Date.now() - 2 * 86400000),
+            new Date(Date.now() - 1 * 86400000),
+        ];
+
+        // Scores increasing: 2 -> 3 -> 4 -> 5 -> 6
+        const baseScores = [2, 3, 3, 5, 6];
+
+        for (let i = 0; i < dates.length; i++) {
+            // Map fields to scores
+            const responseData: Record<string, any> = {};
+
+            template.sections.forEach(section => {
+                section.fields.forEach(field => {
+                    // Add some randomness but stick to trend
+                    let score = baseScores[i];
+                    if (section.title === 'Driving') score += 1; // Good at driving
+                    if (section.title === 'Report Writing') score -= 1; // Bad at writing
+
+                    // clamp 1-7
+                    score = Math.max(1, Math.min(7, score));
+
+                    responseData[field.id.toString()] = score.toString();
+                });
+            });
+
+            await prisma.formResponse.create({
+                data: {
+                    date: dates[i],
+                    traineeId: trainee.empId,
+                    trainerId: trainer.id,
+                    templateId: template.id,
+                    responseData: JSON.stringify(responseData),
+                    status: 'REVIEWED'
+                }
+            });
+        }
+        console.log(`Seeded 5 progression DORs for ${trainee.empName}`);
+    }
 }
 
 main()
