@@ -6,13 +6,13 @@ import Link from 'next/link';
 import Search from './Search';
 import FilterButton from './FilterButton';
 
-export default async function EmployeesPage({
-    searchParams,
-}: {
-    searchParams?: {
+export default async function EmployeesPage(props: {
+    searchParams?: Promise<{
         query?: string;
-    };
+        showDeparted?: string;
+    }>;
 }) {
+    const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const showDeparted = searchParams?.showDeparted === 'true';
     const isIdSearch = !isNaN(parseInt(query));
@@ -22,6 +22,7 @@ export default async function EmployeesPage({
         where: {
             departed: showDeparted ? undefined : false,
             OR: query ? [
+                // @ts-ignore - 'mode' is not supported in SQLite (local) but works in Postgres (prod)
                 { empName: { contains: query, mode: 'insensitive' } },
                 ...(isIdSearch ? [{ empId: parseInt(query) }] : [])
             ] : undefined
