@@ -7,6 +7,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { sendEmail, generateDORSubmittedEmail, generateDORSignedEmail } from '@/lib/email';
 
 export async function getDOR(id: number) {
     return await prisma.formResponse.findUnique({
@@ -34,13 +35,26 @@ export async function signDOR(id: number) {
     const session = await auth();
     if (!session?.user?.email) throw new Error("Unauthorized");
 
-    await prisma.formResponse.update({
+    const updatedDor = await prisma.formResponse.update({
         where: { id },
         data: {
             status: 'REVIEWED',
             traineeSignatureAt: new Date()
+        },
+        include: {
+            trainer: true,
+            trainee: true
         }
     });
+
+    if (updatedDor.trainer.email) {
+        // Fire and forget email to avoid blocking UI
+        sendEmail({
+            to: updatedDor.trainer.email,
+            subject: `DOR Signed: #${updatedDor.id}`,
+            html: generateDORSignedEmail(updatedDor.trainer.name, updatedDor.trainee.empName || 'Trainee', updatedDor.date, updatedDor.id)
+        }).catch(e => console.error("Failed to send signature email", e));
+    }
 
     revalidatePath(`/dor/${id}`);
 }
@@ -97,7 +111,7 @@ export async function submitDOR(formData: FormData) {
         }
     }
 
-    await prisma.formResponse.create({
+    const newDor = await prisma.formResponse.create({
         data: {
             templateId,
             traineeId,
@@ -106,6 +120,22 @@ export async function submitDOR(formData: FormData) {
             status: 'SUBMITTED'
         }
     });
+
+    // Email Notification
+    try {
+        const traineeUser = await prisma.user.findUnique({ where: { empId: traineeId } });
+        const trainer = await prisma.user.findUnique({ where: { id: formTrainerId } });
+
+        if (traineeUser?.email && trainer) {
+            await sendEmail({
+                to: traineeUser.email,
+                subject: `New DOR Submitted: #${newDor.id}`,
+                html: generateDORSubmittedEmail(traineeUser.name, trainer.name, newDor.date, newDor.id)
+            });
+        }
+    } catch (e) {
+        console.error("Failed to send submission email", e);
+    }
 
     revalidatePath('/dashboard');
     redirect(`/employees/${traineeId}`);
