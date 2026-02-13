@@ -88,3 +88,20 @@ export async function updateTemplateMetadata(id: number, data: { title?: string,
     });
     revalidatePath(`/admin/forms/builder/${id}`);
 }
+
+export async function updateField(fieldId: number, label: string) {
+    const field = await prisma.formField.update({
+        where: { id: fieldId },
+        data: { label },
+        include: { section: true }
+    });
+    revalidatePath(`/admin/forms/builder/${field.section.templateId}`);
+}
+
+export async function deleteField(fieldId: number) {
+    const field = await prisma.formField.delete({
+        where: { id: fieldId },
+        include: { section: true }
+    });
+    revalidatePath(`/admin/forms/builder/${field.section.templateId}`);
+}
