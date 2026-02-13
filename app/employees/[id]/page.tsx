@@ -9,6 +9,7 @@ import { User, BookOpen, Award, CheckCircle, Package, FileText, Upload } from 'l
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import ExpirationRow from './ExpirationRow';
+import DORHistoryWithAggregates from '@/app/components/employee/DORHistoryWithAggregates';
 
 export default async function EmployeeDetailPage(props: {
     params: Promise<{ id: string }>,
@@ -40,6 +41,26 @@ export default async function EmployeeDetailPage(props: {
             // @ts-ignore
             flags: {
                 where: { status: 'OPEN' }
+            },
+            // 1. DORs Received (as Trainee)
+            formResponses: {
+                orderBy: { date: 'desc' },
+                include: {
+                    template: true,
+                    trainer: true
+                }
+            },
+            // 2. DORs Written (as Trainer - linked via User)
+            user: {
+                include: {
+                    authoredTrainerResponses: {
+                        orderBy: { date: 'desc' },
+                        include: {
+                            template: true,
+                            trainee: true
+                        }
+                    }
+                }
             }
         }
     });
@@ -264,6 +285,13 @@ export default async function EmployeeDetailPage(props: {
                     </div>
                 </div>
             </div>
+
+            {/* DOR History & Relationships */}
+            <DORHistoryWithAggregates
+                employeeName={employee.empName || 'Employee'}
+                receivedDORs={employee.formResponses || []}
+                authoredDORs={employee.user?.authoredTrainerResponses || []}
+            />
         </div>
     );
 }

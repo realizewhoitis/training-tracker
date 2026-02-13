@@ -7,6 +7,7 @@ import DailyScoreChart from './components/charts/DailyScoreChart';
 import CategoryRadarChart from './components/charts/CategoryRadarChart';
 import ExpirationTabs from './components/dashboard/ExpirationTabs';
 import DORAnalyticsDashboard from './components/dashboard/DORAnalyticsDashboard';
+import FormInbox from './components/dashboard/FormInbox';
 
 import EISWidget from '@/components/eis/EISWidget';
 
@@ -106,6 +107,10 @@ export default async function Home() {
   });
 
   const recentTraining = await prisma.attendance.findMany({
+    where: {
+      attendanceDate: { not: null },
+      attendanceHours: { gt: 0 }
+    },
     take: 5,
     orderBy: {
       attendanceDate: 'desc'

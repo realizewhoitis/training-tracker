@@ -102,13 +102,54 @@ export async function submitDOR(formData: FormData) {
     const traineeId = parseInt(formData.get('traineeId') as string);
     const formTrainerId = formData.get('trainerId') ? parseInt(formData.get('trainerId') as string) : parseInt(session.user.id);
 
-    // Collect all field data
+    // Fetch Template for Naming Convention
+    const template = await prisma.formTemplate.findUnique({
+        where: { id: templateId },
+        include: { sections: { include: { fields: true } } }
+    });
+
+    // Collect all field data & Helper map for labels
     const responseData: Record<string, any> = {};
+    const fieldLabelMap: Record<string, string> = {};
+
     for (const [key, value] of Array.from(formData.entries())) {
         if (key.startsWith('field-')) {
             const fieldId = key.replace('field-', '');
             responseData[fieldId] = value;
         }
+    }
+
+    // Build field label map
+    if (template) {
+        template.sections.forEach(section => {
+            section.fields.forEach(field => {
+                fieldLabelMap[field.label] = String(field.id);
+            });
+        });
+    }
+
+    let customTitle = null;
+    if (template?.namingConvention) {
+        const traineeUser = await prisma.employee.findUnique({ where: { empId: traineeId } });
+        const trainer = await prisma.user.findUnique({ where: { id: formTrainerId } });
+        const dateStr = new Date().toISOString().split('T')[0];
+
+        let title = template.namingConvention;
+        title = title.replace(/\{\{date\}\}/g, dateStr);
+        title = title.replace(/\{\{trainee\}\}/g, traineeUser?.empName || 'Unknown');
+        title = title.replace(/\{\{trainer\}\}/g, trainer?.name || 'Unknown');
+
+        // Replace field values {{field:Label}}
+        const fieldRegex = /\{\{field:(.+?)\}\}/g;
+        title = title.replace(fieldRegex, (match, fieldLabel) => {
+            const fieldId = fieldLabelMap[fieldLabel];
+            if (fieldId && responseData[fieldId]) {
+                return String(responseData[fieldId]);
+            }
+            return ''; // Empty string if field not found or empty
+        });
+
+        customTitle = title;
     }
 
     const newDor = await prisma.formResponse.create({
@@ -117,6 +158,7 @@ export async function submitDOR(formData: FormData) {
             traineeId,
             trainerId: formTrainerId,
             responseData: JSON.stringify(responseData),
+            customTitle,
             status: 'SUBMITTED'
         }
     });
@@ -129,7 +171,7 @@ export async function submitDOR(formData: FormData) {
         if (traineeUser?.email && trainer) {
             await sendEmail({
                 to: traineeUser.email,
-                subject: `New DOR Submitted: #${newDor.id}`,
+                subject: `New DOR Submitted: ${customTitle || `#${newDor.id}`}`,
                 html: generateDORSubmittedEmail(traineeUser.name, trainer.name, newDor.date, newDor.id)
             });
         }
@@ -169,4 +211,20 @@ export async function updateDOR(formData: FormData) {
 
     revalidatePath(`/dor/${dorId}`);
     redirect(`/dor/${dorId}`);
+}
+
+export async function deleteDOR(id: number) {
+    const session = await auth();
+    // Strict Admin Check
+    if (session?.user?.role !== 'ADMIN') {
+        throw new Error("Unauthorized: Admin Access Required");
+    }
+
+    await prisma.formResponse.delete({
+        where: { id }
+    });
+
+    revalidatePath('/admin/forms/submissions');
+    revalidatePath('/dashboard');
+    revalidatePath('/employees');
 }

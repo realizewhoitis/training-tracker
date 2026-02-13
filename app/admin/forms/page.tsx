@@ -22,7 +22,13 @@ export default async function FormsDashboard() {
             <div className="flex justify-between items-center bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Form Templates</h1>
-                    <p className="text-slate-500">Manage Daily Observation Report structures</p>
+                    <p className="text-slate-500 mb-2">Manage Daily Observation Report structures</p>
+                    <Link
+                        href="/admin/forms/submissions"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center"
+                    >
+                        View All Submissions &rarr;
+                    </Link>
                 </div>
                 <form action={handleCreate} className="flex gap-2">
                     <input

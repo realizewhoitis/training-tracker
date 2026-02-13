@@ -62,3 +62,14 @@ export async function publishTemplate(id: number) {
     });
     revalidatePath('/admin/forms');
 }
+
+export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string }) {
+    await prisma.formTemplate.update({
+        where: { id },
+        data: {
+            ...(data.title && { title: data.title }),
+            ...(data.namingConvention !== undefined && { namingConvention: data.namingConvention })
+        }
+    });
+    revalidatePath(`/admin/forms/builder/${id}`);
+}

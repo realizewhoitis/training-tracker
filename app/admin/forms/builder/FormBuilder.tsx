@@ -89,6 +89,22 @@ export default function FormBuilder({ template }: { template: any }) {
                     <div className="text-center mb-8 border-b border-slate-200 pb-4">
                         <h1 className="text-3xl font-bold text-slate-800">{template.title}</h1>
                         <p className="text-slate-500">Daily Observation Report</p>
+
+                        <div className="mt-4 max-w-2xl mx-auto">
+                            <label className="block text-xs font-medium text-slate-500 mb-2 text-left">Generated Name Pattern</label>
+
+                            <NamingConventionBuilder
+                                defaultValue={template.namingConvention}
+                                fields={template.sections.flatMap((s: any) => s.fields) || []}
+                                onSave={async (newValue) => {
+                                    // Debouncing could be added here if needed, but since it's driven by drag-drops, 
+                                    // frequent server calls might be okay or we can debounce the action itself.
+                                    // For now, let's just save.
+                                    const { updateTemplateMetadata } = await import('@/app/actions/form-builder');
+                                    await updateTemplateMetadata(template.id, { namingConvention: newValue });
+                                }}
+                            />
+                        </div>
                     </div>
 
                     {template.sections.map((section: any) => (
