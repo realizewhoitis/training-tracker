@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import Link from 'next/link';
 import DailyScoreChart from './components/charts/DailyScoreChart';
 import CategoryRadarChart from './components/charts/CategoryRadarChart';
+import ExpirationTabs from './components/dashboard/ExpirationTabs';
 
 import EISWidget from '@/components/eis/EISWidget';
 
@@ -34,6 +35,25 @@ export default async function Home() {
     }
   });
 
+  const expiredCertificates = await prisma.expiration.findMany({
+    where: {
+      Expiration: {
+        lt: now
+      },
+      employee: {
+        departed: false
+      }
+    },
+    include: {
+      employee: true,
+      certificate: true
+    },
+    take: 10,
+    orderBy: {
+      Expiration: 'asc' // Oldest (most overdue) first
+    }
+  });
+
   const recentTraining = await prisma.attendance.findMany({
     take: 5,
     orderBy: {
@@ -52,9 +72,9 @@ export default async function Home() {
   // Calculate Analytics for Trainee
   const dailyScores: { date: string; score: number }[] = [];
   const categoryScores: Record<string, { total: number; count: number }> = {};
-  const radarData: { category: string; score: number }[] = [];
+  const radarData: { category: string; score: number; fullMark: number }[] = [];
 
-  let currentUser: any = null; // Declare currentUser here
+  let currentUser: any = null;
 
   if (session?.user?.email) {
     currentUser = await prisma.user.findUnique({
@@ -131,7 +151,8 @@ export default async function Home() {
         Object.keys(categoryScores).forEach(category => {
           radarData.push({
             category,
-            score: parseFloat((categoryScores[category].total / categoryScores[category].count).toFixed(1))
+            score: parseFloat((categoryScores[category].total / categoryScores[category].count).toFixed(1)),
+            fullMark: 7
           });
         });
       }
@@ -266,37 +287,7 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-100">
-            <h2 className="text-lg font-semibold text-slate-800 flex items-center">
-              <AlertTriangle className="w-5 h-5 mr-2 text-amber-500" />
-              Upcoming Expirations
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {upcomingExpirations.map((exp: any) => (
-                <div key={exp.expirationID} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                  <div>
-                    <p className="font-medium text-slate-800">{exp.certificate.certificateName}</p>
-                    <p className="text-sm text-slate-500">{exp.employee.empName}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-amber-600">
-                      {exp.Expiration ? Math.ceil((new Date(exp.Expiration).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0} days
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {exp.Expiration ? exp.Expiration.toLocaleDateString() : 'No Date'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {upcomingExpirations.length === 0 && (
-                <p className="text-slate-500 text-center py-4">No upcoming expirations.</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <ExpirationTabs upcoming={upcomingExpirations} expired={expiredCertificates} />
       </div>
     </div>
   );
