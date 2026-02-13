@@ -3,38 +3,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useState } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Plus, GripVertical, Type, Star } from 'lucide-react';
+
+import { GripVertical } from 'lucide-react';
 import { addSection, addField, publishTemplate } from '@/app/actions/form-builder';
-
-// Separate component for sortable items
-function SortableItem(props: any) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
-    return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            {props.children}
-        </div>
-    );
-}
+import NamingConventionBuilder from './NamingConventionBuilder';
 
 export default function FormBuilder({ template }: { template: any }) {
     const [isPublishing, setIsPublishing] = useState(false);
 
-    // Using sensors for drag and drop
-    const sensors = useSensors(
-        useSensor(PointerSensor),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
+
 
     // Simplistic handlers for adding items - in a real app these would have modals or inline edits
     const handleAddSection = async () => {
