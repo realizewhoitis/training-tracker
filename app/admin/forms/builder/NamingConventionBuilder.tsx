@@ -46,6 +46,7 @@ function DraggableItem({ token, onRemove }: { token: NamingToken; onRemove?: () 
             {onRemove && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                    onPointerDown={(e) => e.stopPropagation()}
                     className="ml-2 hover:bg-black/10 rounded-full p-0.5"
                 >
                     <X size={12} />

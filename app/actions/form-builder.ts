@@ -83,7 +83,8 @@ export async function updateTemplateMetadata(id: number, data: { title?: string,
         where: { id },
         data: {
             ...(data.title && { title: data.title }),
-            ...(data.namingConvention !== undefined && { namingConvention: data.namingConvention })
+            ...(data.namingConvention !== undefined && { namingConvention: data.namingConvention }),
+            isPublished: false
         }
     });
     revalidatePath(`/admin/forms/builder/${id}`);
