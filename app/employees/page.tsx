@@ -72,12 +72,12 @@ export default async function EmployeesPage(props: {
                             {employees.map((employee: any) => (
                                 <tr key={employee.empId} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center space-x-3">
-                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                        <Link href={`/employees/${employee.empId}`} className="flex items-center space-x-3 group">
+                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-200 transition-colors">
                                                 <User size={16} />
                                             </div>
-                                            <span className="font-medium text-slate-900">{employee.empName}</span>
-                                        </div>
+                                            <span className="font-medium text-slate-900 group-hover:text-blue-600 transition-colors">{employee.empName}</span>
+                                        </Link>
                                     </td>
                                     <td className="px-6 py-4 text-slate-500 text-sm">#{employee.empId}</td>
                                     <td className="px-6 py-4">

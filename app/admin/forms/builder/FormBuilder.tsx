@@ -5,7 +5,8 @@
 import { useState } from 'react';
 
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
-import { addSection, addField, publishTemplate, updateSection, deleteSection } from '@/app/actions/form-builder';
+
+import { addSection, addField, publishTemplate, updateSection, deleteSection, updateField, deleteField } from '@/app/actions/form-builder';
 import NamingConventionBuilder from './NamingConventionBuilder';
 
 export default function FormBuilder({ template }: { template: any }) {
@@ -52,6 +53,19 @@ export default function FormBuilder({ template }: { template: any }) {
     const handleDeleteSection = async (sectionId: number) => {
         if (confirm("Are you sure you want to delete this section? All fields within it will be lost.")) {
             await deleteSection(sectionId);
+        }
+    };
+
+    const handleEditField = async (fieldId: number, currentLabel: string) => {
+        const newLabel = prompt("Rename Field:", currentLabel);
+        if (newLabel && newLabel !== currentLabel) {
+            await updateField(fieldId, newLabel);
+        }
+    };
+
+    const handleDeleteField = async (fieldId: number) => {
+        if (confirm("Are you sure you want to delete this field?")) {
+            await deleteField(fieldId);
         }
     };
 
@@ -138,7 +152,25 @@ export default function FormBuilder({ template }: { template: any }) {
                                     <div key={field.id} className="flex items-start p-3 bg-slate-50 rounded border border-slate-100 relative group/field">
                                         <GripVertical className="text-slate-300 mr-3 mt-1 cursor-move" size={14} />
                                         <div className="flex-1">
-                                            <p className="font-medium text-sm text-slate-700 mb-1">{field.label}</p>
+                                            <div className="flex justify-between items-start">
+                                                <p className="font-medium text-sm text-slate-700 mb-1">{field.label}</p>
+                                                <div className="flex space-x-1 opacity-0 group-hover/field:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => handleEditField(field.id, field.label)}
+                                                        className="text-slate-400 hover:text-blue-600"
+                                                        title="Rename Field"
+                                                    >
+                                                        <Pencil size={12} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteField(field.id)}
+                                                        className="text-slate-400 hover:text-red-600"
+                                                        title="Delete Field"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
 
                                             {field.type === 'RATING' && (
                                                 <div className="flex space-x-1">
