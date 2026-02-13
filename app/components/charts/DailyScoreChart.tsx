@@ -7,7 +7,7 @@ interface DailyScoreData {
     score: number;
 }
 
-export default function DailyScoreChart({ data }: { data: DailyScoreData[] }) {
+export default function DailyScoreChart({ data, color = '#2563eb' }: { data: DailyScoreData[], color?: string }) {
     return (
         <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -25,9 +25,9 @@ export default function DailyScoreChart({ data }: { data: DailyScoreData[] }) {
                     <Line
                         type="monotone"
                         dataKey="score"
-                        stroke="#2563eb"
+                        stroke={color}
                         strokeWidth={2}
-                        dot={{ r: 4, fill: '#2563eb' }}
+                        dot={{ r: 4, fill: color }}
                         activeDot={{ r: 6 }}
                     />
                 </LineChart>

@@ -8,9 +8,10 @@ interface CategoryRadarProps {
         score: number;
         fullMark: number;
     }[];
+    color?: string;
 }
 
-export default function CategoryRadarChart({ data }: CategoryRadarProps) {
+export default function CategoryRadarChart({ data, color = '#8b5cf6' }: CategoryRadarProps) {
     if (!data || data.length < 3) {
         return (
             <div className="h-64 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-100 text-slate-400 px-8 text-center">
@@ -55,9 +56,9 @@ export default function CategoryRadarChart({ data }: CategoryRadarProps) {
                     <Radar
                         name="Average Score"
                         dataKey="score"
-                        stroke="#8b5cf6"
+                        stroke={color}
                         strokeWidth={3}
-                        fill="#8b5cf6"
+                        fill={color}
                         fillOpacity={0.3}
                     />
                     <Tooltip

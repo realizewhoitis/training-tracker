@@ -6,8 +6,59 @@ import Link from 'next/link';
 import DailyScoreChart from './components/charts/DailyScoreChart';
 import CategoryRadarChart from './components/charts/CategoryRadarChart';
 import ExpirationTabs from './components/dashboard/ExpirationTabs';
+import DORAnalyticsDashboard from './components/dashboard/DORAnalyticsDashboard';
 
 import EISWidget from '@/components/eis/EISWidget';
+
+const calculateAnalytics = (resList: any[]) => {
+  const dailyScores: { date: string; score: number }[] = [];
+  const categoryScores: Record<string, { total: number; count: number }> = {};
+  const radarData: { category: string; score: number; fullMark: number }[] = [];
+
+  resList.forEach(res => {
+    const data = JSON.parse(res.responseData);
+    let dailyTotal = 0;
+    let dailyCount = 0;
+
+    res.template.sections.forEach((section: any) => {
+      section.fields.forEach((field: any) => {
+        if (field.type === 'RATING' && data[field.id]) {
+          const score = parseInt(data[field.id]);
+          if (!isNaN(score)) {
+            dailyTotal += score;
+            dailyCount++;
+
+            if (!categoryScores[section.title]) {
+              categoryScores[section.title] = { total: 0, count: 0 };
+            }
+            categoryScores[section.title].total += score;
+            categoryScores[section.title].count++;
+          }
+        }
+      });
+    });
+
+    if (dailyCount > 0) {
+      dailyScores.push({
+        date: res.date.toISOString(),
+        score: parseFloat((dailyTotal / dailyCount).toFixed(1))
+      });
+    }
+  });
+
+  Object.keys(categoryScores).forEach(category => {
+    radarData.push({
+      category,
+      score: parseFloat((categoryScores[category].total / categoryScores[category].count).toFixed(1)),
+      fullMark: 7
+    });
+  });
+
+  // Sort dailyScores by date
+  dailyScores.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  return { daily: dailyScores, radar: radarData };
+};
 
 export default async function Home() {
   const totalEmployees = await prisma.employee.count({
@@ -74,6 +125,12 @@ export default async function Home() {
   const categoryScores: Record<string, { total: number; count: number }> = {};
   const radarData: { category: string; score: number; fullMark: number }[] = [];
 
+  // Initialize analytics containers
+  let analyticsAll = { daily: [] as any[], radar: [] as any[] };
+  let analyticsRadio = { daily: [] as any[], radar: [] as any[] };
+  let analyticsCallTaking = { daily: [] as any[], radar: [] as any[] };
+  let hasAnalyticsData = false;
+
   let currentUser: any = null;
 
   if (session?.user?.email) {
@@ -116,48 +173,17 @@ export default async function Home() {
           orderBy: { date: 'asc' }
         });
 
-        responses.forEach(res => {
-          const data = JSON.parse(res.responseData);
-          let dailyTotal = 0;
-          let dailyCount = 0;
-
-          res.template.sections.forEach(section => {
-            section.fields.forEach(field => {
-              if (field.type === 'RATING' && data[field.id]) {
-                const score = parseInt(data[field.id]);
-                if (!isNaN(score)) {
-                  dailyTotal += score;
-                  dailyCount++;
-
-                  // Category Aggregation
-                  if (!categoryScores[section.title]) {
-                    categoryScores[section.title] = { total: 0, count: 0 };
-                  }
-                  categoryScores[section.title].total += score;
-                  categoryScores[section.title].count++;
-                }
-              }
-            });
-          });
-
-          if (dailyCount > 0) {
-            dailyScores.push({
-              date: res.date.toISOString(),
-              score: parseFloat((dailyTotal / dailyCount).toFixed(1))
-            });
-          }
-        });
-
-        Object.keys(categoryScores).forEach(category => {
-          radarData.push({
-            category,
-            score: parseFloat((categoryScores[category].total / categoryScores[category].count).toFixed(1)),
-            fullMark: 7
-          });
-        });
+        if (responses.length > 0) {
+          hasAnalyticsData = true;
+          analyticsAll = calculateAnalytics(responses);
+          analyticsRadio = calculateAnalytics(responses.filter(r => r.template.type === 'RADIO'));
+          analyticsCallTaking = calculateAnalytics(responses.filter(r => r.template.type === 'CALL_TAKING'));
+        }
       }
     }
   }
+
+
 
   return (
     <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
@@ -207,24 +233,12 @@ export default async function Home() {
       )}
 
       {/* Analytics Section for Trainees */}
-      {dailyScores.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <Clock className="w-5 h-5 mr-2 text-blue-600" />
-              Daily Performance Trend
-            </h2>
-            <DailyScoreChart data={dailyScores} />
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-              <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
-              Performance by Category
-            </h2>
-            <CategoryRadarChart data={radarData} />
-          </div>
-        </div>
+      {hasAnalyticsData && (
+        <DORAnalyticsDashboard
+          all={analyticsAll}
+          radio={analyticsRadio}
+          callTaking={analyticsCallTaking}
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -289,6 +303,6 @@ export default async function Home() {
 
         <ExpirationTabs upcoming={upcomingExpirations} expired={expiredCertificates} />
       </div>
-    </div>
+    </div >
   );
 }

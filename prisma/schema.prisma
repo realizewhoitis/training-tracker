@@ -170,6 +170,7 @@ model Expiration {
 model FormTemplate {
   id          Int      @id @default(autoincrement())
   title       String
+  type        String   @default("GENERAL") // GENERAL, RADIO, CALL_TAKING
   version     Int      @default(1)
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
