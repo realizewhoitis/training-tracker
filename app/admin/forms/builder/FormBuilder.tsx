@@ -4,8 +4,8 @@
 
 import { useState } from 'react';
 
-import { GripVertical } from 'lucide-react';
-import { addSection, addField, publishTemplate } from '@/app/actions/form-builder';
+import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { addSection, addField, publishTemplate, updateSection, deleteSection } from '@/app/actions/form-builder';
 import NamingConventionBuilder from './NamingConventionBuilder';
 
 export default function FormBuilder({ template }: { template: any }) {
@@ -41,6 +41,21 @@ export default function FormBuilder({ template }: { template: any }) {
             alert("Published!");
         }
     };
+
+    const handleEditSection = async (sectionId: number, currentTitle: string) => {
+        const newTitle = prompt("Rename Section:", currentTitle);
+        if (newTitle && newTitle !== currentTitle) {
+            await updateSection(sectionId, newTitle);
+        }
+    };
+
+    const handleDeleteSection = async (sectionId: number) => {
+        if (confirm("Are you sure you want to delete this section? All fields within it will be lost.")) {
+            await deleteSection(sectionId);
+        }
+    };
+
+
 
     return (
         <div className="space-y-8">
@@ -87,9 +102,23 @@ export default function FormBuilder({ template }: { template: any }) {
                     {template.sections.map((section: any) => (
                         <div key={section.id} className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 group">
                             <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-2">
-                                <h3 className="font-bold text-lg text-slate-800 flex items-center">
+                                <h3 className="font-bold text-lg text-slate-800 flex items-center group/title">
                                     <GripVertical className="text-slate-300 mr-2 cursor-move" size={16} />
                                     {section.title}
+                                    <button
+                                        onClick={() => handleEditSection(section.id, section.title)}
+                                        className="ml-2 text-slate-400 hover:text-blue-600 opacity-0 group-hover/title:opacity-100 transition-opacity"
+                                        title="Rename Section"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteSection(section.id)}
+                                        className="ml-1 text-slate-400 hover:text-red-600 opacity-0 group-hover/title:opacity-100 transition-opacity"
+                                        title="Delete Section"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
                                 </h3>
                                 <div className="space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button onClick={() => handleAddField(section.id, 'RATING')} className="text-xs bg-amber-50 text-amber-700 px-2 py-1 rounded hover:bg-amber-100" title="Add Rating 1-7">

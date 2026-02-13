@@ -55,6 +55,21 @@ export async function addField(sectionId: number, label: string, type: string, o
     revalidatePath(`/admin/forms/builder`); // Revalidating builder area
 }
 
+export async function updateSection(sectionId: number, title: string) {
+    const section = await prisma.formSection.update({
+        where: { id: sectionId },
+        data: { title }
+    });
+    revalidatePath(`/admin/forms/builder/${section.templateId}`);
+}
+
+export async function deleteSection(sectionId: number) {
+    const section = await prisma.formSection.delete({
+        where: { id: sectionId }
+    });
+    revalidatePath(`/admin/forms/builder/${section.templateId}`);
+}
+
 export async function publishTemplate(id: number) {
     await prisma.formTemplate.update({
         where: { id },
