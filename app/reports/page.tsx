@@ -1,5 +1,5 @@
 
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, CalendarClock } from 'lucide-react';
 
 export default async function ReportsPage() {
     return (
@@ -56,6 +56,22 @@ export default async function ReportsPage() {
                         Total training hours logged per employee for the current year.
                     </p>
                     <a href="/api/reports?type=training" className="text-blue-600 text-sm font-medium flex items-center hover:underline">
+                        <Download size={16} className="mr-1" /> Download CSV
+                    </a>
+                </div>
+
+                {/* Report Card 4 - Shift Roster */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow cursor-pointer">
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="p-3 bg-purple-50 rounded-lg text-purple-600">
+                            <CalendarClock size={24} />
+                        </div>
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">Shift Roster</h3>
+                    <p className="text-sm text-slate-500 mb-4">
+                        List of employees grouped by their assigned shift.
+                    </p>
+                    <a href="/api/reports?type=shift_roster" className="text-blue-600 text-sm font-medium flex items-center hover:underline">
                         <Download size={16} className="mr-1" /> Download CSV
                     </a>
                 </div>

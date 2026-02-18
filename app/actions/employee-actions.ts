@@ -11,6 +11,8 @@ export async function updateEmployee(
     const empName = formData.get('empName') as string;
     const newEmpIdRaw = formData.get('empId') as string;
     const departed = formData.get('departed') === 'on';
+    const shiftIdRaw = formData.get('shiftId') as string;
+    const shiftId = shiftIdRaw ? parseInt(shiftIdRaw) : null;
 
     if (!empName || !newEmpIdRaw) {
         throw new Error('Name and ID are required');
@@ -24,7 +26,8 @@ export async function updateEmployee(
             data: {
                 empName,
                 empId: newEmpId, // Prisma will update PK and cascade to FKs
-                departed
+                departed,
+                shiftId: shiftId
             }
         });
     } catch (error) {

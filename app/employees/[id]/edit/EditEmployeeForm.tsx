@@ -1,18 +1,21 @@
 'use client';
 
 import { updateEmployee } from '@/app/actions/employee-actions';
-import { Save, AlertTriangle } from 'lucide-react';
+import { Save, AlertTriangle, CalendarClock } from 'lucide-react';
 import Link from 'next/link';
+import AddShift from '../../components/AddShift';
 
 interface EditEmployeeFormProps {
     employee: {
         empId: number;
         empName: string | null;
         departed: boolean;
+        shiftId: number | null;
     };
+    shifts: { id: number; name: string }[];
 }
 
-export default function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
+export default function EditEmployeeForm({ employee, shifts }: EditEmployeeFormProps) {
     const updateAction = updateEmployee.bind(null, employee.empId);
 
     return (
@@ -32,6 +35,31 @@ export default function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                         required
                         className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
+                </div>
+
+
+                {/* Shift Assignment */}
+                <div>
+                    <label htmlFor="shiftId" className="block text-sm font-medium text-slate-700 mb-1">
+                        Shift Assignment
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <CalendarClock size={18} />
+                        </div>
+                        <select
+                            id="shiftId"
+                            name="shiftId"
+                            defaultValue={employee.shiftId || ''}
+                            className="pl-10 w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                        >
+                            <option value="">No Shift Assigned</option>
+                            {shifts.map((shift) => (
+                                <option key={shift.id} value={shift.id}>{shift.name}</option>
+                            ))}
+                        </select>
+                        <AddShift />
+                    </div>
                 </div>
 
                 {/* Employee ID */}
@@ -109,6 +137,6 @@ export default function EditEmployeeForm({ employee }: EditEmployeeFormProps) {
                     </button>
                 </div>
             </div>
-        </form>
+        </form >
     );
 }

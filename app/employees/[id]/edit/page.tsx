@@ -2,6 +2,7 @@
 import prisma from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import EditEmployeeForm from './EditEmployeeForm';
+import { getShifts } from '@/app/actions/shift-actions';
 import { UserCog } from 'lucide-react';
 import Link from 'next/link';
 
@@ -12,6 +13,8 @@ export default async function EditEmployeePage(props: { params: Promise<{ id: st
     const employee = await prisma.employee.findUnique({
         where: { empId: employeeId }
     });
+
+    const shifts = await getShifts();
 
     if (!employee) {
         notFound();
@@ -29,7 +32,7 @@ export default async function EditEmployeePage(props: { params: Promise<{ id: st
                 </div>
             </div>
 
-            <EditEmployeeForm employee={employee} />
+            <EditEmployeeForm employee={employee} shifts={shifts} />
         </div>
     );
 }

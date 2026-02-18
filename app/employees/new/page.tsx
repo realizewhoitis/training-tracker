@@ -1,10 +1,14 @@
 
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { UserPlus, Save, X } from 'lucide-react';
+import { UserPlus, Save, X, CalendarClock } from 'lucide-react';
 import Link from 'next/link';
+import AddShift from '../components/AddShift';
+import { getShifts } from '@/app/actions/shift-actions';
 
-export default function NewEmployeePage() {
+export default async function NewEmployeePage() {
+
+    const shifts = await getShifts();
 
     async function createEmployee(formData: FormData) {
         'use server';
@@ -12,6 +16,8 @@ export default function NewEmployeePage() {
         const empName = formData.get('empName') as string;
         const empIdRaw = formData.get('empId') as string;
         const empId = empIdRaw ? parseInt(empIdRaw) : undefined;
+        const shiftIdRaw = formData.get('shiftId') as string;
+        const shiftId = shiftIdRaw ? parseInt(shiftIdRaw) : undefined;
 
         // Simple validation
         if (!empName) return;
@@ -21,7 +27,8 @@ export default function NewEmployeePage() {
                 data: {
                     empName: empName,
                     departed: false,
-                    ...(empId && { empId: empId })
+                    ...(empId && { empId: empId }),
+                    ...(shiftId && { shiftId: shiftId })
                 }
             });
         } catch (error) {
@@ -64,6 +71,28 @@ export default function NewEmployeePage() {
                             placeholder="e.g. John Doe"
                             className="pl-10 w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
+                    </div>
+                </div>
+
+                <div>
+                    <label htmlFor="shiftId" className="block text-sm font-medium text-slate-700 mb-1">
+                        Shift Assignment <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <CalendarClock size={18} />
+                        </div>
+                        <select
+                            id="shiftId"
+                            name="shiftId"
+                            className="pl-10 w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                        >
+                            <option value="">No Shift Assigned</option>
+                            {shifts.map((shift: { id: number; name: string }) => (
+                                <option key={shift.id} value={shift.id}>{shift.name}</option>
+                            ))}
+                        </select>
+                        <AddShift />
                     </div>
                 </div>
 

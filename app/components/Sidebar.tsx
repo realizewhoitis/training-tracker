@@ -1,7 +1,7 @@
 import { getSettings } from '@/app/admin/settings/actions';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, FileText, Inbox } from 'lucide-react';
+import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, FileText, Inbox, ShieldCheck } from 'lucide-react';
 import { auth } from '@/auth';
 
 // ...
@@ -113,6 +113,15 @@ const Sidebar = async () => {
                             >
                                 <Settings className="w-5 h-5 text-gray-400 group-hover:text-white" />
                                 <span className="font-medium">System Settings</span>
+                            </Link>
+                        )}
+                        {userRole === 'ADMIN' && (
+                            <Link
+                                href="/admin/roles"
+                                className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                            >
+                                <ShieldCheck className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                                <span className="font-medium">Manage Roles</span>
                             </Link>
                         )}
                     </div>

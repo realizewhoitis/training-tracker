@@ -19,6 +19,16 @@ model Employee {
   formResponses FormResponse[] @relation("Trainee")
   flags       EISFlag[]
   user        User?
+  
+  shiftId     Int?
+  shift       Shift?   @relation(fields: [shiftId], references: [id])
+}
+
+model Shift {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique // "A", "B", "C", "D", "Admin", "IT", "Radio"
+  
+  employees Employee[]
 }
 
 model AssetCategory {
