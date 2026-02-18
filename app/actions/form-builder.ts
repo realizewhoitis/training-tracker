@@ -78,13 +78,13 @@ export async function publishTemplate(id: number) {
     revalidatePath('/admin/forms');
 }
 
-export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string }) {
+export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean }) {
     await prisma.formTemplate.update({
         where: { id },
         data: {
             ...(data.title && { title: data.title }),
             ...(data.namingConvention !== undefined && { namingConvention: data.namingConvention }),
-            isPublished: false
+            ...(data.isPublished !== undefined && { isPublished: data.isPublished })
         }
     });
     revalidatePath(`/admin/forms/builder/${id}`);

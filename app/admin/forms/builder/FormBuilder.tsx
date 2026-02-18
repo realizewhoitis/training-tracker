@@ -107,7 +107,7 @@ export default function FormBuilder({ template }: { template: any }) {
                                     // frequent server calls might be okay or we can debounce the action itself.
                                     // For now, let's just save.
                                     const { updateTemplateMetadata } = await import('@/app/actions/form-builder');
-                                    await updateTemplateMetadata(template.id, { namingConvention: newValue });
+                                    await updateTemplateMetadata(template.id, { namingConvention: newValue, isPublished: false });
                                 }}
                             />
                         </div>

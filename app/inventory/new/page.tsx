@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { Package, Save, X, Tag, Hash } from 'lucide-react';
 import Link from 'next/link';
+import AddCategory from './AddCategory';
 
 export default async function NewAssetPage() {
 
@@ -77,6 +78,7 @@ export default async function NewAssetPage() {
                         <select
                             name="categoryId"
                             required
+                            aria-label="Select Category"
                             className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white"
                         >
                             <option value="">Select a category...</option>
@@ -84,6 +86,7 @@ export default async function NewAssetPage() {
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
+                        <AddCategory />
                     </div>
                 </div>
 

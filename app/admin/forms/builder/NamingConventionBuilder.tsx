@@ -34,20 +34,22 @@ function DraggableItem({ token, onRemove }: { token: NamingToken; onRemove?: () 
             ref={setNodeRef}
             style={style}
             {...attributes}
-            {...listeners}
-            className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium border shadow-sm cursor-grab active:cursor-grabbing select-none
+            className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium border shadow-sm select-none
                 ${token.type === 'system' ? 'bg-blue-50 text-blue-700 border-blue-200' : ''}
                 ${token.type === 'field' ? 'bg-purple-50 text-purple-700 border-purple-200' : ''}
                 ${token.type === 'text' ? 'bg-slate-100 text-slate-600 border-slate-200 font-mono' : ''}
             `}
         >
-            <GripVertical size={12} className="mr-1 opacity-50" />
+            <div {...listeners} className="cursor-grab active:cursor-grabbing mr-1 opacity-50 hover:opacity-100">
+                <GripVertical size={12} />
+            </div>
             {token.label}
             {onRemove && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onRemove(); }}
                     onPointerDown={(e) => e.stopPropagation()}
-                    className="ml-2 hover:bg-black/10 rounded-full p-0.5"
+                    aria-label="Remove item"
+                    className="ml-2 hover:bg-black/10 rounded-full p-0.5 cursor-pointer"
                 >
                     <X size={12} />
                 </button>

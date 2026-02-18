@@ -53,6 +53,15 @@ export async function returnAsset(formData: FormData) {
 
     revalidatePath(`/inventory/${assetId}`);
     revalidatePath('/inventory');
-    // We should also find the employee and revalidate their page, but we don't have the employeeId here easily without a query. 
     // It's probably fine as the employee page will be fresh on navigation.
+}
+
+export async function createCategory(name: string) {
+    if (!name) return;
+
+    await prisma.assetCategory.create({
+        data: { name }
+    });
+
+    revalidatePath('/inventory/new');
 }
