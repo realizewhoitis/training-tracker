@@ -32,3 +32,26 @@ export async function updateRoleTemplate(formData: FormData) {
 
     revalidatePath('/admin/roles');
 }
+
+export async function createRole(roleName: string) {
+    if (!roleName) throw new Error('Role name is required');
+
+    // Check if exists
+    const existing = await prisma.roleTemplate.findUnique({
+        where: { roleName }
+    });
+
+    if (existing) {
+        throw new Error('Role already exists');
+    }
+
+    await prisma.roleTemplate.create({
+        data: {
+            roleName,
+            permissions: JSON.stringify([]) // Start with no permissions
+        }
+    });
+
+    revalidatePath('/admin/roles');
+    revalidatePath('/admin/users'); // Update users page too
+}

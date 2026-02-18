@@ -2,11 +2,18 @@ import prisma from '@/lib/prisma';
 import { User, Shield, Trash2, Key, RefreshCw } from 'lucide-react';
 import { createUser, deleteUser, resetPassword } from './actions';
 import UserRoleSelect from './UserRoleSelect';
+import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 
 export default async function UserManagementPage() {
     const users = await prisma.user.findMany({
         orderBy: { name: 'asc' }
     });
+
+    const roleTemplates = await prisma.roleTemplate.findMany();
+    const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
+    const databaseRoles = roleTemplates.map(rt => rt.roleName);
+    // Combine and ensure unique. Keep ADMIN.
+    const availableRoles = Array.from(new Set([...knownRoles, ...databaseRoles])).sort();
 
     return (
         <div className="max-w-6xl mx-auto p-6 md:p-10 space-y-8">
@@ -40,10 +47,9 @@ export default async function UserManagementPage() {
                     <div className="md:col-span-1">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Role</label>
                         <select name="role" className="w-full rounded-md border-gray-300 text-sm">
-                            <option value="TRAINEE">Trainee</option>
-                            <option value="TRAINER">Trainer</option>
-                            <option value="SUPERVISOR">Supervisor</option>
-                            <option value="ADMIN">Admin</option>
+                            {availableRoles.map(role => (
+                                <option key={role} value={role}>{role}</option>
+                            ))}
                         </select>
                     </div>
                     <div className="md:col-span-1">
@@ -74,7 +80,7 @@ export default async function UserManagementPage() {
                             <tr key={user.id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                                <UserRoleSelect userId={user.id} currentRole={user.role} />
+                                <UserRoleSelect userId={user.id} currentRole={user.role} availableRoles={availableRoles} />
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end items-center gap-3">
                                         {(user.role === 'SUPERVISOR' || user.role === 'TRAINER') && (

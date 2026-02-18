@@ -2,11 +2,14 @@ import prisma from '@/lib/prisma';
 import { ShieldCheck, Save, Info } from 'lucide-react';
 import { PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, Permission, ALL_PERMISSIONS, PERMISSION_LABELS } from '@/lib/permissions';
 import { updateRoleTemplate } from './actions';
+import CreateRoleButton from './CreateRoleButton';
 
 export default async function RoleManagerPage() {
     const roleTemplates = await prisma.roleTemplate.findMany();
 
-    const rolesToManage = ['SUPERVISOR', 'TRAINER']; // Admin is always full access, FTO/Trainee are somewhat fixed
+    const knownRoles = ['SUPERVISOR', 'TRAINER', 'TRAINEE']; // Standard system roles (excluding ADMIN)
+    const databaseRoles = roleTemplates.map(rt => rt.roleName);
+    const rolesToManage = Array.from(new Set([...knownRoles, ...databaseRoles])).filter(r => r !== 'ADMIN');
 
     const getPermissionsForRole = (role: string): Permission[] => {
         const template = roleTemplates.find(rt => rt.roleName === role);
@@ -20,14 +23,15 @@ export default async function RoleManagerPage() {
         <div className="max-w-6xl mx-auto p-6 md:p-10 space-y-8">
             <div className="flex justify-between items-end border-b border-gray-200 pb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center">
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center">
                         <ShieldCheck className="mr-3 text-indigo-600" />
                         Role Templates
                     </h1>
-                    <p className="text-gray-500 mt-2">
-                        Define the default capabilities for Supervisors and Trainers.
+                    <p className="text-slate-500 mt-2">
+                        Define potential capabilities for different roles.
                     </p>
                 </div>
+                <CreateRoleButton />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

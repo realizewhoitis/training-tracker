@@ -6,9 +6,10 @@ import { useTransition } from 'react';
 interface UserRoleSelectProps {
     userId: number;
     currentRole: string;
+    availableRoles: string[];
 }
 
-export default function UserRoleSelect({ userId, currentRole }: UserRoleSelectProps) {
+export default function UserRoleSelect({ userId, currentRole, availableRoles }: UserRoleSelectProps) {
     const [isPending, startTransition] = useTransition();
 
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -30,10 +31,9 @@ export default function UserRoleSelect({ userId, currentRole }: UserRoleSelectPr
                             'bg-gray-100 text-gray-800'
                 }`}
         >
-            <option value="TRAINEE">TRAINEE</option>
-            <option value="TRAINER">TRAINER</option>
-            <option value="SUPERVISOR">SUPERVISOR</option>
-            <option value="ADMIN">ADMIN</option>
+            {availableRoles.map(role => (
+                <option key={role} value={role}>{role}</option>
+            ))}
         </select>
     );
 }
