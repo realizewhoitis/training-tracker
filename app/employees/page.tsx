@@ -10,15 +10,24 @@ export default async function EmployeesPage(props: {
     searchParams?: Promise<{
         query?: string;
         showDeparted?: string;
+        sort?: string;
+        order?: string;
     }>;
 }) {
     const searchParams = await props.searchParams;
     const query = searchParams?.query || '';
     const showDeparted = searchParams?.showDeparted === 'true';
+    const sort = searchParams?.sort || 'name';
+    const order = searchParams?.order === 'desc' ? 'desc' : 'asc';
     const isIdSearch = !isNaN(parseInt(query));
 
+    let orderBy: any = { empName: order };
+    if (sort === 'id') orderBy = { empId: order };
+    if (sort === 'role') orderBy = { user: { role: order } };
+    if (sort === 'shift') orderBy = { shift: { name: order } };
+
     const employees = await prisma.employee.findMany({
-        orderBy: { empName: 'asc' },
+        orderBy: orderBy,
         where: {
             departed: showDeparted ? undefined : false,
             OR: query ? [
@@ -28,6 +37,8 @@ export default async function EmployeesPage(props: {
             ] : undefined
         },
         include: {
+            user: true,
+            shift: true,
             _count: {
                 select: { attendances: true, expirations: true }
             }
@@ -60,8 +71,26 @@ export default async function EmployeesPage(props: {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200">
-                                <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Name</th>
-                                <th className="px-6 py-4 font-semibold text-slate-600 text-sm">ID</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 text-sm">
+                                    <Link href={`/employees?sort=name&order=${sort === 'name' && order === 'asc' ? 'desc' : 'asc'}&query=${query}&showDeparted=${showDeparted}`} className="flex items-center hover:text-blue-600">
+                                        Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
+                                    </Link>
+                                </th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 text-sm">
+                                    <Link href={`/employees?sort=id&order=${sort === 'id' && order === 'asc' ? 'desc' : 'asc'}&query=${query}&showDeparted=${showDeparted}`} className="flex items-center hover:text-blue-600">
+                                        ID {sort === 'id' && (order === 'asc' ? '↑' : '↓')}
+                                    </Link>
+                                </th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 text-sm">
+                                    <Link href={`/employees?sort=role&order=${sort === 'role' && order === 'asc' ? 'desc' : 'asc'}&query=${query}&showDeparted=${showDeparted}`} className="flex items-center hover:text-blue-600">
+                                        Role {sort === 'role' && (order === 'asc' ? '↑' : '↓')}
+                                    </Link>
+                                </th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 text-sm">
+                                    <Link href={`/employees?sort=shift&order=${sort === 'shift' && order === 'asc' ? 'desc' : 'asc'}&query=${query}&showDeparted=${showDeparted}`} className="flex items-center hover:text-blue-600">
+                                        Shift {sort === 'shift' && (order === 'asc' ? '↑' : '↓')}
+                                    </Link>
+                                </th>
                                 <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Status</th>
                                 <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Training Log</th>
                                 <th className="px-6 py-4 font-semibold text-slate-600 text-sm">Active Certs</th>
@@ -80,6 +109,24 @@ export default async function EmployeesPage(props: {
                                         </Link>
                                     </td>
                                     <td className="px-6 py-4 text-slate-500 text-sm">#{employee.empId}</td>
+                                    <td className="px-6 py-4 text-sm">
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${employee.user?.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
+                                                employee.user?.role === 'SUPERVISOR' ? 'bg-amber-100 text-amber-800' :
+                                                    employee.user?.role === 'TRAINER' ? 'bg-teal-100 text-teal-800' :
+                                                        'bg-slate-100 text-slate-600'
+                                            }`}>
+                                            {employee.user?.role || 'TRAINEE'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm">
+                                        {employee.shift ? (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                                {employee.shift.name}
+                                            </span>
+                                        ) : (
+                                            <span className="text-slate-400 text-xs italic">Unassigned</span>
+                                        )}
+                                    </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${!employee.departed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                             }`}>

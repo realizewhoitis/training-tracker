@@ -11,6 +11,7 @@ const Sidebar = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userRole = (session?.user as any)?.role;
     const settings = await getSettings();
+    const activeModules = JSON.parse(settings.modules || '[]');
 
     return (
         <div className="h-screen w-64 bg-slate-900 text-white flex flex-col shadow-xl">
@@ -18,7 +19,7 @@ const Sidebar = async () => {
                 {settings.logoPath ? (
                     <div className="flex flex-col items-start">
                         <Image
-                            src={`/api/files/${settings.logoPath}`}
+                            src={settings.logoPath?.startsWith('data:') ? settings.logoPath : `/api/files/${settings.logoPath}`}
                             alt={settings.orgName}
                             width={150}
                             height={50}
@@ -60,43 +61,51 @@ const Sidebar = async () => {
                     <BookOpen className="w-5 h-5 text-gray-400 group-hover:text-white" />
                     <span className="font-medium">Training</span>
                 </Link>
-                <Link
-                    href="/inventory"
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                >
-                    <Package className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                    <span className="font-medium">Inventory</span>
-                </Link>
-                <Link
-                    href="/reports"
-                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                >
-                    <FileText className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                    <span className="font-medium">Reports</span>
-                </Link>
+                {activeModules.includes('INVENTORY') && (
+                    <Link
+                        href="/inventory"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                    >
+                        <Package className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                        <span className="font-medium">Inventory</span>
+                    </Link>
+                )}
+                {activeModules.includes('REPORTS') && (
+                    <Link
+                        href="/reports"
+                        className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                    >
+                        <FileText className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                        <span className="font-medium">Reports</span>
+                    </Link>
+                )}
                 {(userRole === 'ADMIN' || userRole === 'TRAINER') && (
                     <div className="space-y-2 pt-2 border-t border-slate-700">
-                        <Link
-                            href="/dor/new"
-                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                        >
-                            <ClipboardList className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                            <span className="font-medium">Write DOR</span>
-                        </Link>
-                        <Link
-                            href="/admin/forms"
-                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                        >
-                            <Settings className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                            <span className="font-medium">Form Builder</span>
-                        </Link>
-                        <Link
-                            href="/admin/forms/submissions"
-                            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
-                        >
-                            <Inbox className="w-5 h-5 text-gray-400 group-hover:text-white" />
-                            <span className="font-medium">Form Inbox</span>
-                        </Link>
+                        {activeModules.includes('DOR') && (
+                            <>
+                                <Link
+                                    href="/dor/new"
+                                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                                >
+                                    <ClipboardList className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                                    <span className="font-medium">Write DOR</span>
+                                </Link>
+                                <Link
+                                    href="/admin/forms"
+                                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                                >
+                                    <Settings className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                                    <span className="font-medium">Form Builder</span>
+                                </Link>
+                                <Link
+                                    href="/admin/forms/submissions"
+                                    className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
+                                >
+                                    <Inbox className="w-5 h-5 text-gray-400 group-hover:text-white" />
+                                    <span className="font-medium">Form Inbox</span>
+                                </Link>
+                            </>
+                        )}
                         {userRole === 'ADMIN' && (
                             <Link
                                 href="/admin/users"

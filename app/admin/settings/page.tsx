@@ -67,7 +67,7 @@ export default async function SettingsPage() {
                         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 inline-block">
                             <p className="text-xs text-gray-500 mb-2">Current Logo:</p>
                             <Image
-                                src={`/api/files/${settings.logoPath}`}
+                                src={settings.logoPath?.startsWith('data:') ? settings.logoPath : `/api/files/${settings.logoPath}`}
                                 alt="Current Logo"
                                 width={150}
                                 height={150}

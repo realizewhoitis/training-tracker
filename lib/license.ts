@@ -9,8 +9,18 @@ export async function verifyLicense() {
     // 2. Check Key Format (Mock)
     // Real impl would verify cryptographic signature
     const key = settings.licenseKey || "";
-    if (!key.startsWith("ORBIT-")) {
-        return { valid: false, status: "INVALID_KEY_FORMAT" };
+
+    // Check against IssuedLicense table
+    const issuedLicense = await prisma.issuedLicense.findUnique({
+        where: { key }
+    });
+
+    if (!issuedLicense) {
+        return { valid: false, status: "INVALID_KEY" };
+    }
+
+    if (!issuedLicense.isActive) {
+        return { valid: false, status: "REVOKED" };
     }
 
     // 3. Check Expiry

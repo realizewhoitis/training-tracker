@@ -19,6 +19,9 @@ export const PERMISSIONS = {
 
     // Branding
     MANAGE_BRANDING: 'branding.manage', // Settings page
+
+    // SaaS Management
+    MANAGE_SAAS: 'saas.manage', // License generation, module toggles
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -38,7 +41,8 @@ export const PERMISSION_LABELS: Record<Permission, { label: string; description:
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);
 
 export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
-    'ADMIN': ALL_PERMISSIONS as Permission[],
+    'SUPERUSER': ALL_PERMISSIONS as Permission[], // Superuser has everything + SaaS
+    'ADMIN': ALL_PERMISSIONS.filter(p => p !== PERMISSIONS.MANAGE_SAAS) as Permission[],
     'SUPERVISOR': [
         PERMISSIONS.VIEW_REPORTS,
         PERMISSIONS.EXPORT_REPORTS,

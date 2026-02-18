@@ -82,8 +82,16 @@ export default function HelpPage() {
                         <li>• <strong>Training Log:</strong> Complete history of attended training.</li>
                         <li>• <strong>Certificates:</strong> Upload and view scanned documents.</li>
                         <li>• <strong>Assets:</strong> See currently assigned equipment.</li>
-                        <li>• <strong>EIS Flags:</strong> (Admin Only) Active risk alerts.</li>
+                        <li>• <strong>Role & Shift:</strong> View current role (e.g., Lieutenant) and shift assignment (Header).</li>
                     </ul>
+                </div>
+
+                <div className="bg-white p-4 rounded-xl border border-gray-200 mb-6 shadow-sm">
+                    <h3 className="font-semibold text-gray-800 mb-2">Sorting & Organization</h3>
+                    <p className="text-sm text-gray-600">
+                        You can now click the column headers in the Employee List (<strong>Name</strong>, <strong>ID</strong>, <strong>Role</strong>, <strong>Shift</strong>)
+                        to sort the roster. Click again to reverse the order.
+                    </p>
                 </div>
 
                 <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
@@ -97,6 +105,35 @@ export default function HelpPage() {
                         <li>Enter the employee's <strong>Full Name</strong> (e.g., "Jane Doe").</li>
                         <li>Click <strong>"Create Employee"</strong>. They will immediately appear in the roster.</li>
                     </ol>
+                </div>
+            </section>
+
+            {/* 2.5 Shift Management */}
+            <section id="shifts" className="scroll-mt-20">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
+                    <Users className="mr-3 text-teal-600" /> Shift Management
+                </h2>
+                <p className="text-gray-600 mb-4">
+                    Organize your team by shifts (A, B, C, etc.) to streamline reporting and scheduling.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="border border-gray-200 rounded-xl p-4">
+                        <h3 className="font-semibold text-gray-800 mb-2">Assigning Shifts</h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                            You can assign a shift when creating a new employee or by editing an existing profile.
+                        </p>
+                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                            <li>Go to <strong>Employee Profile</strong> &gt; <strong>Edit</strong>.</li>
+                            <li>Select a shift from the dropdown.</li>
+                            <li>Click the <strong>(+)</strong> button to create a new shift on the fly.</li>
+                        </ul>
+                    </div>
+                    <div className="border border-gray-200 rounded-xl p-4">
+                        <h3 className="font-semibold text-gray-800 mb-2">Shift Reports</h3>
+                        <p className="text-sm text-gray-600">
+                            Navigate to <strong>Reports</strong> to download a <strong>Shift Roster</strong> CSV. This provides a quick export of all employees grouped by their assigned shift.
+                        </p>
+                    </div>
                 </div>
             </section>
 
@@ -195,7 +232,41 @@ export default function HelpPage() {
                 </div>
             </section>
 
-            {/* 6. Security & Licensing */}
+            {/* 6. Role Management */}
+            <section id="roles" className="scroll-mt-20">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
+                    <ShieldAlert className="mr-3 text-indigo-600" /> Role Management (Admin)
+                </h2>
+                <p className="text-gray-600 mb-4">
+                    Control who can access what. Orbit 911 supports dynamic roles and granular permission control.
+                </p>
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-6">
+                    <h3 className="font-bold text-indigo-900 mb-3">Dynamic Roles</h3>
+                    <p className="text-indigo-800 text-sm mb-4">
+                        Need a "Lieutenant" or "Dispatch Supervisor"? You can now create custom roles.
+                    </p>
+                    <ol className="list-decimal list-inside space-y-2 text-sm text-indigo-800 ml-2">
+                        <li>Go to <strong>Admin &gt; Manage Roles</strong>.</li>
+                        <li>Click <strong>"Create New Role"</strong>.</li>
+                        <li>Enter the role name (e.g., LIEUTENANT).</li>
+                        <li>The new role will immediately appear in the User Creation dropdowns.</li>
+                    </ol>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm mb-6">
+                    <h3 className="font-semibold text-gray-800 mb-2">Permissions Panel</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                        Define exactly what each role can do.
+                    </p>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                        <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span> Manage Users</li>
+                        <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span> View/Export Reports</li>
+                        <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span> Manage Inventory</li>
+                        <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span> Dismiss EIS Flags</li>
+                    </ul>
+                </div>
+            </section>
+
+            {/* 7. Security & Licensing */}
             <section id="security" className="scroll-mt-20">
                 <h2 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
                     <Settings className="mr-3 text-slate-600" /> Security & Settings (Admin)

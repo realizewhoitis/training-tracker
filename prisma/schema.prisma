@@ -259,6 +259,19 @@ model OrganizationSettings {
   licenseExpiry DateTime?
   
   updatedAt   DateTime @updatedAt
+  
+  modules     String?  // JSON array of enabled modules: ["INVENTORY", "EIS", "DOR"]
+}
+
+model IssuedLicense {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  clientName  String   // Who is this for?
+  
+  issuedAt    DateTime @default(now())
+  expiresAt   DateTime?
+  
+  isActive    Boolean  @default(true)
 }
 
 model AuditLog {

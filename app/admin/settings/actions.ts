@@ -1,7 +1,6 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { saveFile } from '@/lib/storage';
 import { revalidatePath } from 'next/cache';
 
 import { auth } from '@/auth';
@@ -21,8 +20,11 @@ export async function updateSettings(formData: FormData) {
     let logoPath = existing?.logoPath;
 
     if (logoFile && logoFile.size > 0) {
-        // Save to 'branding' folder
-        logoPath = await saveFile(logoFile, 'branding');
+        // Convert to Base64 for database storage (Vercel compatible)
+        const buffer = Buffer.from(await logoFile.arrayBuffer());
+        const base64 = buffer.toString('base64');
+        const mimeType = logoFile.type || 'image/png';
+        logoPath = `data:${mimeType};base64,${base64}`;
     }
 
     if (existing) {
@@ -57,5 +59,15 @@ export async function updateSettings(formData: FormData) {
 
 export async function getSettings() {
     const settings = await prisma.organizationSettings.findFirst();
-    return settings || { orgName: 'Orbit 911', logoPath: null };
+    // Default to ALL modules enabled for backward compatibility if settings or modules field is missing
+    const defaultModules = JSON.stringify(['INVENTORY', 'EIS', 'DOR', 'REPORTS']);
+
+    if (!settings) {
+        return { orgName: 'Orbit 911', logoPath: null, modules: defaultModules };
+    }
+
+    return {
+        ...settings,
+        modules: settings.modules || defaultModules
+    };
 }
