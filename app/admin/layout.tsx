@@ -14,10 +14,15 @@ export default async function AdminLayout({
         redirect('/login');
     }
 
-    // Check if user has ADMIN role
+    // Check if user has ADMIN or SUPERUSER role (or TRAINER for specific sub-routes, handled by page)
+    // We allow TRAINER here to access /admin/forms etc, but individual pages might block them.
+    // Ideally, we'd check permissions, but for now:
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((session.user as any).role !== 'ADMIN') {
-        redirect('/'); // specific forbidden page would be better, but home for now
+    const userRole = (session.user as any).role;
+    const allowedRoles = ['ADMIN', 'SUPERUSER', 'TRAINER'];
+
+    if (!allowedRoles.includes(userRole)) {
+        redirect('/');
     }
 
     return (
