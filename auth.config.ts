@@ -21,6 +21,11 @@ export const authConfig = {
                 return true;
             }
 
+            // Allow setup route for database initialization
+            if (nextUrl.pathname.startsWith('/setup')) {
+                return true;
+            }
+
             if (isOnDashboard) {
                 if (isLoggedIn) return true;
                 return false; // Redirect unauthenticated users to login page
