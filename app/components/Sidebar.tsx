@@ -79,7 +79,7 @@ const Sidebar = async () => {
                         <span className="font-medium">Reports</span>
                     </Link>
                 )}
-                {(userRole === 'ADMIN' || userRole === 'TRAINER') && (
+                {(userRole === 'ADMIN' || userRole === 'TRAINER' || userRole === 'SUPERUSER') && (
                     <div className="space-y-2 pt-2 border-t border-slate-700">
                         {activeModules.includes('DOR') && (
                             <>
@@ -106,7 +106,7 @@ const Sidebar = async () => {
                                 </Link>
                             </>
                         )}
-                        {userRole === 'ADMIN' && (
+                        {(userRole === 'ADMIN' || userRole === 'SUPERUSER') && (
                             <Link
                                 href="/admin/users"
                                 className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
@@ -115,7 +115,7 @@ const Sidebar = async () => {
                                 <span className="font-medium">Manage Users</span>
                             </Link>
                         )}
-                        {userRole === 'ADMIN' && (
+                        {(userRole === 'ADMIN' || userRole === 'SUPERUSER') && (
                             <Link
                                 href="/admin/settings"
                                 className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
@@ -124,13 +124,22 @@ const Sidebar = async () => {
                                 <span className="font-medium">System Settings</span>
                             </Link>
                         )}
-                        {userRole === 'ADMIN' && (
+                        {(userRole === 'ADMIN' || userRole === 'SUPERUSER') && (
                             <Link
                                 href="/admin/roles"
                                 className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
                             >
                                 <ShieldCheck className="w-5 h-5 text-gray-400 group-hover:text-white" />
                                 <span className="font-medium">Manage Roles</span>
+                            </Link>
+                        )}
+                        {userRole === 'SUPERUSER' && (
+                            <Link
+                                href="/superuser"
+                                className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-purple-900/50 transition-all duration-200 group border border-purple-800/50"
+                            >
+                                <ShieldCheck className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
+                                <span className="font-medium text-purple-200 group-hover:text-white">Superuser</span>
                             </Link>
                         )}
                     </div>
