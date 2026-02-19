@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:switch:local": "npx tsx scripts/switch-db-provider.ts local && npx prisma generate",
-    "db:switch:prod": "npx tsx scripts/switch-db-provider.ts prod && npx prisma generate"
+    "db:switch:prod": "npx tsx scripts/switch-db-provider.ts prod && npx prisma generate",
+    "create-superuser": "tsx scripts/create-superuser.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
