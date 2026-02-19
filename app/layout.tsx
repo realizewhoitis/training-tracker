@@ -35,7 +35,7 @@ export default async function RootLayout({
   const pathname = headersList.get('x-pathname') || '';
 
   // Allow access to admin validation pages even if license is invalid
-  const isAdminPath = pathname.startsWith('/admin');
+  const isAdminPath = pathname.startsWith('/admin') || pathname.startsWith('/setup');
   const showLockScreen = !license.valid && !isAdminPath;
 
   return (
