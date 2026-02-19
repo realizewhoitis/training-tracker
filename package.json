@@ -6,7 +6,7 @@
     "dev": "next dev",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
-    "build": "prisma generate && next build",
+    "build": "prisma db push && prisma generate && next build",
     "create-superuser": "tsx scripts/create-superuser.ts"
   },
   "dependencies": {
