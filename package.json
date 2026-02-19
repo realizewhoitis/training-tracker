@@ -4,11 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx tsx scripts/switch-db-provider.ts prod && npx prisma db push && npx prisma generate && next build",
-    "start": "next start",
-    "lint": "next lint",
-    "db:switch:local": "npx tsx scripts/switch-db-provider.ts local && npx prisma generate",
-    "db:switch:prod": "npx tsx scripts/switch-db-provider.ts prod && npx prisma generate",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "build": "prisma generate && next build",
     "create-superuser": "tsx scripts/create-superuser.ts"
   },
   "dependencies": {

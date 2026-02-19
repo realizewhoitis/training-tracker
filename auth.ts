@@ -60,19 +60,26 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     const passwordsMatch = await bcrypt.compare(password, user.password);
                     if (!passwordsMatch) return null;
 
-                    // MFA Check
                     if (user.twoFactorEnabled && user.twoFactorSecret) {
-                        if (!twoFactorCode) {
-                            throw new Error('2FA_REQUIRED');
-                        }
+                        try {
+                            const { OTP } = await import('otplib');
+                            const totp = new OTP();
 
-                        // Dynamic import to handle potential missing dependency in dev environment
-                        // In production, this package is required.
-                        const { authenticator } = await import('otplib');
-                        const isValid = authenticator.check(twoFactorCode, user.twoFactorSecret);
+                            // If code is not provided, send it via email
+                            if (!twoFactorCode) {
+                                const token = await totp.generate({ secret: user.twoFactorSecret });
+                                const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
+                                await sendTwoFactorTokenEmail(email, token);
+                                throw new Error('2FA_REQUIRED');
+                            }
 
-                        if (!isValid) {
-                            throw new Error('2FA_INVALID');
+                            const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 5 });
+                            if (!result.valid) throw new Error('2FA_INVALID');
+                        } catch (e: any) {
+                            if (e.message === '2FA_REQUIRED') throw e;
+                            if (e.message === '2FA_INVALID') throw e;
+                            console.error('2FA Error', e);
+                            throw new Error('2FA_ERROR');
                         }
                     }
 
