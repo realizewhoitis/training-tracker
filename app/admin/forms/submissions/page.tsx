@@ -11,7 +11,8 @@ export const dynamic = 'force-dynamic';
 export default async function AdminFormSubmissionsPage() {
     const session = await auth();
     // @ts-ignore
-    if (session?.user?.role !== 'ADMIN') {
+    const userRole = session?.user?.role;
+    if (userRole !== 'ADMIN' && userRole !== 'SUPERUSER' && userRole !== 'TRAINER') {
         redirect('/dashboard');
     }
 
