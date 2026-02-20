@@ -10,6 +10,8 @@ import { logAudit } from '@/lib/audit';
 export async function createUser(formData: FormData) {
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+    // @ts-ignore
+    const adminRole = session?.user?.role;
 
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
@@ -18,6 +20,10 @@ export async function createUser(formData: FormData) {
 
     if (!name || !email || !password || !role) {
         throw new Error('Missing required fields');
+    }
+
+    if (role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
+        throw new Error('Unauthorized to create Superuser accounts');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -45,6 +51,13 @@ export async function createUser(formData: FormData) {
 export async function deleteUser(id: number) {
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+    // @ts-ignore
+    const adminRole = session?.user?.role;
+
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+    if (targetUser?.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
+        throw new Error('Unauthorized to delete Superuser accounts');
+    }
 
     await prisma.user.delete({ where: { id } });
 
@@ -62,6 +75,15 @@ export async function deleteUser(id: number) {
 export async function updateUserRole(id: number, role: string) {
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+    // @ts-ignore
+    const adminRole = session?.user?.role;
+
+    const targetUser = await prisma.user.findUnique({ where: { id } });
+
+    // Check if trying to upgrade someone to SUPERUSER, or edit an existing SUPERUSER
+    if ((role === 'SUPERUSER' || targetUser?.role === 'SUPERUSER') && adminRole !== 'SUPERUSER') {
+        throw new Error('Unauthorized to grant or modify Superuser roles');
+    }
 
     await prisma.user.update({
         where: { id },
@@ -82,12 +104,19 @@ export async function updateUserRole(id: number, role: string) {
 export async function resetPassword(formData: FormData) {
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+    // @ts-ignore
+    const adminRole = session?.user?.role;
 
     const userId = parseInt(formData.get('userId') as string);
     const newPassword = formData.get('newPassword') as string;
 
     if (!newPassword || newPassword.length < 6) {
         throw new Error('Password must be at least 6 characters');
+    }
+
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (targetUser?.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
+        throw new Error('Unauthorized to reset passwords for Superuser accounts');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

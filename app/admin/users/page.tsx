@@ -3,8 +3,13 @@ import { User, Shield, Trash2, Key, RefreshCw } from 'lucide-react';
 import { createUser, deleteUser, resetPassword } from './actions';
 import UserRoleSelect from './UserRoleSelect';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
+import { auth } from '@/auth';
 
 export default async function UserManagementPage() {
+    const session = await auth();
+    // @ts-ignore
+    const currentUserRole = session?.user?.role;
+
     const users = await prisma.user.findMany({
         orderBy: { name: 'asc' }
     });
@@ -13,7 +18,12 @@ export default async function UserManagementPage() {
     const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
     const databaseRoles = roleTemplates.map(rt => rt.roleName);
     // Combine and ensure unique. Keep ADMIN.
-    const availableRoles = Array.from(new Set([...knownRoles, ...databaseRoles])).sort();
+    let availableRoles = Array.from(new Set([...knownRoles, ...databaseRoles])).sort();
+
+    // Non-superusers cannot create or assign the SUPERUSER role
+    if (currentUserRole !== 'SUPERUSER') {
+        availableRoles = availableRoles.filter(role => role !== 'SUPERUSER');
+    }
 
     return (
         <div className="max-w-6xl mx-auto p-6 md:p-10 space-y-8">
@@ -80,7 +90,15 @@ export default async function UserManagementPage() {
                             <tr key={user.id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                                <UserRoleSelect userId={user.id} currentRole={user.role} availableRoles={availableRoles} />
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {(user.role === 'SUPERUSER' && currentUserRole !== 'SUPERUSER') ? (
+                                        <span className="text-xs font-bold px-2 py-1 rounded-full border border-purple-800/50 bg-purple-100 text-purple-800 cursor-not-allowed opacity-75">
+                                            {user.role}
+                                        </span>
+                                    ) : (
+                                        <UserRoleSelect userId={user.id} currentRole={user.role} availableRoles={availableRoles} />
+                                    )}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end items-center gap-3">
                                         {(user.role === 'SUPERVISOR' || user.role === 'TRAINER') && (
@@ -88,22 +106,28 @@ export default async function UserManagementPage() {
                                                 <Shield size={16} />
                                             </a>
                                         )}
-                                        <form action={resetPassword} className="flex items-center gap-2">
-                                            <input type="hidden" name="userId" value={user.id} />
-                                            <input name="newPassword" type="password" placeholder="New Pass" className="w-24 text-xs border border-gray-300 rounded px-2 py-1" required minLength={6} />
-                                            <button type="submit" className="text-amber-600 hover:text-amber-900" title="Reset Password">
-                                                <RefreshCw size={16} />
-                                            </button>
-                                        </form>
 
-                                        <form action={async () => {
-                                            'use server';
-                                            await deleteUser(user.id);
-                                        }}>
-                                            <button type="submit" className="text-red-600 hover:text-red-900" title="Delete User">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </form>
+                                        {/* Action Buttons (Hidden if current user is not a superuser but target is) */}
+                                        {!(user.role === 'SUPERUSER' && currentUserRole !== 'SUPERUSER') && (
+                                            <>
+                                                <form action={resetPassword} className="flex items-center gap-2">
+                                                    <input type="hidden" name="userId" value={user.id} />
+                                                    <input name="newPassword" type="password" placeholder="New Pass" className="w-24 text-xs border border-gray-300 rounded px-2 py-1" required minLength={6} />
+                                                    <button type="submit" className="text-amber-600 hover:text-amber-900" title="Reset Password">
+                                                        <RefreshCw size={16} />
+                                                    </button>
+                                                </form>
+
+                                                <form action={async () => {
+                                                    'use server';
+                                                    await deleteUser(user.id);
+                                                }}>
+                                                    <button type="submit" className="text-red-600 hover:text-red-900" title="Delete User">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </form>
+                                            </>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
