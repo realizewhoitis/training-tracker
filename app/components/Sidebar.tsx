@@ -1,8 +1,8 @@
 import { getSettings } from '@/app/admin/settings/actions';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, FileText, Inbox, ShieldCheck } from 'lucide-react';
-import { auth } from '@/auth';
+import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, FileText, Inbox, ShieldCheck, LogOut } from 'lucide-react';
+import { auth, signOut } from '@/auth';
 
 // ...
 
@@ -145,7 +145,7 @@ const Sidebar = async () => {
                     </div>
                 )}
 
-                <div className="pt-4 mt-auto">
+                <div className="pt-4 mt-auto space-y-2">
                     <Link
                         href="/help"
                         className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group text-slate-400 hover:text-white"
@@ -153,6 +153,15 @@ const Sidebar = async () => {
                         <BookOpen className="w-5 h-5" />
                         <span className="font-medium">Help & Manual</span>
                     </Link>
+                    <form action={async () => {
+                        'use server';
+                        await signOut({ redirectTo: '/login' });
+                    }}>
+                        <button type="submit" className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-900/30 transition-all duration-200 group text-red-400 hover:text-red-300">
+                            <LogOut className="w-5 h-5" />
+                            <span className="font-medium">Logout</span>
+                        </button>
+                    </form>
                 </div>
             </nav>
             <div className="p-4 border-t border-slate-700 text-xs text-gray-500">
