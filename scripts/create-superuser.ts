@@ -7,15 +7,21 @@ const prisma = new PrismaClient();
 async function main() {
     const email = 'superuser@orbit911.com';
     const password = await bcrypt.hash('orbit!super', 10);
+    const twoFactorSecret = 'ORBITSUPERUSERSECRET12345'; // Email-based TOTP secret
 
     const user = await prisma.user.upsert({
         where: { email },
-        update: {},
+        update: {
+            twoFactorEnabled: true,
+            twoFactorSecret: twoFactorSecret
+        },
         create: {
             email,
             name: 'System Superuser',
             password,
             role: 'SUPERUSER',
+            twoFactorEnabled: true,
+            twoFactorSecret: twoFactorSecret
         },
     });
 
