@@ -136,3 +136,41 @@ export async function resetPassword(formData: FormData) {
 
     revalidatePath('/admin/users');
 }
+
+export async function toggleTwoFactor(userId: number, enabled: boolean) {
+    const session = await auth();
+    const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+    // @ts-ignore
+    const adminRole = session?.user?.role;
+
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) throw new Error('User not found');
+
+    if (targetUser.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
+        throw new Error('Unauthorized to modify Superuser 2FA settings');
+    }
+
+    const { randomBytes } = await import('crypto');
+    // If enabling and they don't have a secret yet, generate one
+    const newSecret = enabled && !targetUser.twoFactorSecret
+        ? randomBytes(20).toString('hex')
+        : targetUser.twoFactorSecret;
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: {
+            twoFactorEnabled: enabled,
+            twoFactorSecret: newSecret
+        }
+    });
+
+    await logAudit({
+        userId: adminId,
+        action: 'UPDATE_2FA',
+        resource: 'User',
+        details: `${enabled ? 'Enabled' : 'Disabled'} 2FA for user ID ${userId}`,
+        severity: 'WARN'
+    });
+
+    revalidatePath('/admin/users');
+}

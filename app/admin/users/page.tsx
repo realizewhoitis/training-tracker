@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
-import { User, Shield, Trash2, Key, RefreshCw } from 'lucide-react';
-import { createUser, deleteUser, resetPassword } from './actions';
+import { User, Shield, Trash2, Key, RefreshCw, Lock, Unlock } from 'lucide-react';
+import { createUser, deleteUser, resetPassword, toggleTwoFactor } from './actions';
 import UserRoleSelect from './UserRoleSelect';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 import { auth } from '@/auth';
@@ -56,7 +56,7 @@ export default async function UserManagementPage() {
                     </div>
                     <div className="md:col-span-1">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Role</label>
-                        <select name="role" className="w-full rounded-md border-gray-300 text-sm">
+                        <select name="role" className="w-full rounded-md border-gray-300 text-sm" aria-label="Select user role">
                             {availableRoles.map(role => (
                                 <option key={role} value={role}>{role}</option>
                             ))}
@@ -82,6 +82,7 @@ export default async function UserManagementPage() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">2FA</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -98,6 +99,28 @@ export default async function UserManagementPage() {
                                     ) : (
                                         <UserRoleSelect userId={user.id} currentRole={user.role} availableRoles={availableRoles} />
                                     )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <form action={async () => {
+                                        'use server';
+                                        await toggleTwoFactor(user.id, !user.twoFactorEnabled);
+                                    }}>
+                                        <button
+                                            type="submit"
+                                            disabled={user.role === 'SUPERUSER' && currentUserRole !== 'SUPERUSER'}
+                                            className={`inline-flex items-center px-2 py-1 rounded border text-xs font-medium transition-colors ${user.twoFactorEnabled
+                                                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+                                                : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                            title={user.twoFactorEnabled ? 'Click to Disable 2FA' : 'Click to Enable 2FA'}
+                                        >
+                                            {user.twoFactorEnabled ? (
+                                                <><Lock size={12} className="mr-1" /> Enabled</>
+                                            ) : (
+                                                <><Unlock size={12} className="mr-1" /> Disabled</>
+                                            )}
+                                        </button>
+                                    </form>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex justify-end items-center gap-3">
