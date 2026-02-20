@@ -1,4 +1,3 @@
-
 'use server';
 
 import { signIn } from '@/auth';
@@ -10,11 +9,15 @@ export async function authenticate(
 ) {
     try {
         await signIn('credentials', formData);
-    } catch (error) {
-        if ((error as Error).message.includes('2FA_REQUIRED')) {
+    } catch (error: any) {
+        // NextAuth wraps custom errors inside layers of causes or types.
+        // Easiest robust detection is partial string match on the serialized error stack.
+        const errorStack = String(error) + (error.cause ? String(error.cause) : '') + (error.stack ? String(error.stack) : '');
+
+        if (errorStack.includes('2FA_REQUIRED')) {
             return '2FA_REQUIRED';
         }
-        if ((error as Error).message.includes('2FA_INVALID')) {
+        if (errorStack.includes('2FA_INVALID')) {
             return 'Invalid 2FA Code.';
         }
 
@@ -23,20 +26,12 @@ export async function authenticate(
                 case 'CredentialsSignin':
                     return 'Invalid credentials.';
                 case 'CallbackRouteError':
-                    // NextAuth wraps thrown errors in CallbackRouteError
-                    // We need to check the cause or the message again if it was wrapped
-                    const msg = error.message;
-                    if (msg.includes('2FA_REQUIRED') || error.cause?.err?.message.includes('2FA_REQUIRED')) {
-                        return '2FA_REQUIRED';
-                    }
-                    if (msg.includes('2FA_INVALID') || error.cause?.err?.message.includes('2FA_INVALID')) {
-                        return 'Invalid 2FA Code.';
-                    }
                     return 'Something went wrong.';
                 default:
                     return 'Something went wrong.';
             }
         }
+        // NEXT_REDIRECT error must be bubbled up!
         throw error;
     }
 }

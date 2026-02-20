@@ -1,7 +1,15 @@
 
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
+
+class TwoFactorRequiredError extends CredentialsSignin {
+    code = '2FA_REQUIRED';
+}
+
+class TwoFactorInvalidError extends CredentialsSignin {
+    code = '2FA_INVALID';
+}
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
@@ -71,14 +79,18 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                 const token = await totp.generate({ secret: user.twoFactorSecret });
                                 const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
                                 await sendTwoFactorTokenEmail(email, token);
-                                throw new Error('2FA_REQUIRED');
+                                throw new TwoFactorRequiredError();
                             }
 
                             const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 5 });
-                            if (!result.valid) throw new Error('2FA_INVALID');
+                            if (!result.valid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
-                            if (e.message === '2FA_REQUIRED') throw e;
-                            if (e.message === '2FA_INVALID') throw e;
+                            if (e instanceof TwoFactorRequiredError || e.message === '2FA_REQUIRED' || e.code === '2FA_REQUIRED') {
+                                throw new TwoFactorRequiredError();
+                            }
+                            if (e instanceof TwoFactorInvalidError || e.message === '2FA_INVALID' || e.code === '2FA_INVALID') {
+                                throw new TwoFactorInvalidError();
+                            }
                             console.error('2FA Error', e);
                             throw new Error('2FA_ERROR');
                         }
