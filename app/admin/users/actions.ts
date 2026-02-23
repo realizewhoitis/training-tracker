@@ -150,7 +150,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
         throw new Error('Unauthorized to modify Superuser 2FA settings');
     }
 
-    const generateBase32Secret = (length: number = 20) => {
+    const generateBase32Secret = (length: number = 32) => {
         const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
         let secret = '';
         const crypto = require('crypto');
@@ -163,7 +163,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
 
     // If enabling and they don't have a secret yet, generate one
     const newSecret = enabled && !targetUser.twoFactorSecret
-        ? generateBase32Secret(20)
+        ? generateBase32Secret(32)
         : targetUser.twoFactorSecret;
 
     await prisma.user.update({

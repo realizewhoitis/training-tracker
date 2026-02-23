@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const crypto = require('crypto');
 
-const generateBase32Secret = (length = 20) => {
+const generateBase32Secret = (length = 32) => {
     const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     let secret = '';
     const bytes = crypto.randomBytes(length);
@@ -16,12 +16,11 @@ async function main() {
     const users = await prisma.user.findMany();
     let count = 0;
     for (const user of users) {
-        // Base32 encoded strings only contain A-Z and 2-7
-        if (user.twoFactorSecret && !/^[A-Z2-7]+$/.test(user.twoFactorSecret)) {
-            console.log(`Fixing invalid hex secret for ${user.email}`);
+        if (user.twoFactorSecret && (user.twoFactorSecret.length !== 32 || !/^[A-Z2-7]+$/.test(user.twoFactorSecret))) {
+            console.log(`Fixing invalid 2FA secret padding for ${user.email}`);
             await prisma.user.update({
                 where: { id: user.id },
-                data: { twoFactorSecret: generateBase32Secret(20) }
+                data: { twoFactorSecret: generateBase32Secret(32) }
             });
             count++;
         }
