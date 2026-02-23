@@ -39,3 +39,25 @@ export async function updateEmployee(
     revalidatePath(`/employees/${newEmpId}`);
     redirect(`/employees/${newEmpId}`);
 }
+
+export async function bulkAssignShift(employeeIds: number[], shiftId: number | null) {
+    if (!employeeIds || employeeIds.length === 0) {
+        throw new Error('No employees selected');
+    }
+
+    try {
+        await prisma.employee.updateMany({
+            where: {
+                empId: { in: employeeIds }
+            },
+            data: {
+                shiftId: shiftId
+            }
+        });
+    } catch (e: any) {
+        console.error('Bulk shift assignment failed:', e);
+        throw new Error('Failed to perform bulk shift assignment.');
+    }
+
+    revalidatePath('/employees');
+}
