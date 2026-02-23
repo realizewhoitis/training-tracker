@@ -44,10 +44,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen flex bg-slate-50`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex bg-slate-50`}
       >
         {!showLockScreen && <Sidebar />}
-        <main className={`flex-1 p-8 overflow-y-auto w-full ${showLockScreen ? 'flex items-center justify-center' : ''}`}>
+        <main className={`flex-1 p-8 w-full ${showLockScreen ? 'flex items-center justify-center' : ''}`}>
           {showLockScreen ? <LicenseLockScreen /> : children}
           <Analytics />
         </main>

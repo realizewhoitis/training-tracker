@@ -14,7 +14,7 @@ const Sidebar = async () => {
     const activeModules = JSON.parse(settings.modules || '[]');
 
     return (
-        <div className="h-screen w-64 bg-slate-900 text-white flex flex-col shadow-xl">
+        <div className="w-64 shrink-0 bg-slate-900 text-white flex flex-col shadow-xl">
             <div className="p-6 border-b border-slate-700">
                 {settings.logoPath ? (
                     <div className="flex flex-col items-start">
@@ -39,7 +39,7 @@ const Sidebar = async () => {
                     Training in motion
                 </p>
             </div>
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide">
+            <nav className="flex-1 p-4 space-y-2">
                 <Link
                     href="/"
                     className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
