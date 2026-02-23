@@ -56,7 +56,7 @@ export async function submitTrainingLogs(entries: TrainingLogEntry[]) {
 }
 
 export async function submitRoster(
-    trainingId: number,
+    trainingTopic: number | string,
     date: Date,
     hours: number,
     employeeIds: number[],
@@ -67,15 +67,41 @@ export async function submitRoster(
     }
 
     try {
-        // Basic validation: Check if Training exists
-        const training = await prisma.training.findUnique({ where: { TrainingID: trainingId } });
-        if (!training) {
-            return { success: false, error: `Training ID ${trainingId} not found.` };
+        let finalTrainingId: number;
+
+        if (typeof trainingTopic === 'number') {
+            // Validate existing training
+            const training = await prisma.training.findUnique({ where: { TrainingID: trainingTopic } });
+            if (!training) {
+                return { success: false, error: `Training ID ${trainingTopic} not found.` };
+            }
+            finalTrainingId = training.TrainingID;
+        } else {
+            // Create a brand new training topic on the fly using the provided string
+            if (!trainingTopic.trim()) {
+                return { success: false, error: 'A valid training topic name must be provided.' };
+            }
+
+            const newTraining = await prisma.training.create({
+                data: {
+                    TrainingName: trainingTopic.trim(),
+                    category: 'Virtual Roster', // Default category for impromptu training
+                }
+            });
+
+            finalTrainingId = newTraining.TrainingID;
+
+            await logAudit({
+                action: 'CREATE',
+                resource: 'Training',
+                details: `Automatically generated new topic "${trainingTopic}" via Virtual Roster`,
+                severity: 'INFO'
+            });
         }
 
         const data = employeeIds.map(empId => ({
             employeeID: empId,
-            trainingID: trainingId,
+            trainingID: finalTrainingId,
             attendanceDate: date,
             attendanceHours: hours,
             attendanceNote: note || "Virtual Roster",
@@ -90,7 +116,7 @@ export async function submitRoster(
         await logAudit({
             action: 'CREATE',
             resource: 'Virtual Roster',
-            details: `Logged ${result.count} employees for Training ID ${trainingId}`,
+            details: `Logged ${result.count} employees for Training ID ${finalTrainingId}`,
             severity: 'INFO'
         });
 

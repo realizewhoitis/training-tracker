@@ -25,7 +25,8 @@ export default function RosterChecklist({
 }) {
     const router = useRouter();
 
-    const [selectedTrainingId, setSelectedTrainingId] = useState<number | ''>('');
+    const [selectedTrainingId, setSelectedTrainingId] = useState<number | 'NEW' | ''>('');
+    const [newTopicName, setNewTopicName] = useState<string>('');
     const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [hours, setHours] = useState<string>('1.0');
     const [note, setNote] = useState<string>('');
@@ -96,6 +97,7 @@ export default function RosterChecklist({
         setError(null);
 
         if (!selectedTrainingId) return setError("Please select a training topic.");
+        if (selectedTrainingId === 'NEW' && !newTopicName.trim()) return setError("Please enter a name for the new training topic.");
         if (selectedEmpIds.size === 0) return setError("Please select at least one employee.");
         if (!date) return setError("Please specify a date.");
         if (!hours || parseFloat(hours) <= 0) return setError("Please specify valid hours.");
@@ -103,8 +105,10 @@ export default function RosterChecklist({
         setIsSubmitting(true);
 
         try {
+            const finalTopicPayload = selectedTrainingId === 'NEW' ? newTopicName.trim() : Number(selectedTrainingId);
+
             const res = await submitRoster(
-                Number(selectedTrainingId),
+                finalTopicPayload,
                 new Date(date),
                 parseFloat(hours),
                 Array.from(selectedEmpIds),
@@ -152,16 +156,37 @@ export default function RosterChecklist({
                                 <select
                                     className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
                                     value={selectedTrainingId}
-                                    onChange={(e) => setSelectedTrainingId(e.target.value ? Number(e.target.value) : '')}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === 'NEW') setSelectedTrainingId('NEW');
+                                        else setSelectedTrainingId(val ? Number(val) : '');
+                                    }}
                                     required
                                 >
                                     <option value="">-- Select a Topic --</option>
+                                    <option value="NEW" className="font-bold text-blue-600 bg-blue-50">➕ Create New Topic...</option>
                                     {trainings.map(t => (
                                         <option key={t.TrainingID} value={t.TrainingID}>
                                             {t.TrainingName}
                                         </option>
                                     ))}
                                 </select>
+
+                                {selectedTrainingId === 'NEW' && (
+                                    <div className="mt-3 animate-in fade-in slide-in-from-top-2">
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                            New Topic Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={newTopicName}
+                                            onChange={(e) => setNewTopicName(e.target.value)}
+                                            placeholder="e.g. CPR Certification"
+                                            className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white border-2 border-blue-200"
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div>
