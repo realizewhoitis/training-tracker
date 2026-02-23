@@ -36,14 +36,14 @@ export default function ExpirationTabs({ upcoming, expired }: ExpirationTabsProp
     const currentList = activeTab === 'upcoming' ? upcoming : expired;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden h-full flex flex-col">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="border-b border-slate-100">
                 <div className="flex">
                     <button
                         onClick={() => setActiveTab('upcoming')}
                         className={`flex-1 py-4 text-sm font-medium text-center border-b-2 transition-colors ${activeTab === 'upcoming'
-                                ? 'border-amber-500 text-amber-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                            ? 'border-amber-500 text-amber-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                             }`}
                     >
                         <span className="flex items-center justify-center">
@@ -54,8 +54,8 @@ export default function ExpirationTabs({ upcoming, expired }: ExpirationTabsProp
                     <button
                         onClick={() => setActiveTab('expired')}
                         className={`flex-1 py-4 text-sm font-medium text-center border-b-2 transition-colors ${activeTab === 'expired'
-                                ? 'border-red-500 text-red-600'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                            ? 'border-red-500 text-red-600'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                             }`}
                     >
                         <span className="flex items-center justify-center">
@@ -66,7 +66,7 @@ export default function ExpirationTabs({ upcoming, expired }: ExpirationTabsProp
                 </div>
             </div>
 
-            <div className="p-6 flex-1 overflow-y-auto min-h-[300px]">
+            <div className="p-6">
                 <div className="space-y-4">
                     {currentList.length === 0 ? (
                         <div className="text-center py-8">

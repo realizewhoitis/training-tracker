@@ -191,7 +191,7 @@ export default async function Home() {
 
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto overflow-x-hidden">
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>

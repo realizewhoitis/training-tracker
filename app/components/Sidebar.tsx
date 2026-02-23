@@ -39,7 +39,7 @@ const Sidebar = async () => {
                     Training in motion
                 </p>
             </div>
-            <nav className="flex-1 p-4 space-y-2">
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 <Link
                     href="/"
                     className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-slate-800 transition-all duration-200 group"
