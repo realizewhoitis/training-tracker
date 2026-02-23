@@ -32,8 +32,14 @@ export default function RosterChecklist({
 
     const [selectedEmpIds, setSelectedEmpIds] = useState<Set<number>>(new Set());
     const [expandedShifts, setExpandedShifts] = useState<Set<string>>(new Set(['ALL']));
+    const [viewMode, setViewMode] = useState<'shift' | 'alpha'>('shift');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Alphabetical list
+    const sortedEmployeesAlpha = useMemo(() => {
+        return [...employees].sort((a, b) => (a.empName || '').localeCompare(b.empName || ''));
+    }, [employees]);
 
     // Group employees by shift for easier selection
     const groupedEmployees = useMemo(() => {
@@ -216,15 +222,31 @@ export default function RosterChecklist({
                 {/* RIGHT COL: EMPLOYEE ROSTER */}
                 <div className="lg:col-span-2">
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                        <div className="bg-slate-800 text-white p-4 flex justify-between items-center">
+                        <div className="bg-slate-800 text-white p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div>
                                 <h2 className="text-lg font-bold flex items-center">
                                     <CheckCircle2 className="w-5 h-5 mr-2 text-blue-400" />
                                     Active Roster
                                 </h2>
                                 <p className="text-slate-400 text-sm">Select who attended this session</p>
+                                <div className="mt-4 flex space-x-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewMode('shift')}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'shift' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                                    >
+                                        Group by Shift
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewMode('alpha')}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${viewMode === 'alpha' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}
+                                    >
+                                        Alphabetical List
+                                    </button>
+                                </div>
                             </div>
-                            <div className="space-x-3 text-sm font-medium">
+                            <div className="flex space-x-3 text-sm font-medium items-end sm:items-center">
                                 <button type="button" onClick={selectAll} className="text-blue-300 hover:text-white transition-colors">Select All</button>
                                 <span className="text-slate-600">|</span>
                                 <button type="button" onClick={clearAll} className="text-slate-300 hover:text-white transition-colors">Clear All</button>
@@ -232,71 +254,102 @@ export default function RosterChecklist({
                         </div>
 
                         <div className="p-4 bg-slate-50 flex-1">
-                            <div className="space-y-4">
-                                {Object.entries(groupedEmployees).map(([shiftName, emps]) => {
-                                    const isExpanded = expandedShifts.has(shiftName) || expandedShifts.has('ALL');
-                                    const allSelected = emps.every(e => selectedEmpIds.has(e.empId));
-                                    const someSelected = emps.some(e => selectedEmpIds.has(e.empId)) && !allSelected;
+                            {viewMode === 'shift' ? (
+                                <div className="space-y-4">
+                                    {Object.entries(groupedEmployees).map(([shiftName, emps]) => {
+                                        const isExpanded = expandedShifts.has(shiftName) || expandedShifts.has('ALL');
+                                        const allSelected = emps.every(e => selectedEmpIds.has(e.empId));
+                                        const someSelected = emps.some(e => selectedEmpIds.has(e.empId)) && !allSelected;
 
-                                    return (
-                                        <div key={shiftName} className="bg-white border text-balance border-slate-200 rounded-lg shadow-sm overflow-hidden">
-                                            {/* SHIFT HEADER */}
-                                            <div className="bg-slate-100 flex items-center justify-between p-3 border-b border-slate-200">
-                                                <button
-                                                    type="button"
-                                                    className="flex items-center cursor-pointer flex-1"
-                                                    onClick={() => toggleShiftExpansion(shiftName)}
-                                                >
-                                                    {isExpanded ? <ChevronDown className="w-5 h-5 text-slate-500 mr-2" /> : <ChevronRight className="w-5 h-5 text-slate-500 mr-2" />}
-                                                    <span className="font-bold text-slate-700">Shift {shiftName}</span>
-                                                    <span className="ml-3 text-xs font-semibold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
-                                                        {emps.length} Members
-                                                    </span>
-                                                </button>
+                                        return (
+                                            <div key={shiftName} className="bg-white border text-balance border-slate-200 rounded-lg shadow-sm overflow-hidden">
+                                                {/* SHIFT HEADER */}
+                                                <div className="bg-slate-100 flex items-center justify-between p-3 border-b border-slate-200">
+                                                    <button
+                                                        type="button"
+                                                        className="flex items-center cursor-pointer flex-1"
+                                                        onClick={() => toggleShiftExpansion(shiftName)}
+                                                    >
+                                                        {isExpanded ? <ChevronDown className="w-5 h-5 text-slate-500 mr-2" /> : <ChevronRight className="w-5 h-5 text-slate-500 mr-2" />}
+                                                        <span className="font-bold text-slate-700">Shift {shiftName}</span>
+                                                        <span className="ml-3 text-xs font-semibold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
+                                                            {emps.length} Members
+                                                        </span>
+                                                    </button>
 
-                                                <label
-                                                    className="text-sm font-medium hover:bg-slate-200 px-3 py-1 rounded transition-colors flex items-center cursor-pointer"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className={`w-4 h-4 mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer ${someSelected ? 'opacity-50' : ''}`}
-                                                        checked={allSelected || someSelected}
-                                                        onChange={() => handleToggleShiftGroup(shiftName, emps)}
-                                                    />
-                                                    <span className={allSelected ? "text-blue-700 font-bold" : "text-slate-600"}>
-                                                        {allSelected ? "Shift Selected" : "Select Shift"}
-                                                    </span>
-                                                </label>
-                                            </div>
-
-                                            {/* EMPLOYEE LIST */}
-                                            {isExpanded && (
-                                                <div className="p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                                    {emps.map(emp => (
-                                                        <label
-                                                            key={emp.empId}
-                                                            className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${selectedEmpIds.has(emp.empId)
-                                                                ? 'bg-blue-50 border-blue-300 shadow-sm'
-                                                                : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'
-                                                                }`}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                                                checked={selectedEmpIds.has(emp.empId)}
-                                                                onChange={() => handleToggleEmployee(emp.empId)}
-                                                            />
-                                                            <span className={`ml-3 font-medium ${selectedEmpIds.has(emp.empId) ? 'text-blue-900' : 'text-slate-700'}`}>
-                                                                {emp.empName}
-                                                            </span>
-                                                        </label>
-                                                    ))}
+                                                    <label
+                                                        className="text-sm font-medium hover:bg-slate-200 px-3 py-1 rounded transition-colors flex items-center cursor-pointer"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            className={`w-4 h-4 mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer ${someSelected ? 'opacity-50' : ''}`}
+                                                            checked={allSelected || someSelected}
+                                                            onChange={() => handleToggleShiftGroup(shiftName, emps)}
+                                                        />
+                                                        <span className={allSelected ? "text-blue-700 font-bold" : "text-slate-600"}>
+                                                            {allSelected ? "Shift Selected" : "Select Shift"}
+                                                        </span>
+                                                    </label>
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+
+                                                {/* EMPLOYEE LIST */}
+                                                {isExpanded && (
+                                                    <div className="p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                        {emps.map(emp => (
+                                                            <label
+                                                                key={emp.empId}
+                                                                className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${selectedEmpIds.has(emp.empId)
+                                                                    ? 'bg-blue-50 border-blue-300 shadow-sm'
+                                                                    : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'
+                                                                    }`}
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                                    checked={selectedEmpIds.has(emp.empId)}
+                                                                    onChange={() => handleToggleEmployee(emp.empId)}
+                                                                />
+                                                                <span className={`ml-3 font-medium ${selectedEmpIds.has(emp.empId) ? 'text-blue-900' : 'text-slate-700'}`}>
+                                                                    {emp.empName}
+                                                                </span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                        {sortedEmployeesAlpha.map(emp => (
+                                            <label
+                                                key={emp.empId}
+                                                className={`flex items-center p-3 rounded-lg border cursor-pointer transition-all ${selectedEmpIds.has(emp.empId)
+                                                    ? 'bg-blue-50 border-blue-300 shadow-sm'
+                                                    : 'bg-white border-slate-200 hover:bg-slate-50'
+                                                    }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                                    checked={selectedEmpIds.has(emp.empId)}
+                                                    onChange={() => handleToggleEmployee(emp.empId)}
+                                                />
+                                                <div className="ml-3">
+                                                    <div className={`font-medium ${selectedEmpIds.has(emp.empId) ? 'text-blue-900' : 'text-slate-700'}`}>
+                                                        {emp.empName}
+                                                    </div>
+                                                    <div className="text-xs text-slate-500 mt-0.5">
+                                                        Shift {emp.shift?.name || 'Unassigned'}
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                     </div>
