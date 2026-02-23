@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { ShieldCheck, Key, Settings, Plus, UserPlus } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
 import EmailTemplateEditor from './EmailTemplateEditor';
+import DatabaseTools from './DatabaseTools';
 
 export default async function SuperuserPage() {
     const session = await auth();
@@ -123,6 +124,7 @@ export default async function SuperuserPage() {
                 </div>
 
                 <div className="space-y-6">
+                    <DatabaseTools />
                     <EmailTemplateEditor templates={templates} />
 
                     {/* Module & User Control */}
