@@ -285,3 +285,14 @@ model AuditLog {
   details     String?  // JSON details
   severity    String   @default("INFO") // "INFO", "WARN", "CRITICAL"
 }
+
+model EmailTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // e.g., "Account Creation", "Agency Onboarding"
+  
+  subject     String
+  body        String   // HTML or plain-text template blending text and variables
+  variables   String   // JSON array of available variables (e.g., ["{{name}}", "{{email}}"])
+  
+  updatedAt   DateTime @updatedAt
+}

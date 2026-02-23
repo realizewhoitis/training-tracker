@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { ShieldCheck, Key, Settings, Plus, UserPlus } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
+import EmailTemplateEditor from './EmailTemplateEditor';
 
 export default async function SuperuserPage() {
     const session = await auth();
@@ -15,6 +16,7 @@ export default async function SuperuserPage() {
     const settings = await prisma.organizationSettings.findFirst() || { orgName: 'Not Configured', modules: '[]' };
     const licenses = await prisma.issuedLicense.findMany({ orderBy: { issuedAt: 'desc' } });
     const users = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+    const templates = await prisma.emailTemplate.findMany({ orderBy: { name: 'asc' } });
 
     // Actions
     async function generateLicense(formData: FormData) {
@@ -120,8 +122,10 @@ export default async function SuperuserPage() {
                     </div>
                 </div>
 
-                {/* Module & User Control */}
                 <div className="space-y-6">
+                    <EmailTemplateEditor templates={templates} />
+
+                    {/* Module & User Control */}
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center">
                             <Settings className="mr-2 text-slate-500" /> Active Modules

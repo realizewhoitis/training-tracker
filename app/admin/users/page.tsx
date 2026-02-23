@@ -66,7 +66,13 @@ export default async function UserManagementPage() {
                         <label className="block text-xs font-medium text-gray-500 mb-1">Password</label>
                         <input name="password" type="password" placeholder="******" required minLength={6} className="w-full rounded-md border-gray-300 text-sm" />
                     </div>
-                    <div>
+                    <div className="md:col-span-1 flex items-center h-10 space-x-2">
+                        <input type="checkbox" name="sendEmail" id="sendEmail" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                        <label htmlFor="sendEmail" className="text-xs font-medium text-gray-700 cursor-pointer">
+                            Send Welcome Email
+                        </label>
+                    </div>
+                    <div className="md:col-span-5 lg:col-span-1">
                         <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors">
                             Add User
                         </button>

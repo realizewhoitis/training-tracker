@@ -3,6 +3,7 @@
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
+import { sendTemplatedEmail } from '@/lib/mail';
 
 import { auth } from '@/auth';
 import { logAudit } from '@/lib/audit';
@@ -44,6 +45,16 @@ export async function createUser(formData: FormData) {
         details: `Created user ${email} (ID: ${user.id})`,
         severity: 'WARN'
     });
+
+    if (formData.get('sendEmail') === 'on') {
+        // Run asynchronously so it doesn't block the UI
+        sendTemplatedEmail('Account Creation', email, {
+            name: name,
+            email: email,
+            password: password,
+            login_url: process.env.NEXTAUTH_URL ? `${process.env.NEXTAUTH_URL}/login` : 'our system'
+        });
+    }
 
     revalidatePath('/admin/users');
 }
