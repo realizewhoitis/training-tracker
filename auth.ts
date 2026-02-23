@@ -1,14 +1,21 @@
-
 import NextAuth, { CredentialsSignin } from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 
 class TwoFactorRequiredError extends CredentialsSignin {
     code = '2FA_REQUIRED';
+    constructor() {
+        super('2FA_REQUIRED');
+        this.name = 'TwoFactorRequiredError';
+    }
 }
 
 class TwoFactorInvalidError extends CredentialsSignin {
     code = '2FA_INVALID';
+    constructor() {
+        super('2FA_INVALID');
+        this.name = 'TwoFactorInvalidError';
+    }
 }
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
@@ -85,14 +92,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 5 });
                             if (!result.valid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
-                            if (e instanceof TwoFactorRequiredError || e.message === '2FA_REQUIRED' || e.code === '2FA_REQUIRED') {
+                            if (e instanceof TwoFactorRequiredError || e.code === '2FA_REQUIRED' || e.message?.includes('2FA_REQUIRED')) {
                                 throw new TwoFactorRequiredError();
                             }
-                            if (e instanceof TwoFactorInvalidError || e.message === '2FA_INVALID' || e.code === '2FA_INVALID') {
+                            if (e instanceof TwoFactorInvalidError || e.code === '2FA_INVALID' || e.message?.includes('2FA_INVALID')) {
                                 throw new TwoFactorInvalidError();
                             }
                             console.error('2FA Error', e);
-                            throw new Error('2FA_ERROR');
+                            throw e;
                         }
                     }
 
