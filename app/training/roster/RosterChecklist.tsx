@@ -18,10 +18,12 @@ interface Employee {
 
 export default function RosterChecklist({
     trainings,
-    employees
+    employees,
+    userRole
 }: {
     trainings: Training[];
     employees: Employee[];
+    userRole: string;
 }) {
     const router = useRouter();
 
@@ -96,8 +98,8 @@ export default function RosterChecklist({
         e.preventDefault();
         setError(null);
 
-        if (!selectedTrainingId) return setError("Please select a training topic.");
-        if (selectedTrainingId === 'NEW' && !newTopicName.trim()) return setError("Please enter a name for the new training topic.");
+        if (!selectedTrainingId) return setError("Please select a training event.");
+        if (selectedTrainingId === 'NEW' && !newTopicName.trim()) return setError("Please enter a name for the new training event.");
         if (selectedEmpIds.size === 0) return setError("Please select at least one employee.");
         if (!date) return setError("Please specify a date.");
         if (!hours || parseFloat(hours) <= 0) return setError("Please specify valid hours.");
@@ -151,7 +153,7 @@ export default function RosterChecklist({
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                                    Training Topic <span className="text-red-500">*</span>
+                                    Training Event <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
@@ -163,8 +165,10 @@ export default function RosterChecklist({
                                     }}
                                     required
                                 >
-                                    <option value="">-- Select a Topic --</option>
-                                    <option value="NEW" className="font-bold text-blue-600 bg-blue-50">➕ Create New Topic...</option>
+                                    <option value="">-- Select an Event --</option>
+                                    {(userRole === 'ADMIN' || userRole === 'SUPERUSER') && (
+                                        <option value="NEW" className="font-bold text-blue-600 bg-blue-50">➕ Create New Event...</option>
+                                    )}
                                     {trainings.map(t => (
                                         <option key={t.TrainingID} value={t.TrainingID}>
                                             {t.TrainingName}
@@ -175,7 +179,7 @@ export default function RosterChecklist({
                                 {selectedTrainingId === 'NEW' && (
                                     <div className="mt-3 animate-in fade-in slide-in-from-top-2">
                                         <label className="block text-sm font-medium text-slate-700 mb-1">
-                                            New Topic Name <span className="text-red-500">*</span>
+                                            New Event Name <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"

@@ -136,7 +136,7 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                             <h2 className="font-semibold text-slate-800">1. Log Details</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Training Module</label>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Training Event</label>
                                 <select
                                     value={selectedTrainingId}
                                     onChange={(e) => setSelectedTrainingId(e.target.value ? Number(e.target.value) : '')}
@@ -242,8 +242,8 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                                             key={emp.empId}
                                             onClick={() => handleToggleEmployee(emp.empId)}
                                             className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center ${selectedEmpIds.has(emp.empId)
-                                                    ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-300'
-                                                    : 'bg-white border-slate-200 hover:border-blue-200 hover:bg-slate-50'
+                                                ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-300'
+                                                : 'bg-white border-slate-200 hover:border-blue-200 hover:bg-slate-50'
                                                 }`}
                                         >
                                             <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center ${selectedEmpIds.has(emp.empId) ? 'bg-blue-600 border-blue-600' : 'border-slate-300 bg-white'

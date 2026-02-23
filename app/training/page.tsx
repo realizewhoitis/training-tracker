@@ -4,7 +4,6 @@ import { auth } from '@/auth';
 import { getSettings } from '@/app/admin/settings/actions';
 import { BookOpen, Search, Filter, Plus, ClipboardList, FileUp, Calendar, Award, CheckCircle, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
-import DeleteTrainingButton from './DeleteTrainingButton';
 import { redirect } from 'next/navigation';
 
 export default async function TrainingPage({
@@ -36,7 +35,7 @@ export default async function TrainingPage({
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Training Modules</h1>
+                    <h1 className="text-3xl font-bold text-slate-800">Training Events</h1>
                     <p className="text-slate-500">View available training courses and activity logs</p>
                 </div>
 
@@ -75,7 +74,7 @@ export default async function TrainingPage({
                                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm"
                             >
                                 <FileUp className="w-4 h-4" />
-                                <span>Add Training Module</span>
+                                <span>Add Training Event</span>
                             </Link>
                         </>
                     )}
@@ -121,7 +120,7 @@ export default async function TrainingPage({
                                     {training._count.attendances} sessions
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <Link href={`/ training / ${training.TrainingID} `} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    <Link href={`/training/${training.TrainingID}`} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                                         View Logs
                                     </Link>
                                 </td>

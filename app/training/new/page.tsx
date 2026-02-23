@@ -52,8 +52,8 @@ export default async function NewTrainingPage() {
         <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Add Training Module</h1>
-                    <p className="text-slate-500">Create a new course or topic</p>
+                    <h1 className="text-3xl font-bold text-slate-800">Add Training Event</h1>
+                    <p className="text-slate-500">Create a new course or event</p>
                 </div>
                 <Link href="/training" className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
                     <X size={24} />
@@ -65,7 +65,7 @@ export default async function NewTrainingPage() {
                 {/* Name Field */}
                 <div>
                     <label htmlFor="trainingName" className="block text-sm font-medium text-slate-700 mb-1">
-                        Module Name <span className="text-red-500">*</span>
+                        Event Name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
@@ -138,7 +138,7 @@ export default async function NewTrainingPage() {
                         className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 shadow-sm"
                     >
                         <Save size={18} className="mr-2" />
-                        Create Module
+                        Create Event
                     </button>
                 </div>
             </form>
