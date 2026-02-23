@@ -60,6 +60,7 @@ export default async function VirtualRosterPage() {
             <RosterChecklist
                 trainings={availableTrainings}
                 employees={activeEmployees}
+                userPermissions={userPermissions}
             />
         </div>
     );
