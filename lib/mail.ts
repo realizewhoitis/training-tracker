@@ -11,7 +11,7 @@ export async function sendTwoFactorTokenEmail(email: string, token: string) {
 
     try {
         const { data, error } = await resend.emails.send({
-            from: 'Orbit 911 <onboarding@resend.dev>', // Default Resend test domain
+            from: 'Orbit 911 <system@orbit911.com>', // Verified Production Domain
             to: email,
             subject: 'Your 2FA Code - Orbit 911',
             html: `<p>Your 2FA code is: <strong>${token}</strong></p>`
