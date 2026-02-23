@@ -12,7 +12,8 @@ export async function authenticate(
     } catch (error: any) {
         // NextAuth wraps custom errors inside layers of causes or types.
         // Easiest robust detection is partial string match on the serialized error stack.
-        const errorStack = String(error) + (error.cause ? String(error.cause) : '') + (error.stack ? String(error.stack) : '');
+        const causeMsg = (error as any).cause?.err?.message || '';
+        const errorStack = String(error) + (error.cause ? String(error.cause) : '') + (error.stack ? String(error.stack) : '') + causeMsg;
 
         if (errorStack.includes('2FA_REQUIRED')) {
             return '2FA_REQUIRED';
