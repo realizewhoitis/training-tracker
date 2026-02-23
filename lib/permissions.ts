@@ -13,6 +13,9 @@ export const PERMISSIONS = {
     // Inventory
     MANAGE_INVENTORY: 'inventory.manage', // Create assets, assign them
 
+    // Training
+    MANAGE_TRAINING: 'training.manage', // Create new training topics/events on the fly
+
     // EIS
     VIEW_EIS: 'eis.view', // View flags
     MANAGE_EIS: 'eis.manage', // Resolve/Dismiss flags
@@ -33,9 +36,11 @@ export const PERMISSION_LABELS: Record<Permission, { label: string; description:
     [PERMISSIONS.EXPORT_REPORTS]: { label: 'Export Reports', description: 'Download reports as PDF' },
     [PERMISSIONS.MANAGE_FORMS]: { label: 'Manage Forms', description: 'Create and edit evaluation templates' },
     [PERMISSIONS.MANAGE_INVENTORY]: { label: 'Manage Inventory', description: 'Create and assign assets' },
+    [PERMISSIONS.MANAGE_TRAINING]: { label: 'Manage Training', description: 'Dynamically create new training events and modules' },
     [PERMISSIONS.VIEW_EIS]: { label: 'View EIS', description: 'View Early Intervention System flags' },
     [PERMISSIONS.MANAGE_EIS]: { label: 'Manage EIS', description: 'Resolve and dismiss EIS alerts' },
     [PERMISSIONS.MANAGE_BRANDING]: { label: 'Manage Branding', description: 'Update logos and organization name' },
+    [PERMISSIONS.MANAGE_SAAS]: { label: 'Manage SaaS', description: 'Global organization and licensing configuration' },
 };
 
 export const ALL_PERMISSIONS = Object.values(PERMISSIONS);

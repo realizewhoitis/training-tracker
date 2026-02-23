@@ -8,6 +8,8 @@ export default async function VirtualRosterPage() {
     const session = await auth();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userRole = (session?.user as any)?.role;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userPermissions = (session?.user as any)?.permissions || [];
 
     if (userRole !== 'ADMIN' && userRole !== 'SUPERUSER' && userRole !== 'TRAINER') {
         return (

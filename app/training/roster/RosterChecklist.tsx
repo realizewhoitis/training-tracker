@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitRoster } from '@/app/actions/log-training';
 import { CheckCircle2, ChevronDown, ChevronRight, XCircle } from 'lucide-react';
+import { PERMISSIONS } from '@/lib/permissions';
 
 interface Training {
     TrainingID: number;
@@ -19,11 +20,11 @@ interface Employee {
 export default function RosterChecklist({
     trainings,
     employees,
-    userRole
+    userPermissions
 }: {
     trainings: Training[];
     employees: Employee[];
-    userRole: string;
+    userPermissions: string[];
 }) {
     const router = useRouter();
 
@@ -166,7 +167,7 @@ export default function RosterChecklist({
                                     required
                                 >
                                     <option value="">-- Select an Event --</option>
-                                    {(userRole === 'ADMIN' || userRole === 'SUPERUSER') && (
+                                    {userPermissions.includes(PERMISSIONS.MANAGE_TRAINING) && (
                                         <option value="NEW" className="font-bold text-blue-600 bg-blue-50">➕ Create New Event...</option>
                                     )}
                                     {trainings.map(t => (
