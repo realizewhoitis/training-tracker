@@ -1,10 +1,19 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from '@/lib/prisma';
-import { BookOpen, Search, Filter, Plus, ClipboardList } from 'lucide-react';
+import { auth } from '@/auth';
+import { getSettings } from '@/app/admin/settings/actions';
+import { BookOpen, Search, Filter, Plus, ClipboardList, FileUp, Calendar, Award, CheckCircle, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
+import DeleteTrainingButton from './DeleteTrainingButton';
+import { redirect } from 'next/navigation';
 
-export default async function TrainingPage() {
+export default async function TrainingPage({
+    searchParams,
+}: {
+    searchParams?: {
+        roster_success?: string;
+    };
+}) {
     const trainings = await prisma.training.findMany({
         orderBy: { TrainingName: 'asc' },
         include: {
@@ -13,6 +22,15 @@ export default async function TrainingPage() {
             }
         }
     });
+
+    const session = await auth();
+    if (!session) {
+        redirect('/auth/login');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userRole = (session.user as any)?.role;
+    const showRosterSuccess = searchParams?.roster_success === 'true';
 
     return (
         <div className="space-y-6">
@@ -43,15 +61,33 @@ export default async function TrainingPage() {
                         <ClipboardList className="w-4 h-4" />
                         <span>Bulk Log</span>
                     </Link>
-                    <Link
-                        href="/training/new"
-                        className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm"
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span>Add Module</span>
-                    </Link>
+                    {(userRole === 'ADMIN' || userRole === 'SUPERUSER' || userRole === 'TRAINER') && (
+                        <>
+                            <Link
+                                href="/training/roster"
+                                className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium shadow-sm"
+                            >
+                                <Users className="w-4 h-4" />
+                                <span>Virtual Sign-In</span>
+                            </Link>
+                            <Link
+                                href="/training/new"
+                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm"
+                            >
+                                <FileUp className="w-4 h-4" />
+                                <span>Add Training Module</span>
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
+
+            {showRosterSuccess && (
+                <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <p className="text-sm font-medium">Roster successfully updated!</p>
+                </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <table className="w-full text-left">
@@ -85,7 +121,7 @@ export default async function TrainingPage() {
                                     {training._count.attendances} sessions
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <Link href={`/training/${training.TrainingID}`} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    <Link href={`/ training / ${training.TrainingID} `} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                                         View Logs
                                     </Link>
                                 </td>
