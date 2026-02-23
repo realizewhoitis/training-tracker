@@ -40,9 +40,9 @@ export async function updateEmployee(
     redirect(`/employees/${newEmpId}`);
 }
 
-export async function bulkAssignShift(employeeIds: number[], shiftId: number | null) {
+export async function bulkAssignShift(employeeIds: number[], shiftId: number | null): Promise<{ success: boolean, error?: string }> {
     if (!employeeIds || employeeIds.length === 0) {
-        throw new Error('No employees selected');
+        return { success: false, error: 'No employees selected' };
     }
 
     try {
@@ -56,8 +56,9 @@ export async function bulkAssignShift(employeeIds: number[], shiftId: number | n
         });
     } catch (e: any) {
         console.error('Bulk shift assignment failed:', e);
-        throw new Error('Failed to perform bulk shift assignment.');
+        return { success: false, error: e.message || 'Failed to perform bulk shift assignment.' };
     }
 
     revalidatePath('/employees');
+    return { success: true };
 }

@@ -64,7 +64,11 @@ export default function EmployeeTable({
                 finalShiftId = parseInt(selectedShiftId);
             }
 
-            await bulkAssignShift(Array.from(selectedIds), finalShiftId);
+            const assignRes = await bulkAssignShift(Array.from(selectedIds), finalShiftId);
+            if (!assignRes?.success) {
+                throw new Error(assignRes?.error || 'Failed to perform bulk shift assignment.');
+            }
+
             setSelectedIds(new Set());
             setSelectedShiftId('');
             setNewShiftName('');
