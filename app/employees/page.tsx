@@ -70,17 +70,15 @@ export default async function EmployeesPage(props: {
                     </Link>
                 </div>
             </div>
-        </div>
-            </div >
 
-        <EmployeeTable
-            employees={employees}
-            shifts={activeShifts}
-            sort={sort}
-            order={order}
-            query={query}
-            showDeparted={showDeparted}
-        />
-        </div >
+            <EmployeeTable
+                employees={employees}
+                shifts={activeShifts}
+                sort={sort}
+                order={order}
+                query={query}
+                showDeparted={showDeparted}
+            />
+        </div>
     );
 }
