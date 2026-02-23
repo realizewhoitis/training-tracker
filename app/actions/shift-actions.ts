@@ -2,17 +2,18 @@
 
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { Shift } from '@prisma/client';
 
-export async function createShift(name: string) {
-    if (!name) return;
+export async function createShift(name: string): Promise<{ success: boolean; shift?: Shift; error?: string }> {
+    if (!name) return { success: false, error: 'Name is required' };
 
     try {
-        await prisma.shift.create({
+        const shift = await prisma.shift.create({
             data: { name }
         });
         revalidatePath('/employees');
         revalidatePath('/employees/new');
-        return { success: true };
+        return { success: true, shift };
     } catch (error) {
         console.error('Failed to create shift:', error);
         return { success: false, error: 'Failed to create shift' };

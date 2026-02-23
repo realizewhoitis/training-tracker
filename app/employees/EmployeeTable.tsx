@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { User, Users } from 'lucide-react';
+import { User, Users, Plus } from 'lucide-react';
 import { bulkAssignShift } from '../actions/employee-actions';
+import { createShift } from '../actions/shift-actions';
 import { Shift } from '@prisma/client';
 
 export default function EmployeeTable({
@@ -24,6 +25,7 @@ export default function EmployeeTable({
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedShiftId, setSelectedShiftId] = useState<string>('');
+    const [newShiftName, setNewShiftName] = useState<string>('');
 
     const toggleAll = () => {
         if (selectedIds.size === employees.length) {
@@ -42,14 +44,33 @@ export default function EmployeeTable({
 
     const handleBulkAssign = async () => {
         if (selectedIds.size === 0) return;
+
         setIsSubmitting(true);
         try {
-            await bulkAssignShift(Array.from(selectedIds), selectedShiftId === 'remove' ? null : parseInt(selectedShiftId));
+            let finalShiftId: number | null = null;
+
+            if (selectedShiftId === 'create_new') {
+                if (!newShiftName.trim()) {
+                    alert("Please enter a name for the new shift.");
+                    setIsSubmitting(false);
+                    return;
+                }
+                const res = await createShift(newShiftName.trim());
+                if (!res.success || !res.shift) {
+                    throw new Error(res.error || "Failed to create new shift.");
+                }
+                finalShiftId = res.shift.id;
+            } else if (selectedShiftId !== 'remove') {
+                finalShiftId = parseInt(selectedShiftId);
+            }
+
+            await bulkAssignShift(Array.from(selectedIds), finalShiftId);
             setSelectedIds(new Set());
             setSelectedShiftId('');
-        } catch (e) {
+            setNewShiftName('');
+        } catch (e: any) {
             console.error(e);
-            alert("Failed to assign shift. Please try again.");
+            alert(e.message || "Failed to assign shift. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -67,26 +88,49 @@ export default function EmployeeTable({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <select
-                            className="text-sm border-indigo-200 bg-white rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500"
-                            value={selectedShiftId}
-                            onChange={e => setSelectedShiftId(e.target.value)}
-                            disabled={isSubmitting}
-                            aria-label="Select Shift for Bulk Assignment"
-                        >
-                            <option value="">-- Apply Bulk Shift --</option>
-                            <option value="remove">Remove from Shift (Unassign)</option>
-                            {shifts.map(s => (
-                                <option key={s.id} value={s.id}>Shift {s.name}</option>
-                            ))}
-                        </select>
+                        {selectedShiftId === 'create_new' ? (
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="text"
+                                    placeholder="New Shift Name..."
+                                    className="text-sm border-indigo-200 focus:ring-indigo-500 focus:border-indigo-500 rounded-md py-1.5 px-3"
+                                    value={newShiftName}
+                                    onChange={e => setNewShiftName(e.target.value)}
+                                    disabled={isSubmitting}
+                                    autoFocus
+                                />
+                                <button
+                                    onClick={() => { setSelectedShiftId(''); setNewShiftName(''); }}
+                                    className="text-slate-400 hover:text-slate-600 px-2"
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        ) : (
+                            <select
+                                className="text-sm border-indigo-200 bg-white rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500"
+                                value={selectedShiftId}
+                                onChange={e => setSelectedShiftId(e.target.value)}
+                                disabled={isSubmitting}
+                                aria-label="Select Shift for Bulk Assignment"
+                            >
+                                <option value="">-- Apply Bulk Shift --</option>
+                                <option value="create_new">✨ Create New Shift...</option>
+                                <option value="remove">Remove from Shift (Unassign)</option>
+                                {shifts.map(s => (
+                                    <option key={s.id} value={s.id}>Shift {s.name}</option>
+                                ))}
+                            </select>
+                        )}
 
                         <button
                             onClick={handleBulkAssign}
-                            disabled={!selectedShiftId || isSubmitting}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                            disabled={(!selectedShiftId && !newShiftName) || isSubmitting}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center"
                         >
-                            {isSubmitting ? 'Applying...' : 'Apply Change'}
+                            {selectedShiftId === 'create_new' && <Plus className="w-4 h-4 mr-1" />}
+                            {isSubmitting ? 'Applying...' : selectedShiftId === 'create_new' ? 'Create & Apply' : 'Apply Change'}
                         </button>
                     </div>
                 </div>
