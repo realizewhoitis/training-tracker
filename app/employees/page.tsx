@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Search from './Search';
 import FilterButton from './FilterButton';
 import EmployeeTable from './EmployeeTable';
+import ManageShiftsModal from './ManageShiftsModal';
+import { auth } from '@/auth';
 
 export default async function EmployeesPage(props: {
     searchParams?: Promise<{
@@ -21,6 +23,11 @@ export default async function EmployeesPage(props: {
     const sort = searchParams?.sort || 'name';
     const order = searchParams?.order === 'desc' ? 'desc' : 'asc';
     const isIdSearch = !isNaN(parseInt(query));
+
+    const session = await auth();
+    // @ts-ignore
+    const userRole = session?.user?.role;
+    const canManageShifts = userRole === 'ADMIN' || userRole === 'SUPERVISOR' || userRole === 'SUPERUSER';
 
     let orderBy: any = { empName: order };
     if (sort === 'id') orderBy = { empId: order };
@@ -59,6 +66,7 @@ export default async function EmployeesPage(props: {
                 </div>
 
                 <div className="flex space-x-3 w-full md:w-auto">
+                    {canManageShifts && <ManageShiftsModal initialShifts={activeShifts} />}
                     <Search placeholder="Search employees..." />
                     <FilterButton />
                     <Link

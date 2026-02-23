@@ -25,3 +25,26 @@ export async function getShifts() {
         orderBy: { name: 'asc' }
     });
 }
+
+export async function deleteShift(shiftId: number): Promise<{ success: boolean; error?: string }> {
+    if (!shiftId) return { success: false, error: 'Shift ID is required' };
+
+    try {
+        await prisma.$transaction([
+            prisma.employee.updateMany({
+                where: { shiftId: shiftId },
+                data: { shiftId: null }
+            }),
+            prisma.shift.delete({
+                where: { id: shiftId }
+            })
+        ]);
+
+        revalidatePath('/employees');
+        revalidatePath('/employees/new');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Failed to delete shift:', error);
+        return { success: false, error: error.message || 'Failed to delete shift' };
+    }
+}
