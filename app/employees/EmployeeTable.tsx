@@ -123,7 +123,7 @@ export default function EmployeeTable({
                                 <option value="create_new">✨ Create New Shift...</option>
                                 <option value="remove">Remove from Shift (Unassign)</option>
                                 {shifts.map(s => (
-                                    <option key={s.id} value={s.id}>Shift {s.name}</option>
+                                    <option key={s.id} value={s.id}>{s.name}</option>
                                 ))}
                             </select>
                         )}
