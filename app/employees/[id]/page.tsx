@@ -161,18 +161,7 @@ export default async function EmployeeDetailPage(props: {
                             </span>
                         )}
                     </div>
-                    <div className="flex gap-2">
-                        {employee.user?.role && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                                {employee.user.role}
-                            </span>
-                        )}
-                        {employee.shift && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                Shift {employee.shift.name}
-                            </span>
-                        )}
-                    </div>
+
 
                     <div className="flex gap-2 w-full justify-end mt-2">
                         <Link
