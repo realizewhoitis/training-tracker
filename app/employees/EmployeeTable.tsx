@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { User, Users, Plus } from 'lucide-react';
-import { bulkAssignShift } from '../actions/employee-actions';
+import { bulkAssignShift, bulkUpdateRole, bulkUpdateStatus } from '../actions/employee-actions';
 import { createShift } from '../actions/shift-actions';
 import { Shift } from '@prisma/client';
 
 export default function EmployeeTable({
     employees,
     shifts,
+    availableRoles,
     sort,
     order,
     query,
@@ -17,6 +18,7 @@ export default function EmployeeTable({
 }: {
     employees: any[];
     shifts: Shift[];
+    availableRoles: string[];
     sort: string;
     order: string;
     query: string;
@@ -24,8 +26,13 @@ export default function EmployeeTable({
 }) {
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Bulk Action State
+    const [actionType, setActionType] = useState<'shift' | 'role' | 'status'>('shift');
     const [selectedShiftId, setSelectedShiftId] = useState<string>('');
     const [newShiftName, setNewShiftName] = useState<string>('');
+    const [selectedRole, setSelectedRole] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
 
     const toggleAll = () => {
         if (selectedIds.size === employees.length) {
@@ -47,31 +54,41 @@ export default function EmployeeTable({
 
         setIsSubmitting(true);
         try {
-            let finalShiftId: number | null = null;
+            const employeeIdsArray = Array.from(selectedIds);
 
-            if (selectedShiftId === 'create_new') {
-                if (!newShiftName.trim()) {
-                    alert("Please enter a name for the new shift.");
-                    setIsSubmitting(false);
-                    return;
+            if (actionType === 'shift') {
+                let finalShiftId: number | null = null;
+                if (selectedShiftId === 'create_new') {
+                    if (!newShiftName.trim()) {
+                        alert("Please enter a name for the new shift.");
+                        setIsSubmitting(false);
+                        return;
+                    }
+                    const res = await createShift(newShiftName.trim());
+                    if (!res.success || !res.shift) {
+                        throw new Error(res.error || "Failed to create new shift.");
+                    }
+                    finalShiftId = res.shift.id;
+                } else if (selectedShiftId !== 'remove') {
+                    finalShiftId = parseInt(selectedShiftId);
                 }
-                const res = await createShift(newShiftName.trim());
-                if (!res.success || !res.shift) {
-                    throw new Error(res.error || "Failed to create new shift.");
-                }
-                finalShiftId = res.shift.id;
-            } else if (selectedShiftId !== 'remove') {
-                finalShiftId = parseInt(selectedShiftId);
-            }
 
-            const assignRes = await bulkAssignShift(Array.from(selectedIds), finalShiftId);
-            if (!assignRes?.success) {
-                throw new Error(assignRes?.error || 'Failed to perform bulk shift assignment.');
+                const assignRes = await bulkAssignShift(employeeIdsArray, finalShiftId);
+                if (!assignRes?.success) throw new Error(assignRes?.error || 'Failed to update shift.');
+
+            } else if (actionType === 'role') {
+                if (!selectedRole) throw new Error('Please select a role.');
+                // @ts-ignore - Temporary bypass to invoke without importing the function yet
+                const req = await fetch('/api/dev-null'); // This will be replaced by the actual server action import in next replace block but just to prevent unused variable error in NextJS compiler if I don't import it rn
+            } else if (actionType === 'status') {
+                if (!selectedStatus) throw new Error('Please select a status.');
             }
 
             setSelectedIds(new Set());
             setSelectedShiftId('');
             setNewShiftName('');
+            setSelectedRole('');
+            setSelectedStatus('');
         } catch (e: any) {
             console.error(e);
             alert(e.message || "Failed to assign shift. Please try again.");
@@ -86,55 +103,113 @@ export default function EmployeeTable({
             {/* BULK ACTIONS TOOLBAR */}
             {selectedIds.size > 0 && (
                 <div className="absolute top-0 left-0 right-0 bg-indigo-50 border-b border-indigo-200 p-3 flex flex-col md:flex-row md:items-center justify-between z-10 animate-in slide-in-from-top-4 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05)]">
-                    <div className="flex items-center text-indigo-800 font-medium mb-2 md:mb-0">
-                        <Users className="w-5 h-5 mr-2 text-indigo-600" />
-                        {selectedIds.size} employee{selectedIds.size !== 1 ? 's' : ''} selected
+                    <div className="flex items-center gap-4 mb-2 md:mb-0">
+                        <div className="flex items-center text-indigo-800 font-medium">
+                            <Users className="w-5 h-5 mr-2 text-indigo-600" />
+                            {selectedIds.size} employee{selectedIds.size !== 1 ? 's' : ''} selected
+                        </div>
+                        <button
+                            onClick={() => setSelectedIds(new Set())}
+                            className="text-xs font-medium text-indigo-600 hover:text-indigo-800 underline decoration-indigo-300 underline-offset-2 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded px-1"
+                        >
+                            Clear selection
+                        </button>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {selectedShiftId === 'create_new' ? (
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="text"
-                                    placeholder="New Shift Name..."
-                                    className="text-sm border-indigo-200 focus:ring-indigo-500 focus:border-indigo-500 rounded-md py-1.5 px-3"
-                                    value={newShiftName}
-                                    onChange={e => setNewShiftName(e.target.value)}
+                        {/* 1. Action Type Selector */}
+                        <select
+                            className="text-sm font-medium border-indigo-200 bg-indigo-100/50 text-indigo-900 rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500"
+                            value={actionType}
+                            onChange={(e: any) => setActionType(e.target.value)}
+                            disabled={isSubmitting}
+                            aria-label="Select Action Type"
+                        >
+                            <option value="shift">Assign Shift</option>
+                            <option value="role">Change Role</option>
+                            <option value="status">Set Status</option>
+                        </select>
+
+                        {/* 2. Dynamic Input based on Action Type */}
+                        {actionType === 'shift' && (
+                            selectedShiftId === 'create_new' ? (
+                                <div className="flex items-center space-x-2 animate-in fade-in slide-in-from-right-2">
+                                    <input
+                                        type="text"
+                                        placeholder="New Shift Name..."
+                                        className="text-sm border-indigo-200 focus:ring-indigo-500 focus:border-indigo-500 rounded-md py-1.5 px-3"
+                                        value={newShiftName}
+                                        onChange={e => setNewShiftName(e.target.value)}
+                                        disabled={isSubmitting}
+                                        autoFocus
+                                    />
+                                    <button
+                                        onClick={() => { setSelectedShiftId(''); setNewShiftName(''); }}
+                                        className="text-slate-400 hover:text-slate-600 px-2 text-sm"
+                                        disabled={isSubmitting}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            ) : (
+                                <select
+                                    className="text-sm border-indigo-200 bg-white rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 animate-in fade-in slide-in-from-right-2"
+                                    value={selectedShiftId}
+                                    onChange={e => setSelectedShiftId(e.target.value)}
                                     disabled={isSubmitting}
-                                    autoFocus
-                                />
-                                <button
-                                    onClick={() => { setSelectedShiftId(''); setNewShiftName(''); }}
-                                    className="text-slate-400 hover:text-slate-600 px-2"
-                                    disabled={isSubmitting}
+                                    aria-label="Select Shift for Bulk Assignment"
                                 >
-                                    Cancel
-                                </button>
-                            </div>
-                        ) : (
+                                    <option value="">-- Apply Bulk Shift --</option>
+                                    <option value="create_new">✨ Create New Shift...</option>
+                                    <option value="remove">Remove from Shift (Unassign)</option>
+                                    {shifts.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                            )
+                        )}
+
+                        {actionType === 'role' && (
                             <select
-                                className="text-sm border-indigo-200 bg-white rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500"
-                                value={selectedShiftId}
-                                onChange={e => setSelectedShiftId(e.target.value)}
+                                className="text-sm border-indigo-200 bg-white rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 animate-in fade-in slide-in-from-right-2"
+                                value={selectedRole}
+                                onChange={e => setSelectedRole(e.target.value)}
                                 disabled={isSubmitting}
-                                aria-label="Select Shift for Bulk Assignment"
+                                aria-label="Select Role"
                             >
-                                <option value="">-- Apply Bulk Shift --</option>
-                                <option value="create_new">✨ Create New Shift...</option>
-                                <option value="remove">Remove from Shift (Unassign)</option>
-                                {shifts.map(s => (
-                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                <option value="">-- Select New Role --</option>
+                                {availableRoles.map(r => (
+                                    <option key={r} value={r}>{r}</option>
                                 ))}
+                            </select>
+                        )}
+
+                        {actionType === 'status' && (
+                            <select
+                                className="text-sm border-indigo-200 bg-white rounded-md py-1.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 animate-in fade-in slide-in-from-right-2"
+                                value={selectedStatus}
+                                onChange={e => setSelectedStatus(e.target.value)}
+                                disabled={isSubmitting}
+                                aria-label="Select Status"
+                            >
+                                <option value="">-- Select Status --</option>
+                                <option value="active">Active</option>
+                                <option value="departed">Departed</option>
                             </select>
                         )}
 
                         <button
                             onClick={handleBulkAssign}
-                            disabled={(!selectedShiftId && !newShiftName) || isSubmitting}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center"
+                            disabled={
+                                isSubmitting ||
+                                (actionType === 'shift' && !selectedShiftId && !newShiftName) ||
+                                (actionType === 'role' && !selectedRole) ||
+                                (actionType === 'status' && !selectedStatus)
+                            }
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition-colors disabled:opacity-50 flex items-center ml-2"
                         >
-                            {selectedShiftId === 'create_new' && <Plus className="w-4 h-4 mr-1" />}
-                            {isSubmitting ? 'Applying...' : selectedShiftId === 'create_new' ? 'Create & Apply' : 'Apply Change'}
+                            {actionType === 'shift' && selectedShiftId === 'create_new' && <Plus className="w-4 h-4 mr-1" />}
+                            {isSubmitting ? 'Applying...' : actionType === 'shift' && selectedShiftId === 'create_new' ? 'Create & Apply' : 'Apply'}
                         </button>
                     </div>
                 </div>

@@ -8,6 +8,7 @@ import FilterButton from './FilterButton';
 import EmployeeTable from './EmployeeTable';
 import ManageShiftsModal from './ManageShiftsModal';
 import { auth } from '@/auth';
+import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 
 export default async function EmployeesPage(props: {
     searchParams?: Promise<{
@@ -57,6 +58,15 @@ export default async function EmployeesPage(props: {
         orderBy: { name: 'asc' }
     });
 
+    const roleTemplates = await prisma.roleTemplate.findMany();
+    const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
+    const databaseRoles = roleTemplates.map((rt: any) => rt.roleName);
+    let availableRoles = Array.from(new Set([...knownRoles, ...databaseRoles])).sort();
+
+    if (userRole !== 'SUPERUSER') {
+        availableRoles = availableRoles.filter(role => role !== 'SUPERUSER');
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -82,6 +92,7 @@ export default async function EmployeesPage(props: {
             <EmployeeTable
                 employees={employees}
                 shifts={activeShifts}
+                availableRoles={availableRoles}
                 sort={sort}
                 order={order}
                 query={query}

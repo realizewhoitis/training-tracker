@@ -62,3 +62,52 @@ export async function bulkAssignShift(employeeIds: number[], shiftId: number | n
     revalidatePath('/employees');
     return { success: true };
 }
+
+export async function bulkUpdateRole(employeeIds: number[], role: string): Promise<{ success: boolean, error?: string }> {
+    if (!employeeIds || employeeIds.length === 0) {
+        return { success: false, error: 'No employees selected' };
+    }
+    if (!role) {
+        return { success: false, error: 'Role is required' };
+    }
+
+    try {
+        await prisma.user.updateMany({
+            where: {
+                empId: { in: employeeIds }
+            },
+            data: {
+                role: role
+            }
+        });
+    } catch (e: any) {
+        console.error('Bulk role update failed:', e);
+        return { success: false, error: e.message || 'Failed to update roles.' };
+    }
+
+    revalidatePath('/employees');
+    return { success: true };
+}
+
+export async function bulkUpdateStatus(employeeIds: number[], departed: boolean): Promise<{ success: boolean, error?: string }> {
+    if (!employeeIds || employeeIds.length === 0) {
+        return { success: false, error: 'No employees selected' };
+    }
+
+    try {
+        await prisma.employee.updateMany({
+            where: {
+                empId: { in: employeeIds }
+            },
+            data: {
+                departed: departed
+            }
+        });
+    } catch (e: any) {
+        console.error('Bulk status update failed:', e);
+        return { success: false, error: e.message || 'Failed to update status.' };
+    }
+
+    revalidatePath('/employees');
+    return { success: true };
+}
