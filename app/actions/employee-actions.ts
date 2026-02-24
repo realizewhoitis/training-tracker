@@ -72,7 +72,7 @@ export async function bulkUpdateRole(employeeIds: number[], role: string): Promi
     }
 
     try {
-        await prisma.user.updateMany({
+        const result = await prisma.user.updateMany({
             where: {
                 empId: { in: employeeIds }
             },
@@ -80,6 +80,10 @@ export async function bulkUpdateRole(employeeIds: number[], role: string): Promi
                 role: role
             }
         });
+
+        if (result.count === 0) {
+            return { success: false, error: 'None of the selected employees have registered User accounts yet. They must log in first.' };
+        }
     } catch (e: any) {
         console.error('Bulk role update failed:', e);
         return { success: false, error: e.message || 'Failed to update roles.' };
