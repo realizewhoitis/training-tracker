@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
-import { User, Shield, Trash2, Key, RefreshCw, Lock, Unlock } from 'lucide-react';
-import { createUser, deleteUser, resetPassword, toggleTwoFactor } from './actions';
+import { User, Shield, Trash2, Key, RefreshCw, Lock, Unlock, ShieldAlert } from 'lucide-react';
+import { createUser, deleteUser, resetPassword, toggleTwoFactor, toggleForcePasswordReset } from './actions';
 import UserRoleSelect from './UserRoleSelect';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 import { auth } from '@/auth';
@@ -142,8 +142,17 @@ export default async function UserManagementPage() {
                                                 <form action={resetPassword} className="flex items-center gap-2">
                                                     <input type="hidden" name="userId" value={user.id} />
                                                     <input name="newPassword" type="password" placeholder="New Pass" className="w-24 text-xs border border-gray-300 rounded px-2 py-1" required minLength={6} />
-                                                    <button type="submit" className="text-amber-600 hover:text-amber-900" title="Reset Password">
+                                                    <button type="submit" className="text-amber-600 hover:text-amber-900" title="Reset Password Manually">
                                                         <RefreshCw size={16} />
+                                                    </button>
+                                                </form>
+
+                                                <form action={async () => {
+                                                    'use server';
+                                                    await toggleForcePasswordReset(user.id, !user.forcePasswordReset);
+                                                }}>
+                                                    <button type="submit" className={`${user.forcePasswordReset ? 'text-red-600 hover:text-red-900 bg-red-100' : 'text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50'} p-1 rounded transition-colors`} title={user.forcePasswordReset ? 'Cancel Forced Reset' : 'Force User to Reset Password'}>
+                                                        <ShieldAlert size={16} />
                                                     </button>
                                                 </form>
 

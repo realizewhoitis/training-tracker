@@ -195,3 +195,35 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
 
     revalidatePath('/admin/users');
 }
+
+export async function toggleForcePasswordReset(userId: number, force: boolean) {
+    const session = await auth();
+    const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+
+    // @ts-ignore
+    const adminRole = session?.user?.role;
+
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) throw new Error('User not found');
+
+    if (targetUser.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
+        throw new Error('Unauthorized to modify Superuser security settings');
+    }
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: {
+            forcePasswordReset: force
+        }
+    });
+
+    await logAudit({
+        userId: adminId,
+        action: 'FORCE_PASSWORD_RESET',
+        resource: 'User',
+        details: `${force ? 'Enabled' : 'Disabled'} Force Password Reset for user ID ${userId}`,
+        severity: 'WARN'
+    });
+
+    revalidatePath('/admin/users');
+}
