@@ -1,11 +1,11 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const crypto = require('crypto');
+const nodeCrypto = require('crypto');
 
 const generateBase32Secret = (length = 32) => {
     const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     let secret = '';
-    const bytes = crypto.randomBytes(length);
+    const bytes = nodeCrypto.randomBytes(length);
     for (let i = 0; i < length; i++) {
         secret += base32chars[bytes[i] % 32];
     }

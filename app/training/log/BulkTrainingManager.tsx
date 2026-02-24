@@ -136,8 +136,10 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                             <h2 className="font-semibold text-slate-800">1. Log Details</h2>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Training Event</label>
+                                <label htmlFor="trainingEvent" className="block text-sm font-medium text-slate-700 mb-1">Training Event</label>
                                 <select
+                                    id="trainingEvent"
+                                    title="Training Event"
                                     value={selectedTrainingId}
                                     onChange={(e) => setSelectedTrainingId(e.target.value ? Number(e.target.value) : '')}
                                     className="w-full p-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -151,8 +153,10 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Date</label>
+                                    <label htmlFor="trainingDate" className="block text-sm font-medium text-slate-700 mb-1">Date</label>
                                     <input
+                                        id="trainingDate"
+                                        title="Date"
                                         type="date"
                                         value={date}
                                         onChange={(e) => setDate(e.target.value)}
@@ -160,8 +164,10 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Hours</label>
+                                    <label htmlFor="trainingHours" className="block text-sm font-medium text-slate-700 mb-1">Hours</label>
                                     <input
+                                        id="trainingHours"
+                                        title="Hours"
                                         type="number"
                                         step="0.5"
                                         value={hours}
@@ -172,8 +178,10 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Note (Optional)</label>
+                                <label htmlFor="trainingNote" className="block text-sm font-medium text-slate-700 mb-1">Note (Optional)</label>
                                 <textarea
+                                    id="trainingNote"
+                                    title="Note"
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
                                     placeholder="e.g. In-service training"
@@ -209,6 +217,8 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                                         <input
                                             type="text"
+                                            title="Search name or ID"
+                                            aria-label="Search name or ID"
                                             placeholder="Search name/ID..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -216,6 +226,8 @@ export default function BulkTrainingManager({ employees, trainings }: { employee
                                         />
                                     </div>
                                     <select
+                                        title="Shift Filter"
+                                        aria-label="Shift Filter"
                                         value={shiftFilter}
                                         onChange={(e) => setShiftFilter(e.target.value)}
                                         className="text-sm border border-slate-300 rounded-lg py-1.5 pl-2 pr-8"

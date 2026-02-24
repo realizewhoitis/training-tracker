@@ -24,6 +24,31 @@ import bcrypt from 'bcryptjs';
 import { DEFAULT_ROLE_PERMISSIONS, Permission } from '@/lib/permissions';
 import { logAudit } from '@/lib/audit';
 
+// In-Memory Rate Limiting Dictionary
+// For production scale with multiple instances, use Redis. For standard/single-instance, global Map is sufficient.
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const MAX_ATTEMPTS = 10;
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkRateLimit(ip: string): boolean {
+    const now = Date.now();
+    const record = rateLimitMap.get(ip);
+
+    if (record) {
+        if (now > record.resetAt) {
+            rateLimitMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+            return true;
+        } else if (record.count >= MAX_ATTEMPTS) {
+            return false;
+        } else {
+            record.count++;
+            return true;
+        }
+    } else {
+        rateLimitMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
+        return true;
+    }
+}
 
 async function getUser(email: string) {
     try {
@@ -58,7 +83,15 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
     providers: [
         Credentials({
-            async authorize(credentials) {
+            async authorize(credentials, request) {
+                // Determine remote IP for Rate Limiting
+                // @ts-ignore - Next-Auth Request objects sometimes lack precise typing for generic headers in v5
+                const ip = request?.headers?.get('x-forwarded-for') || request?.headers?.get('x-real-ip') || 'unknown';
+
+                if (ip !== 'unknown' && !checkRateLimit(ip)) {
+                    throw new Error('RATE_LIMIT_EXCEEDED');
+                }
+
                 const parsedCredentials = z
                     .object({
                         email: z.string().email(),

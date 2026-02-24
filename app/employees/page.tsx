@@ -9,6 +9,7 @@ import EmployeeTable from './EmployeeTable';
 import ManageShiftsModal from './ManageShiftsModal';
 import { auth } from '@/auth';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
+import ExportCsvButton from '@/app/components/ExportCsvButton';
 
 export default async function EmployeesPage(props: {
     searchParams?: Promise<{
@@ -67,6 +68,17 @@ export default async function EmployeesPage(props: {
         availableRoles = availableRoles.filter(role => role !== 'SUPERUSER');
     }
 
+    const exportData = employees.map(emp => ({
+        ID: emp.empId,
+        Name: emp.empName,
+        Email: emp.user?.email || 'N/A',
+        Role: emp.user?.role || 'None',
+        Shift: emp.shift?.name || 'Unassigned',
+        Status: emp.departed ? 'Departed' : 'Active',
+        TrainingsLogged: emp._count.attendances,
+        ActiveRequirements: emp._count.expirations
+    }));
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -76,6 +88,7 @@ export default async function EmployeesPage(props: {
                 </div>
 
                 <div className="flex space-x-3 w-full md:w-auto">
+                    <ExportCsvButton data={exportData} filename="employees_roster" />
                     {canManageShifts && <ManageShiftsModal initialShifts={activeShifts} />}
                     <Search placeholder="Search employees..." />
                     <FilterButton />

@@ -46,6 +46,8 @@ export default function ProvisionAccountModal({ empId, employeeName, availableRo
                         Provision User Account
                     </h2>
                     <button
+                        title="Close"
+                        aria-label="Close"
                         onClick={onClose}
                         className="text-slate-400 hover:text-red-500 transition-colors p-1"
                     >

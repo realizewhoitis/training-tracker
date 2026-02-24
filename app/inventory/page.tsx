@@ -3,6 +3,7 @@
 import prisma from '@/lib/prisma';
 import { Package, Search, Plus, Filter } from 'lucide-react';
 import Link from 'next/link';
+import ExportCsvButton from '@/app/components/ExportCsvButton';
 
 export default async function InventoryPage({
     searchParams
@@ -39,6 +40,17 @@ export default async function InventoryPage({
         orderBy: { id: 'desc' }
     });
 
+    const exportData = assets.map((asset: any) => ({
+        ID: asset.id,
+        Name: asset.name,
+        Category: asset.category?.name || 'Unknown',
+        Status: asset.status,
+        SerialNumber: asset.serialNumber || 'N/A',
+        AssetTag: asset.assetTag || 'N/A',
+        AssignedTo: asset.assignments.length > 0 ? asset.assignments[0].employee?.empName : 'None',
+        Notes: asset.notes || 'N/A'
+    }));
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -48,6 +60,7 @@ export default async function InventoryPage({
                 </div>
 
                 <div className="flex space-x-3">
+                    <ExportCsvButton data={exportData} filename="inventory_assets" />
                     <Link
                         href="/inventory/new"
                         className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium shadow-sm ring-1 ring-blue-700"
@@ -73,6 +86,7 @@ export default async function InventoryPage({
                     <Filter size={16} className="text-slate-400" />
                     <select
                         name="status"
+                        title="Filter by status"
                         defaultValue={statusFilter}
                         className="border-none bg-transparent text-sm font-medium text-slate-600 focus:ring-0"
                     >

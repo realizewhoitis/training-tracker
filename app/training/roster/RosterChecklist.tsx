@@ -153,10 +153,12 @@ export default function RosterChecklist({
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label htmlFor="trainingEvent" className="block text-sm font-medium text-slate-700 mb-1">
                                     Training Event <span className="text-red-500">*</span>
                                 </label>
                                 <select
+                                    id="trainingEvent"
+                                    title="Training Event"
                                     className="w-full border-slate-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50"
                                     value={selectedTrainingId}
                                     onChange={(e) => {
@@ -179,10 +181,12 @@ export default function RosterChecklist({
 
                                 {selectedTrainingId === 'NEW' && (
                                     <div className="mt-3 animate-in fade-in slide-in-from-top-2">
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">
+                                        <label htmlFor="newEventName" className="block text-sm font-medium text-slate-700 mb-1">
                                             New Event Name <span className="text-red-500">*</span>
                                         </label>
                                         <input
+                                            id="newEventName"
+                                            title="New Event Name"
                                             type="text"
                                             required
                                             value={newTopicName}

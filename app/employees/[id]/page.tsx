@@ -12,7 +12,7 @@ import ExpirationRow from './ExpirationRow';
 import DORHistoryWithAggregates from '@/app/components/employee/DORHistoryWithAggregates';
 import { auth } from '@/auth';
 import { PERMISSIONS } from '@/lib/permissions';
-import ProfileActions from './components/ProfileActions';
+import ProfileActions from '@/app/employees/[id]/components/ProfileActions';
 
 export default async function EmployeeDetailPage(props: {
     params: Promise<{ id: string }>,
@@ -179,7 +179,7 @@ export default async function EmployeeDetailPage(props: {
                         {!employee.user && canManageUsers && (
                             <ProfileActions
                                 employeeId={employee.empId}
-                                employeeName={employee.empName}
+                                employeeName={employee.empName || 'Employee'}
                                 availableRoles={availableRoles}
                             />
                         )}

@@ -21,6 +21,9 @@ export async function authenticate(
         if (errorStack.includes('2FA_INVALID')) {
             return 'Invalid 2FA Code.';
         }
+        if (errorStack.includes('RATE_LIMIT_EXCEEDED')) {
+            return 'Too many login attempts. Please try again in 15 minutes.';
+        }
 
         if (error instanceof AuthError) {
             switch (error.type) {

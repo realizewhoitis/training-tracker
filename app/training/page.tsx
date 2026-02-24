@@ -5,6 +5,7 @@ import { getSettings } from '@/app/admin/settings/actions';
 import { BookOpen, Search, Filter, Plus, ClipboardList, FileUp, Calendar, Award, CheckCircle, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import ExportCsvButton from '@/app/components/ExportCsvButton';
 
 export default async function TrainingPage({
     searchParams,
@@ -31,6 +32,13 @@ export default async function TrainingPage({
     const userRole = (session.user as any)?.role;
     const showRosterSuccess = searchParams?.roster_success === 'true';
 
+    const exportData = trainings.map((t: any) => ({
+        ID: t.TrainingID,
+        Name: t.TrainingName,
+        Category: t.category || 'General',
+        TotalSessionsLogged: t._count.attendances
+    }));
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -40,6 +48,7 @@ export default async function TrainingPage({
                 </div>
 
                 <div className="flex space-x-3">
+                    <ExportCsvButton data={exportData} filename="training_events" label="Export CSV" />
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                         <input
