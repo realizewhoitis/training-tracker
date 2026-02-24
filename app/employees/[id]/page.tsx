@@ -149,16 +149,22 @@ export default async function EmployeeDetailPage(props: {
                         }`}>
                         {!employee.departed ? 'Active Status' : 'Departed'}
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col items-end gap-2 mt-2">
                         {employee.user?.role && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                                {employee.user.role}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">User Role:</span>
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                    {employee.user.role}
+                                </span>
+                            </div>
                         )}
                         {employee.shift && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                Shift {employee.shift.name}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Assigned Shift:</span>
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    {employee.shift.name}
+                                </span>
+                            </div>
                         )}
                     </div>
 
