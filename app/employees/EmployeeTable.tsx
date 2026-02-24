@@ -78,10 +78,12 @@ export default function EmployeeTable({
 
             } else if (actionType === 'role') {
                 if (!selectedRole) throw new Error('Please select a role.');
-                // @ts-ignore - Temporary bypass to invoke without importing the function yet
-                const req = await fetch('/api/dev-null'); // This will be replaced by the actual server action import in next replace block but just to prevent unused variable error in NextJS compiler if I don't import it rn
+                const assignRes = await bulkUpdateRole(employeeIdsArray, selectedRole);
+                if (!assignRes?.success) throw new Error(assignRes?.error || 'Failed to update roles.');
             } else if (actionType === 'status') {
                 if (!selectedStatus) throw new Error('Please select a status.');
+                const assignRes = await bulkUpdateStatus(employeeIdsArray, selectedStatus === 'departed');
+                if (!assignRes?.success) throw new Error(assignRes?.error || 'Failed to update status.');
             }
 
             setSelectedIds(new Set());
