@@ -227,3 +227,69 @@ export async function toggleForcePasswordReset(userId: number, force: boolean) {
 
     revalidatePath('/admin/users');
 }
+
+export async function provisionEmployeeAccount(empId: number, name: string, email: string, role: string, sendWelcomeEmail: boolean): Promise<{ success: boolean; error?: string }> {
+    const session = await auth();
+    const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+    // @ts-ignore
+    const permissions = session?.user?.permissions as string[] || [];
+
+    if (!permissions.includes('users.manage')) {
+        return { success: false, error: 'Unauthorized to provision user accounts' };
+    }
+
+    if (!name || !email || !role) {
+        return { success: false, error: 'Missing required configuration fields' };
+    }
+
+    try {
+        // Generate a 12-char random secure temporary password
+        const crypto = require('crypto');
+        const tempPassword = crypto.randomBytes(8).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 12);
+
+        // At least one lowercase, uppercase, and number to pass basic validation if needed later
+        const finalTempPassword = tempPassword + 'Aa1';
+
+        const hashedPassword = await bcrypt.hash(finalTempPassword, 10);
+
+        const newUser = await prisma.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+                role,
+                empId: empId,
+                forcePasswordReset: true
+            }
+        });
+
+        await logAudit({
+            userId: adminId,
+            action: 'CREATE',
+            resource: 'User',
+            details: `Auto-provisioned User Account ${email} for Employee ID ${empId}`,
+            severity: 'WARN'
+        });
+
+        if (sendWelcomeEmail) {
+            sendTemplatedEmail('Account Creation', email, {
+                name: name,
+                email: email,
+                password: finalTempPassword,
+                login_url: process.env.NEXTAUTH_URL ? `${process.env.NEXTAUTH_URL}/login` : 'our system'
+            });
+        }
+
+        revalidatePath(`/employees/${empId}`);
+        revalidatePath('/employees');
+        revalidatePath('/admin/users');
+
+        return { success: true };
+    } catch (e: any) {
+        console.error("Account provisioning failed:", e);
+        if (e.code === 'P2002') {
+            return { success: false, error: 'The email address provided is already registered to another account.' };
+        }
+        return { success: false, error: e.message || 'Failed to provision account' };
+    }
+}

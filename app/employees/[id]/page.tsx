@@ -10,6 +10,9 @@ import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import ExpirationRow from './ExpirationRow';
 import DORHistoryWithAggregates from '@/app/components/employee/DORHistoryWithAggregates';
+import { auth } from '@/auth';
+import { PERMISSIONS } from '@/lib/permissions';
+import ProfileActions from './components/ProfileActions';
 
 export default async function EmployeeDetailPage(props: {
     params: Promise<{ id: string }>,
@@ -19,6 +22,12 @@ export default async function EmployeeDetailPage(props: {
     const searchParams = await props.searchParams;
     const employeeId = parseInt(params.id);
     const showAllHistory = searchParams?.history === 'all';
+
+    const session = await auth();
+    const canManageUsers = (session?.user as any)?.permissions?.includes(PERMISSIONS.MANAGE_USERS) || false;
+
+    const roleTemplates = await prisma.roleTemplate.findMany();
+    const availableRoles = ['ADMIN', 'SUPERUSER', 'SUPERVISOR', 'TRAINER', 'TRAINEE', ...roleTemplates.map(rt => rt.roleName)].filter((value, index, self) => self.indexOf(value) === index).sort();
 
     const employee = await prisma.employee.findUnique({
         where: { empId: employeeId },
@@ -164,12 +173,22 @@ export default async function EmployeeDetailPage(props: {
                             </span>
                         )}
                     </div>
-                    <Link
-                        href={`/employees/${employee.empId}/edit`}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
-                    >
-                        Edit Profile
-                    </Link>
+
+                    <div className="flex gap-2 w-full justify-end mt-2">
+                        <Link
+                            href={`/employees/${employee.empId}/edit`}
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center px-2 py-1"
+                        >
+                            Edit Profile
+                        </Link>
+                        {!employee.user && canManageUsers && (
+                            <ProfileActions
+                                employeeId={employee.empId}
+                                employeeName={employee.empName}
+                                availableRoles={availableRoles}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
 
