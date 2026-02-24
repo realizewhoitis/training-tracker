@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Home, Users, BookOpen, UserPlus, Settings, ClipboardList, Package, FileText, Inbox, ShieldCheck, LogOut } from 'lucide-react';
 import { auth, signOut } from '@/auth';
+import pkg from '../../package.json';
 
 // ...
 
@@ -164,8 +165,9 @@ const Sidebar = async () => {
                     </form>
                 </div>
             </nav>
-            <div className="p-4 border-t border-slate-700 text-xs text-gray-500">
-                v1.0.0
+            <div className="p-4 border-t border-slate-700 text-xs text-gray-500 flex justify-between">
+                <span>Orbit 911 Platform</span>
+                <span>v{pkg.version}</span>
             </div>
         </div>
     );
