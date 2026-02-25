@@ -9,6 +9,7 @@ export const PERMISSIONS = {
     VIEW_REPORTS: 'reports.view', // View read-only reports
     EXPORT_REPORTS: 'reports.export', // Download PDF
     MANAGE_FORMS: 'forms.manage', // Edit form templates
+    RECEIVE_DAILY_REPORTS: 'reports.daily_digest', // Receive automated 24-hr DOR emails
 
     // Inventory
     MANAGE_INVENTORY: 'inventory.manage', // Create assets, assign them
@@ -35,6 +36,7 @@ export const PERMISSION_LABELS: Record<Permission, { label: string; description:
     [PERMISSIONS.VIEW_REPORTS]: { label: 'View Reports', description: 'Read-only access to DORs' },
     [PERMISSIONS.EXPORT_REPORTS]: { label: 'Export Reports', description: 'Download reports as PDF' },
     [PERMISSIONS.MANAGE_FORMS]: { label: 'Manage Forms', description: 'Create and edit evaluation templates' },
+    [PERMISSIONS.RECEIVE_DAILY_REPORTS]: { label: 'Receive Daily Reports', description: 'Receive an automated 24-hour DOR email digest' },
     [PERMISSIONS.MANAGE_INVENTORY]: { label: 'Manage Inventory', description: 'Create and assign assets' },
     [PERMISSIONS.MANAGE_TRAINING]: { label: 'Manage Training', description: 'Dynamically create new training events and modules' },
     [PERMISSIONS.VIEW_EIS]: { label: 'View EIS', description: 'View Early Intervention System flags' },
@@ -52,7 +54,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
         PERMISSIONS.VIEW_REPORTS,
         PERMISSIONS.EXPORT_REPORTS,
         PERMISSIONS.VIEW_EIS,
-        PERMISSIONS.MANAGE_INVENTORY
+        PERMISSIONS.MANAGE_INVENTORY,
+        PERMISSIONS.RECEIVE_DAILY_REPORTS
     ],
     'TRAINER': [
         PERMISSIONS.VIEW_REPORTS,
