@@ -8,8 +8,31 @@ datasource db {
   directUrl = env("DIRECT_URL") // Direct connection for migrations
 }
 
+model Agency {
+  id        String   @id @default(cuid())
+  name      String   @unique // e.g. "Dallas PD"
+  timezone  String   @default("America/Chicago")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  employees             Employee[]
+  shifts                Shift[]
+  assetCategories       AssetCategory[]
+  assets                Asset[]
+  trainings             Training[]
+  certificates          Certificate[]
+  policies              Policy[]
+  formTemplates         FormTemplate[]
+  organizationSettings  OrganizationSettings?
+  auditLogs             AuditLog[]
+}
+
 model Employee {
   empId    Int     @id @default(autoincrement())
+  agencyId String?
+  agency   Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   empName  String?
   departed Boolean @default(false)
 
@@ -26,14 +49,22 @@ model Employee {
 }
 
 model Shift {
-  id    Int     @id @default(autoincrement())
-  name  String  @unique // "A", "B", "C", "D", "Admin", "IT", "Radio"
+  id       Int     @id @default(autoincrement())
+  agencyId String?
+  agency   Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  
+  name     String  // Removed @unique so multiple agencies can have a "A" shift
   
   employees Employee[]
+
+  @@unique([agencyId, name])
 }
 
 model AssetCategory {
   id          Int      @id @default(autoincrement())
+  agencyId    String?
+  agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   name        String   // e.g., "Radio", "Firearm", "Vehicle"
   description String?
   
@@ -42,9 +73,12 @@ model AssetCategory {
 
 model Asset {
   id          Int      @id @default(autoincrement())
+  agencyId    String?
+  agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   name        String   // e.g., "Motorola APX 6000"
-  serialNumber String? @unique
-  assetTag    String?  @unique // Internal barcode/tag
+  serialNumber String? 
+  assetTag    String?  // Internal barcode/tag
   
   categoryId  Int
   category    AssetCategory @relation(fields: [categoryId], references: [id])
@@ -76,10 +110,13 @@ model AssetAssignment {
 
 model User {
   id        Int      @id @default(autoincrement())
+  agencyId  String?
+  agency    Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   email     String   @unique
   password  String
   name      String
-  role      String   @default("TRAINEE") // 'TRAINEE', 'ADMIN', 'SUPERVISOR', 'TRAINER'
+  role      String   @default("TRAINEE") // 'SUPERUSER', 'TRAINEE', 'ADMIN', 'SUPERVISOR', 'TRAINER'
   customPermissions String?  // JSON array of strings
   
   twoFactorSecret String?
@@ -102,6 +139,9 @@ model RoleTemplate {
 
 model Training {
   TrainingID   Int     @id @default(autoincrement())
+  agencyId     String?
+  agency       Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   TrainingName String?
   category     String? // CEU Bucket (e.g. "Medical", "Fire", "Law")
   filePath     String? // Path to syllabus or training materials
@@ -126,6 +166,9 @@ model Attendance {
 
 model Certificate {
   CertificateID   Int     @id @default(autoincrement())
+  agencyId        String?
+  agency          Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   certificateName String?
   neededHours     Float?
   yearsValid      Float?
@@ -137,6 +180,9 @@ model Certificate {
 
 model Policy {
   id          Int      @id @default(autoincrement())
+  agencyId    String?
+  agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   title       String
   content     String
   version     String   @default("1.0")
@@ -181,6 +227,9 @@ model Expiration {
 
 model FormTemplate {
   id          Int      @id @default(autoincrement())
+  agencyId    String?
+  agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   title       String
   type        String   @default("GENERAL") // GENERAL, RADIO, CALL_TAKING
   version     Int      @default(1)
@@ -253,6 +302,9 @@ model EISFlag {
 
 model OrganizationSettings {
   id          Int      @id @default(autoincrement())
+  agencyId    String?   @unique
+  agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   orgName     String   @default("Orbit 911 Center")
   logoPath    String?  // Path to uploaded logo file
   
@@ -278,6 +330,9 @@ model IssuedLicense {
 
 model AuditLog {
   id          String   @id @default(uuid())
+  agencyId    String?
+  agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
   timestamp   DateTime @default(now())
   userId      Int?
   user        User?    @relation(fields: [userId], references: [id])
