@@ -17,9 +17,10 @@ export default async function DORViewPage(props: { params: Promise<{ id: string 
     const dor: any = await getDOR(dorId);
     if (!dor) notFound();
 
-    const isAdmin = session.user.role === 'ADMIN';
-    const isTrainee = session.user.role === 'TRAINEE';
-    const canSign = isTrainee && dor.traineeId === session.user.empId && !dor.traineeSignatureAt;
+    const sessionUser = session.user as any;
+    const isAdmin = sessionUser.role === 'ADMIN';
+    const isTrainee = sessionUser.role === 'TRAINEE';
+    const canSign = isTrainee && dor.traineeId === sessionUser.empId && !dor.traineeSignatureAt;
 
     const responseData = JSON.parse(dor.responseData);
     const settings = await getSettings();

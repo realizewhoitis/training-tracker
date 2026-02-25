@@ -1,5 +1,5 @@
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -16,7 +16,7 @@ export default async function AdminFormSubmissionsPage() {
         redirect('/dashboard');
     }
 
-    const submissions = await prisma.formResponse.findMany({
+    const submissions = await (await getTenantPrisma()).formResponse.findMany({
         orderBy: { date: 'desc' },
         include: {
             trainee: true,

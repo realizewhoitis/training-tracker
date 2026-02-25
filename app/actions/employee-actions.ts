@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -21,7 +21,7 @@ export async function updateEmployee(
     const newEmpId = parseInt(newEmpIdRaw);
 
     try {
-        await prisma.employee.update({
+        await (await getTenantPrisma()).employee.update({
             where: { empId: currentEmpId },
             data: {
                 empName,
@@ -46,7 +46,7 @@ export async function bulkAssignShift(employeeIds: number[], shiftId: number | n
     }
 
     try {
-        await prisma.employee.updateMany({
+        await (await getTenantPrisma()).employee.updateMany({
             where: {
                 empId: { in: employeeIds }
             },
@@ -72,7 +72,7 @@ export async function bulkUpdateRole(employeeIds: number[], role: string): Promi
     }
 
     try {
-        const result = await prisma.user.updateMany({
+        const result = await (await getTenantPrisma()).user.updateMany({
             where: {
                 empId: { in: employeeIds }
             },
@@ -99,7 +99,7 @@ export async function bulkUpdateStatus(employeeIds: number[], departed: boolean)
     }
 
     try {
-        await prisma.employee.updateMany({
+        await (await getTenantPrisma()).employee.updateMany({
             where: {
                 empId: { in: employeeIds }
             },

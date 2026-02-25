@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { getTenantPrisma } from '@/lib/prisma';
 
 export async function logAudit({
     userId,
@@ -14,7 +14,7 @@ export async function logAudit({
     severity?: "INFO" | "WARN" | "CRITICAL";
 }) {
     try {
-        await prisma.auditLog.create({
+        await (await getTenantPrisma()).auditLog.create({
             data: {
                 userId,
                 action,

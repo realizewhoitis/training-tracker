@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
 export async function getTraineeProgress(traineeId: number) {
@@ -8,7 +8,7 @@ export async function getTraineeProgress(traineeId: number) {
     if (!session?.user) return [];
 
     // Fetch all submitted/reviewed DORs for this trainee
-    const dors = await prisma.formResponse.findMany({
+    const dors = await (await getTenantPrisma()).formResponse.findMany({
         where: {
             traineeId: traineeId,
             status: { in: ['SUBMITTED', 'REVIEWED'] }
@@ -55,7 +55,7 @@ export async function getCategoryStrengths(traineeId: number) {
     if (!session?.user) return [];
 
     // Fetch all submitted/reviewed DORs
-    const dors = await prisma.formResponse.findMany({
+    const dors = await (await getTenantPrisma()).formResponse.findMany({
         where: {
             traineeId: traineeId,
             status: { in: ['SUBMITTED', 'REVIEWED'] }

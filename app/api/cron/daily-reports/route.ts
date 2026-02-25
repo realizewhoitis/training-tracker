@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { sendDailyDORDigestEmail } from '@/lib/mail';
 import { PERMISSIONS, DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 
@@ -8,7 +8,7 @@ async function getEffectivePermissions(user: any): Promise<string[]> {
     if (user.customPermissions) {
         return JSON.parse(user.customPermissions);
     }
-    const template = await prisma.roleTemplate.findUnique({
+    const template = await (await getTenantPrisma()).roleTemplate.findUnique({
         where: { roleName: user.role }
     });
     if (template) {
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
         // 2. Fetch trailing 24 hour submissions
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-        const recentSubmissions = await prisma.formResponse.findMany({
+        const recentSubmissions = await (await getTenantPrisma()).formResponse.findMany({
             where: {
                 date: {
                     gte: yesterday,
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
         }
 
         // 3. Identify all users eligible to receive the report
-        const activeUsers = await prisma.user.findMany();
+        const activeUsers = await (await getTenantPrisma()).user.findMany();
 
         const recipientEmails: string[] = [];
 

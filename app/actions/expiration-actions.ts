@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { saveFile } from '@/lib/storage';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ export async function updateExpirationDate(expirationId: number, newDate: string
     try {
         const dateValue = newDate ? new Date(newDate) : null;
 
-        await prisma.expiration.update({
+        await (await getTenantPrisma()).expiration.update({
             where: { expirationID: expirationId },
             data: { Expiration: dateValue }
         });
@@ -35,7 +35,7 @@ export async function uploadCertificate(formData: FormData) {
         const relativePath = await saveFile(file, 'certificates');
 
         // Update database
-        await prisma.expiration.update({
+        await (await getTenantPrisma()).expiration.update({
             where: { expirationID: expirationId },
             data: { documentPath: relativePath }
         });

@@ -1,5 +1,5 @@
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { UserPlus, Save, X, CalendarClock } from 'lucide-react';
 import Link from 'next/link';
@@ -23,7 +23,7 @@ export default async function NewEmployeePage() {
         if (!empName) return;
 
         try {
-            await prisma.employee.create({
+            await (await getTenantPrisma()).employee.create({
                 data: {
                     empName: empName,
                     departed: false,

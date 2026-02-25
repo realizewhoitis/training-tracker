@@ -1,6 +1,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { Package, Search, Plus, Filter } from 'lucide-react';
 import Link from 'next/link';
 import ExportCsvButton from '@/app/components/ExportCsvButton';
@@ -28,7 +28,7 @@ export default async function InventoryPage({
         whereCondition.status = statusFilter;
     }
 
-    const assets = await prisma.asset.findMany({
+    const assets = await (await getTenantPrisma()).asset.findMany({
         where: whereCondition,
         include: {
             category: true,

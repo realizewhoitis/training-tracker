@@ -1,19 +1,19 @@
 
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 
 export async function GET() {
     try {
         const counts = {
-            employees: await prisma.employee.count(),
-            trainings: await prisma.training.count(),
-            attendances: await prisma.attendance.count(),
-            certificates: await prisma.certificate.count(),
-            expirations: await prisma.expiration.count(),
-            exclusions: await prisma.certificateTrainingExclusion.count(),
+            employees: await (await getTenantPrisma()).employee.count(),
+            trainings: await (await getTenantPrisma()).training.count(),
+            attendances: await (await getTenantPrisma()).attendance.count(),
+            certificates: await (await getTenantPrisma()).certificate.count(),
+            expirations: await (await getTenantPrisma()).expiration.count(),
+            exclusions: await (await getTenantPrisma()).certificateTrainingExclusion.count(),
         };
 
-        const sampleAttendance = await prisma.attendance.findFirst({
+        const sampleAttendance = await (await getTenantPrisma()).attendance.findFirst({
             include: { employee: true, training: true }
         });
 

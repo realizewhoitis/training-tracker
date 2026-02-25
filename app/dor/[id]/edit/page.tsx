@@ -2,7 +2,7 @@
 import { auth } from '@/auth';
 import { getDOR, getTrainees } from '@/app/actions/dor-submission';
 import { notFound, redirect } from 'next/navigation';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import DORForm from '@/app/dor/new/DORForm';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -12,7 +12,7 @@ export default async function DOREditPage(props: { params: Promise<{ id: string 
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 
-    const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+    const currentUser = await (await getTenantPrisma()).user.findUnique({ where: { email: session.user.email } });
     if (!currentUser || (currentUser as any).role !== 'ADMIN') {
         // Strict Admin check
         redirect('/dashboard');

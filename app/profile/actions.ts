@@ -1,12 +1,12 @@
 'use server';
 
 import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 // Dynamic imports to handle optional dependency during dev
 async function getAuthenticator() {
-    const { authenticator } = await import('otplib');
+    const { authenticator } = (await import('otplib')) as any;
     return authenticator;
 }
 
@@ -32,7 +32,7 @@ export async function enableTwoFactor(secret: string, token: string) {
         return { success: false, message: 'Invalid code. Please try again.' };
     }
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { email: session.user.email },
         data: {
             twoFactorSecret: secret,
@@ -48,7 +48,7 @@ export async function disableTwoFactor() {
     const session = await auth();
     if (!session?.user?.email) throw new Error('Not authenticated');
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { email: session.user.email },
         data: {
             twoFactorEnabled: false,

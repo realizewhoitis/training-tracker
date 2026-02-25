@@ -1,11 +1,11 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { ShieldCheck, Save, Info } from 'lucide-react';
 import { PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, Permission, ALL_PERMISSIONS, PERMISSION_LABELS } from '@/lib/permissions';
 import { updateRoleTemplate } from './actions';
 import CreateRoleButton from './CreateRoleButton';
 
 export default async function RoleManagerPage() {
-    const roleTemplates = await prisma.roleTemplate.findMany();
+    const roleTemplates = await (await getTenantPrisma()).roleTemplate.findMany();
 
     const knownRoles = ['SUPERVISOR', 'TRAINER', 'TRAINEE']; // Standard system roles (excluding ADMIN)
     const databaseRoles = roleTemplates.map(rt => rt.roleName);

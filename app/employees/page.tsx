@@ -1,6 +1,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { User, UserPlus as UserSize } from 'lucide-react';
 import Link from 'next/link';
 import Search from './Search';
@@ -36,7 +36,7 @@ export default async function EmployeesPage(props: {
     if (sort === 'role') orderBy = { user: { role: order } };
     if (sort === 'shift') orderBy = { shift: { name: order } };
 
-    const employees = await prisma.employee.findMany({
+    const employees = await (await getTenantPrisma()).employee.findMany({
         orderBy: orderBy,
         where: {
             departed: showDeparted ? undefined : false,
@@ -55,11 +55,11 @@ export default async function EmployeesPage(props: {
         }
     });
 
-    const activeShifts = await prisma.shift.findMany({
+    const activeShifts = await (await getTenantPrisma()).shift.findMany({
         orderBy: { name: 'asc' }
     });
 
-    const roleTemplates = await prisma.roleTemplate.findMany();
+    const roleTemplates = await (await getTenantPrisma()).roleTemplate.findMany();
     const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
     const databaseRoles = roleTemplates.map((rt: any) => rt.roleName);
     let availableRoles = Array.from(new Set([...knownRoles, ...databaseRoles])).sort();

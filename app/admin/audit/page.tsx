@@ -1,13 +1,13 @@
 
-import prisma from "@/lib/prisma";
+import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 export default async function AuditPage() {
     const session = await auth();
-    if (session?.user?.role !== "ADMIN") redirect("/");
+    if ((session?.user as any)?.role !== "ADMIN") redirect("/");
 
-    const logs = await prisma.auditLog.findMany({
+    const logs = await (await getTenantPrisma()).auditLog.findMany({
         orderBy: { timestamp: 'desc' },
         take: 100,
         include: { user: true }

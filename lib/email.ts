@@ -19,13 +19,19 @@ export async function sendEmail({
     }
 
     try {
-        const data = await resend.emails.send({
+        const { data, error } = await resend.emails.send({
             from: 'Orbit 911 <notifications@orbit911.com>', // You might need to verify a domain or use 'onboarding@resend.dev' for testing
             to,
             subject,
             html,
         });
-        console.log(`📧 Email sent to ${to}: ${data.id}`);
+
+        if (error) {
+            console.error("❌ Failed to send email:", error);
+            throw error;
+        }
+
+        console.log(`📧 Email sent to ${to}: ${data?.id}`);
         return data;
     } catch (error) {
         console.error("❌ Failed to send email:", error);

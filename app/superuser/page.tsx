@@ -1,11 +1,12 @@
-
 import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { ShieldCheck, Key, Settings, Plus, UserPlus } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import EmailTemplateEditor from './EmailTemplateEditor';
 import DatabaseTools from './DatabaseTools';
+import AgencyManager from './AgencyManager';
 
 export default async function SuperuserPage() {
     const session = await auth();
@@ -14,12 +15,36 @@ export default async function SuperuserPage() {
         redirect('/');
     }
 
-    const settings = await prisma.organizationSettings.findFirst() || { orgName: 'Not Configured', modules: '[]' };
-    const licenses = await prisma.issuedLicense.findMany({ orderBy: { issuedAt: 'desc' } });
-    const users = await prisma.user.findMany({ where: { role: 'ADMIN' } });
-    const templates = await prisma.emailTemplate.findMany({ orderBy: { name: 'asc' } });
+    const settings: any = await ((await getTenantPrisma()) as any).organizationSettings.findFirst() || { orgName: 'Not Configured', modules: '[]' };
+    const licenses = await ((await getTenantPrisma()) as any).issuedLicense.findMany({ orderBy: { issuedAt: 'desc' } });
+    const users = await ((await getTenantPrisma()) as any).user.findMany({ where: { role: 'ADMIN' } });
+    const templates = await ((await getTenantPrisma()) as any).emailTemplate.findMany({ orderBy: { name: 'asc' } });
+    const agencies = await ((await getTenantPrisma()) as any).agency.findMany({ orderBy: { createdAt: 'desc' } });
+
+    const cookieStore = await cookies();
+    const activeOverride = cookieStore.get('super_agency_override')?.value || null;
 
     // Actions
+    async function createAgency(formData: FormData) {
+        'use server';
+        const name = formData.get('name') as string;
+        const timezone = formData.get('timezone') as string;
+        if (!name) return;
+        await ((await getTenantPrisma()) as any).agency.create({ data: { name, timezone } });
+        revalidatePath('/superuser');
+    }
+
+    async function setOverride(id: string | null) {
+        'use server';
+        const cookieStore = await cookies();
+        if (id) {
+            cookieStore.set('super_agency_override', id, { path: '/' });
+        } else {
+            cookieStore.delete('super_agency_override');
+        }
+        revalidatePath('/');
+    }
+
     async function generateLicense(formData: FormData) {
         'use server';
         const clientName = formData.get('clientName') as string;
@@ -27,7 +52,7 @@ export default async function SuperuserPage() {
 
         const key = `ORBIT-${Math.random().toString(36).substring(2, 10).toUpperCase()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
 
-        await prisma.issuedLicense.create({
+        await ((await getTenantPrisma()) as any).issuedLicense.create({
             data: {
                 key,
                 clientName,
@@ -49,7 +74,7 @@ export default async function SuperuserPage() {
             newModules = [...currentModules, moduleName];
         }
 
-        await prisma.organizationSettings.update({
+        await ((await getTenantPrisma()) as any).organizationSettings.update({
             where: { id: settings.id || 1 }, // Assuming ID 1 for singleton settings
             data: { modules: JSON.stringify(newModules) }
         });
@@ -73,6 +98,13 @@ export default async function SuperuserPage() {
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <AgencyManager
+                    agencies={agencies}
+                    activeOverride={activeOverride}
+                    createAgency={createAgency}
+                    setOverride={setOverride}
+                />
 
                 {/* License Generation */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">

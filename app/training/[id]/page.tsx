@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Clock, UserPlus, Trash2, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -10,7 +10,7 @@ export default async function TrainingDetailPage(props: { params: Promise<{ id: 
     const trainingId = parseInt(params.id);
     if (isNaN(trainingId)) return notFound();
 
-    const training = await prisma.training.findUnique({
+    const training = await (await getTenantPrisma()).training.findUnique({
         where: { TrainingID: trainingId },
         include: {
             attendances: {
@@ -23,7 +23,7 @@ export default async function TrainingDetailPage(props: { params: Promise<{ id: 
     if (!training) return notFound();
 
     // Fetch active employees for the dropdown
-    const employees = await prisma.employee.findMany({
+    const employees = await (await getTenantPrisma()).employee.findMany({
         where: { departed: false },
         orderBy: { empName: 'asc' }
     });

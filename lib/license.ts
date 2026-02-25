@@ -1,9 +1,9 @@
 
-import prisma from "@/lib/prisma";
+import { getTenantPrisma } from '@/lib/prisma';
 
 export async function verifyLicense() {
     // 1. Get Settings
-    const settings = await prisma.organizationSettings.findFirst();
+    const settings = await (await getTenantPrisma()).organizationSettings.findFirst();
     if (!settings) return { valid: true, status: "NO_SETTINGS_FOUND" }; // Fail open for now or fail closed?
 
     // 2. Check Key Format (Mock)
@@ -11,7 +11,7 @@ export async function verifyLicense() {
     const key = settings.licenseKey || "";
 
     // Check against IssuedLicense table
-    const issuedLicense = await prisma.issuedLicense.findUnique({
+    const issuedLicense = await (await getTenantPrisma()).issuedLicense.findUnique({
         where: { key }
     });
 

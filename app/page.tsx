@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { Users, AlertTriangle, CheckCircle, Clock, FileSignature } from 'lucide-react';
 import { auth } from '@/auth';
 import Link from 'next/link';
@@ -62,7 +62,7 @@ const calculateAnalytics = (resList: any[]) => {
 };
 
 export default async function Home() {
-  const totalEmployees = await prisma.employee.count({
+  const totalEmployees = await (await getTenantPrisma()).employee.count({
     where: { departed: false }
   });
 
@@ -70,7 +70,7 @@ export default async function Home() {
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(now.getDate() + 30);
 
-  const upcomingExpirations = await prisma.expiration.findMany({
+  const upcomingExpirations = await (await getTenantPrisma()).expiration.findMany({
     where: {
       Expiration: {
         gte: now,
@@ -87,7 +87,7 @@ export default async function Home() {
     }
   });
 
-  const expiredCertificates = await prisma.expiration.findMany({
+  const expiredCertificates = await (await getTenantPrisma()).expiration.findMany({
     where: {
       Expiration: {
         lt: now
@@ -106,7 +106,7 @@ export default async function Home() {
     }
   });
 
-  const recentTraining = await prisma.attendance.findMany({
+  const recentTraining = await (await getTenantPrisma()).attendance.findMany({
     where: {
       attendanceDate: { not: null },
       attendanceHours: { gt: 0 }
@@ -139,13 +139,13 @@ export default async function Home() {
   let currentUser: any = null;
 
   if (session?.user?.email) {
-    currentUser = await prisma.user.findUnique({
+    currentUser = await (await getTenantPrisma()).user.findUnique({
       where: { email: session.user.email },
     });
 
     if (currentUser?.empId) {
       // 1. Fetch Pending DORs
-      pendingDORs = await prisma.formResponse.findMany({
+      pendingDORs = await (await getTenantPrisma()).formResponse.findMany({
         where: {
           traineeId: currentUser.empId,
           status: 'SUBMITTED'
@@ -159,7 +159,7 @@ export default async function Home() {
 
       // 2. Fetch Analytics Data (TRAINEE only)
       if (currentUser.role === 'TRAINEE') {
-        const responses = await prisma.formResponse.findMany({
+        const responses = await (await getTenantPrisma()).formResponse.findMany({
           where: {
             traineeId: currentUser.empId,
             status: { in: ['SUBMITTED', 'REVIEWED'] }

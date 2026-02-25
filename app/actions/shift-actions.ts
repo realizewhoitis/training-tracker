@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { Shift } from '@prisma/client';
 
@@ -8,7 +8,7 @@ export async function createShift(name: string): Promise<{ success: boolean; shi
     if (!name) return { success: false, error: 'Name is required' };
 
     try {
-        const shift = await prisma.shift.create({
+        const shift = await (await getTenantPrisma()).shift.create({
             data: { name }
         });
         revalidatePath('/employees');
@@ -21,7 +21,7 @@ export async function createShift(name: string): Promise<{ success: boolean; shi
 }
 
 export async function getShifts() {
-    return await prisma.shift.findMany({
+    return await (await getTenantPrisma()).shift.findMany({
         orderBy: { name: 'asc' }
     });
 }
@@ -30,12 +30,12 @@ export async function deleteShift(shiftId: number): Promise<{ success: boolean; 
     if (!shiftId) return { success: false, error: 'Shift ID is required' };
 
     try {
-        await prisma.$transaction([
-            prisma.employee.updateMany({
+        await (await getTenantPrisma()).$transaction([
+            (await getTenantPrisma()).employee.updateMany({
                 where: { shiftId: shiftId },
                 data: { shiftId: null }
             }),
-            prisma.shift.delete({
+            (await getTenantPrisma()).shift.delete({
                 where: { id: shiftId }
             })
         ]);

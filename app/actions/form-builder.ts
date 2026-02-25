@@ -1,11 +1,11 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function createTemplate(title: string) {
-    const template = await prisma.formTemplate.create({
+    const template = await (await getTenantPrisma()).formTemplate.create({
         data: {
             title,
             version: 1,
@@ -17,7 +17,7 @@ export async function createTemplate(title: string) {
 }
 
 export async function getTemplate(id: number) {
-    return await prisma.formTemplate.findUnique({
+    return await (await getTenantPrisma()).formTemplate.findUnique({
         where: { id },
         include: {
             sections: {
@@ -33,7 +33,7 @@ export async function getTemplate(id: number) {
 }
 
 export async function addSection(templateId: number, title: string, order: number) {
-    await prisma.formSection.create({
+    await (await getTenantPrisma()).formSection.create({
         data: {
             templateId,
             title,
@@ -44,7 +44,7 @@ export async function addSection(templateId: number, title: string, order: numbe
 }
 
 export async function addField(sectionId: number, label: string, type: string, order: number) {
-    await prisma.formField.create({
+    await (await getTenantPrisma()).formField.create({
         data: {
             sectionId,
             label,
@@ -56,7 +56,7 @@ export async function addField(sectionId: number, label: string, type: string, o
 }
 
 export async function updateSection(sectionId: number, title: string) {
-    const section = await prisma.formSection.update({
+    const section = await (await getTenantPrisma()).formSection.update({
         where: { id: sectionId },
         data: { title }
     });
@@ -64,14 +64,14 @@ export async function updateSection(sectionId: number, title: string) {
 }
 
 export async function deleteSection(sectionId: number) {
-    const section = await prisma.formSection.delete({
+    const section = await (await getTenantPrisma()).formSection.delete({
         where: { id: sectionId }
     });
     revalidatePath(`/admin/forms/builder/${section.templateId}`);
 }
 
 export async function publishTemplate(id: number) {
-    await prisma.formTemplate.update({
+    await (await getTenantPrisma()).formTemplate.update({
         where: { id },
         data: { isPublished: true }
     });
@@ -79,7 +79,7 @@ export async function publishTemplate(id: number) {
 }
 
 export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean }) {
-    await prisma.formTemplate.update({
+    await (await getTenantPrisma()).formTemplate.update({
         where: { id },
         data: {
             ...(data.title && { title: data.title }),
@@ -91,7 +91,7 @@ export async function updateTemplateMetadata(id: number, data: { title?: string,
 }
 
 export async function updateField(fieldId: number, label: string) {
-    const field = await prisma.formField.update({
+    const field = await (await getTenantPrisma()).formField.update({
         where: { id: fieldId },
         data: { label },
         include: { section: true }
@@ -100,7 +100,7 @@ export async function updateField(fieldId: number, label: string) {
 }
 
 export async function deleteField(fieldId: number) {
-    const field = await prisma.formField.delete({
+    const field = await (await getTenantPrisma()).formField.delete({
         where: { id: fieldId },
         include: { section: true }
     });

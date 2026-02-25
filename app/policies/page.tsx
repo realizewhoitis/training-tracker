@@ -1,11 +1,11 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
 
 export default async function PoliciesPage() {
-    const policies = await prisma.policy.findMany({
+    const policies = await (await getTenantPrisma()).policy.findMany({
         orderBy: { createdAt: 'desc' },
         include: {
             acknowledgments: true
@@ -21,7 +21,7 @@ export default async function PoliciesPage() {
         const policyId = parseInt(formData.get('policyId') as string);
         const userId = parseInt(formData.get('userId') as string);
 
-        await prisma.policyAcknowledgment.create({
+        await (await getTenantPrisma()).policyAcknowledgment.create({
             data: {
                 policyId: policyId,
                 employeeId: userId

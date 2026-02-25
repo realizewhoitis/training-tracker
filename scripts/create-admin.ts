@@ -31,3 +31,5 @@ mainAdmin()
         await adminPrisma.$disconnect();
         process.exit(1);
     });
+
+export {};

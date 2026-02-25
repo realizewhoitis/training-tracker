@@ -1,8 +1,8 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import BulkTrainingManager from './BulkTrainingManager';
 
 export default async function BulkLogPage() {
-    const employees = await prisma.employee.findMany({
+    const employees = await (await getTenantPrisma()).employee.findMany({
         where: { departed: false },
         orderBy: { empName: 'asc' },
         select: {
@@ -14,7 +14,7 @@ export default async function BulkLogPage() {
         }
     });
 
-    const trainings = await prisma.training.findMany({
+    const trainings = await (await getTenantPrisma()).training.findMany({
         orderBy: { TrainingName: 'asc' },
         select: {
             TrainingID: true,
@@ -31,7 +31,7 @@ export default async function BulkLogPage() {
                 </div>
             </div>
 
-            <BulkTrainingManager employees={employees} trainings={trainings} />
+            <BulkTrainingManager employees={employees} trainings={trainings as any} />
         </div>
     );
 }

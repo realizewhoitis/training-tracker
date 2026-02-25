@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
 
     try {
         if (type === 'roster') {
-            const employees = await prisma.employee.findMany({
+            const employees = await (await getTenantPrisma()).employee.findMany({
                 where: { departed: false },
                 include: {
                     user: true,
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
             const ninetyDays = new Date();
             ninetyDays.setDate(now.getDate() + 90);
 
-            const expirations = await prisma.expiration.findMany({
+            const expirations = await (await getTenantPrisma()).expiration.findMany({
                 where: {
                     Expiration: {
                         lte: ninetyDays
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
             const startOfYear = new Date(currentYear, 0, 1);
             const endOfYear = new Date(currentYear, 11, 31);
 
-            const employees = await prisma.employee.findMany({
+            const employees = await (await getTenantPrisma()).employee.findMany({
                 where: { departed: false },
                 include: {
                     attendances: {

@@ -1,6 +1,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { BookOpen, Save, X, Tag } from 'lucide-react';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default async function NewTrainingPage() {
 
     // Fetch existing categories for suggestion list
-    const existingCategories = await prisma.training.findMany({
+    const existingCategories = await (await getTenantPrisma()).training.findMany({
         select: { category: true },
         distinct: ['category'],
         where: { category: { not: null } }
@@ -24,7 +24,7 @@ export default async function NewTrainingPage() {
         if (!trainingName) return;
 
         // Transaction to ensure data consistency
-        await prisma.$transaction(async (tx) => {
+        await (await getTenantPrisma()).$transaction(async (tx) => {
             // 1. Create Training
             await tx.training.create({
                 data: {

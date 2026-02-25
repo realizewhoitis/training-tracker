@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
 
@@ -18,7 +18,7 @@ export async function submitNewPassword(password: string): Promise<{ success: bo
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await prisma.user.update({
+        await (await getTenantPrisma()).user.update({
             where: { id: parseInt(session.user.id) },
             data: {
                 password: hashedPassword,

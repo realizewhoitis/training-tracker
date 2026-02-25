@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 import { auth } from '@/auth';
@@ -15,7 +15,7 @@ export async function updateSettings(formData: FormData) {
     const licenseKey = formData.get('licenseKey') as string;
 
     // Find existing settings or create first one
-    const existing = await prisma.organizationSettings.findFirst();
+    const existing = await (await getTenantPrisma()).organizationSettings.findFirst();
 
     let logoPath = existing?.logoPath;
 
@@ -28,7 +28,7 @@ export async function updateSettings(formData: FormData) {
     }
 
     if (existing) {
-        await prisma.organizationSettings.update({
+        await (await getTenantPrisma()).organizationSettings.update({
             where: { id: existing.id },
             data: {
                 orgName,
@@ -37,7 +37,7 @@ export async function updateSettings(formData: FormData) {
             }
         });
     } else {
-        await prisma.organizationSettings.create({
+        await (await getTenantPrisma()).organizationSettings.create({
             data: {
                 orgName: orgName || 'Orbit 911 Center',
                 logoPath
@@ -58,7 +58,7 @@ export async function updateSettings(formData: FormData) {
 }
 
 export async function getSettings() {
-    const settings = await prisma.organizationSettings.findFirst();
+    const settings = await (await getTenantPrisma()).organizationSettings.findFirst();
     // Default to ALL modules enabled for backward compatibility if settings or modules field is missing
     const defaultModules = JSON.stringify(['INVENTORY', 'EIS', 'DOR', 'REPORTS']);
 

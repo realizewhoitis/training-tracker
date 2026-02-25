@@ -1,5 +1,5 @@
 import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { ArrowLeft, Users, Calendar, Clock, BookOpen, AlertCircle } from 'lucide-react';
 import RosterChecklist from './RosterChecklist';
@@ -24,11 +24,11 @@ export default async function VirtualRosterPage() {
         );
     }
 
-    const availableTrainings = await prisma.training.findMany({
+    const availableTrainings = await (await getTenantPrisma()).training.findMany({
         orderBy: { TrainingName: 'asc' }
     });
 
-    const activeEmployees = await prisma.employee.findMany({
+    const activeEmployees = await (await getTenantPrisma()).employee.findMany({
         where: { departed: false },
         include: { shift: true },
         orderBy: [

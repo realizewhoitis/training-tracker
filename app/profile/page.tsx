@@ -1,5 +1,5 @@
 import { auth } from '@/auth';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { Shield, CheckCircle, AlertTriangle } from 'lucide-react';
 import MFA_Setup from './MFA_Setup';
 import { redirect } from 'next/navigation';
@@ -8,7 +8,7 @@ export default async function ProfilePage() {
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 
-    const user = await prisma.user.findUnique({
+    const user = await (await getTenantPrisma()).user.findUnique({
         where: { email: session.user.email }
     });
 

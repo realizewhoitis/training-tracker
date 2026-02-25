@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Shield, Save, ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
@@ -8,14 +8,14 @@ import { updateUserPermissions } from './actions';
 export default async function UserPermissionsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const userId = parseInt(params.id);
-    const user = await prisma.user.findUnique({
+    const user = await (await getTenantPrisma()).user.findUnique({
         where: { id: userId }
     });
 
     if (!user) notFound();
 
     // Fetch Role Template to know what the defaults are
-    const roleTemplate = await prisma.roleTemplate.findUnique({
+    const roleTemplate = await (await getTenantPrisma()).roleTemplate.findUnique({
         where: { roleName: user.role }
     });
 

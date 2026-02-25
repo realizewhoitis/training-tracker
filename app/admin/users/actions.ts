@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { sendTemplatedEmail } from '@/lib/mail';
@@ -29,7 +29,7 @@ export async function createUser(formData: FormData) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    const user = await (await getTenantPrisma()).user.create({
         data: {
             name,
             email,
@@ -65,12 +65,12 @@ export async function deleteUser(id: number) {
     // @ts-ignore
     const adminRole = session?.user?.role;
 
-    const targetUser = await prisma.user.findUnique({ where: { id } });
+    const targetUser = await (await getTenantPrisma()).user.findUnique({ where: { id } });
     if (targetUser?.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
         throw new Error('Unauthorized to delete Superuser accounts');
     }
 
-    await prisma.user.delete({ where: { id } });
+    await (await getTenantPrisma()).user.delete({ where: { id } });
 
     await logAudit({
         userId: adminId,
@@ -89,14 +89,14 @@ export async function updateUserRole(id: number, role: string) {
     // @ts-ignore
     const adminRole = session?.user?.role;
 
-    const targetUser = await prisma.user.findUnique({ where: { id } });
+    const targetUser = await (await getTenantPrisma()).user.findUnique({ where: { id } });
 
     // Check if trying to upgrade someone to SUPERUSER, or edit an existing SUPERUSER
     if ((role === 'SUPERUSER' || targetUser?.role === 'SUPERUSER') && adminRole !== 'SUPERUSER') {
         throw new Error('Unauthorized to grant or modify Superuser roles');
     }
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { id },
         data: { role }
     });
@@ -125,14 +125,14 @@ export async function resetPassword(formData: FormData) {
         throw new Error('Password must be at least 6 characters');
     }
 
-    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    const targetUser = await (await getTenantPrisma()).user.findUnique({ where: { id: userId } });
     if (targetUser?.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
         throw new Error('Unauthorized to reset passwords for Superuser accounts');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { id: userId },
         data: { password: hashedPassword }
     });
@@ -154,7 +154,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
     // @ts-ignore
     const adminRole = session?.user?.role;
 
-    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    const targetUser = await (await getTenantPrisma()).user.findUnique({ where: { id: userId } });
     if (!targetUser) throw new Error('User not found');
 
     if (targetUser.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
@@ -177,7 +177,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
         ? generateBase32Secret(32)
         : targetUser.twoFactorSecret;
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { id: userId },
         data: {
             twoFactorEnabled: enabled,
@@ -203,14 +203,14 @@ export async function toggleForcePasswordReset(userId: number, force: boolean) {
     // @ts-ignore
     const adminRole = session?.user?.role;
 
-    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    const targetUser = await (await getTenantPrisma()).user.findUnique({ where: { id: userId } });
     if (!targetUser) throw new Error('User not found');
 
     if (targetUser.role === 'SUPERUSER' && adminRole !== 'SUPERUSER') {
         throw new Error('Unauthorized to modify Superuser security settings');
     }
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { id: userId },
         data: {
             forcePasswordReset: force
@@ -252,7 +252,7 @@ export async function provisionEmployeeAccount(empId: number, name: string, emai
 
         const hashedPassword = await bcrypt.hash(finalTempPassword, 10);
 
-        const newUser = await prisma.user.create({
+        const newUser = await (await getTenantPrisma()).user.create({
             data: {
                 name,
                 email,

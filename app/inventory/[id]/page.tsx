@@ -1,6 +1,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Package, Clock, ArrowRightLeft } from 'lucide-react';
 import { assignAsset, returnAsset } from '../actions';
@@ -8,7 +8,7 @@ import { assignAsset, returnAsset } from '../actions';
 export default async function AssetDetailPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const assetId = parseInt(params.id);
-    const asset = await prisma.asset.findUnique({
+    const asset = await (await getTenantPrisma()).asset.findUnique({
         where: { id: assetId },
         include: {
             category: true,
@@ -22,7 +22,7 @@ export default async function AssetDetailPage(props: { params: Promise<{ id: str
     if (!asset) notFound();
 
     const currentAssignment = asset.assignments.find((a: any) => !a.returnedAt);
-    const employees = await prisma.employee.findMany({ where: { departed: false }, orderBy: { empName: 'asc' } });
+    const employees = await (await getTenantPrisma()).employee.findMany({ where: { departed: false }, orderBy: { empName: 'asc' } });
 
     return (
         <div className="space-y-6">

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { getSettings } from '@/app/admin/settings/actions';
 import { BookOpen, Search, Filter, Plus, ClipboardList, FileUp, Calendar, Award, CheckCircle, Clock, Users } from 'lucide-react';
@@ -14,7 +14,7 @@ export default async function TrainingPage({
         roster_success?: string;
     };
 }) {
-    const trainings = await prisma.training.findMany({
+    const trainings = await (await getTenantPrisma()).training.findMany({
         orderBy: { TrainingName: 'asc' },
         include: {
             _count: {

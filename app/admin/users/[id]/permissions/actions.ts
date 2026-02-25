@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function updateUserPermissions(formData: FormData) {
@@ -10,7 +10,7 @@ export async function updateUserPermissions(formData: FormData) {
 
     if (!userId) throw new Error('User ID is required');
 
-    await prisma.user.update({
+    await (await getTenantPrisma()).user.update({
         where: { id: userId },
         data: {
             customPermissions: useDefaults ? null : JSON.stringify(permissions)

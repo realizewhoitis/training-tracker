@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { scanForFlags, resolveFlag, dismissFlag } from './actions';
 import { AlertTriangle, CheckCircle, ShieldAlert, BadgeCheck, XCircle, Search, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 export default async function EISAdminPage({ searchParams }: { searchParams: { q?: string } }) {
     const query = searchParams.q || '';
 
-    const flags = await prisma.eISFlag.findMany({
+    const flags = await (await getTenantPrisma()).eISFlag.findMany({
         where: {
             status: 'OPEN',
             employee: {

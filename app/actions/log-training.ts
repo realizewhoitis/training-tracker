@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { logAudit } from "@/lib/audit";
 
@@ -19,19 +19,19 @@ export async function submitTrainingLogs(entries: TrainingLogEntry[]) {
     for (const entry of entries) {
         try {
             // Basic validation: Check if Employee and Training exist
-            const emp = await prisma.employee.findUnique({ where: { empId: entry.employeeId } });
+            const emp = await (await getTenantPrisma()).employee.findUnique({ where: { empId: entry.employeeId } });
             if (!emp) {
                 errors.push(`Employee ID ${entry.employeeId} not found`);
                 continue;
             }
 
-            const training = await prisma.training.findUnique({ where: { TrainingID: entry.trainingId } });
+            const training = await (await getTenantPrisma()).training.findUnique({ where: { TrainingID: entry.trainingId } });
             if (!training) {
                 errors.push(`Training ID ${entry.trainingId} not found`);
                 continue;
             }
 
-            await prisma.attendance.create({
+            await (await getTenantPrisma()).attendance.create({
                 data: {
                     employeeID: entry.employeeId,
                     trainingID: entry.trainingId,
@@ -71,7 +71,7 @@ export async function submitRoster(
 
         if (typeof trainingTopic === 'number') {
             // Validate existing training
-            const training = await prisma.training.findUnique({ where: { TrainingID: trainingTopic } });
+            const training = await (await getTenantPrisma()).training.findUnique({ where: { TrainingID: trainingTopic } });
             if (!training) {
                 return { success: false, error: `Training ID ${trainingTopic} not found.` };
             }
@@ -82,7 +82,7 @@ export async function submitRoster(
                 return { success: false, error: 'A valid training topic name must be provided.' };
             }
 
-            const newTraining = await prisma.training.create({
+            const newTraining = await (await getTenantPrisma()).training.create({
                 data: {
                     TrainingName: trainingTopic.trim(),
                     category: 'Virtual Roster', // Default category for impromptu training
@@ -108,7 +108,7 @@ export async function submitRoster(
             attendanceHealth: true
         }));
 
-        const result = await prisma.attendance.createMany({
+        const result = await (await getTenantPrisma()).attendance.createMany({
             data,
             skipDuplicates: true // In case someone clicks twice fast
         });

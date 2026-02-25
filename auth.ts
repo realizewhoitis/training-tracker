@@ -152,6 +152,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 // @ts-ignore
                 token.role = user.role;
                 // @ts-ignore
+                token.agencyId = user.agencyId;
+                // @ts-ignore
                 token.forcePasswordReset = user.forcePasswordReset;
 
                 // Fetch permissions
@@ -166,6 +168,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 session.user.id = token.id as string;
                 // @ts-ignore
                 session.user.role = token.role as string;
+                // @ts-ignore
+                session.user.agencyId = token.agencyId as string | null;
                 // @ts-ignore
                 session.user.forcePasswordReset = token.forcePasswordReset as boolean;
                 // @ts-ignore

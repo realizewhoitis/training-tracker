@@ -1,6 +1,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { Package, Save, X, Tag, Hash, User } from 'lucide-react';
 import Link from 'next/link';
@@ -8,11 +8,11 @@ import AddCategory from './AddCategory';
 
 export default async function NewAssetPage() {
 
-    const categories = await prisma.assetCategory.findMany({
+    const categories = await (await getTenantPrisma()).assetCategory.findMany({
         orderBy: { name: 'asc' }
     });
 
-    const employees = await prisma.employee.findMany({
+    const employees = await (await getTenantPrisma()).employee.findMany({
         where: { departed: false },
         orderBy: { empName: 'asc' }
     });
@@ -30,7 +30,7 @@ export default async function NewAssetPage() {
         if (!name || isNaN(categoryId)) return;
 
         if (employeeId) {
-            await prisma.$transaction(async (tx) => {
+            await (await getTenantPrisma()).$transaction(async (tx) => {
                 const asset = await tx.asset.create({
                     data: {
                         name,
@@ -50,7 +50,7 @@ export default async function NewAssetPage() {
                 });
             });
         } else {
-            await prisma.asset.create({
+            await (await getTenantPrisma()).asset.create({
                 data: {
                     name,
                     categoryId,

@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { logAudit } from "@/lib/audit";
 import { auth } from "@/auth";
@@ -21,7 +21,7 @@ export async function addAttendee(trainingId: number, formData: FormData) {
     const attendanceDate = new Date(dateStr);
 
     try {
-        await prisma.attendance.create({
+        await (await getTenantPrisma()).attendance.create({
             data: {
                 trainingID: trainingId,
                 employeeID: employeeId,
@@ -53,7 +53,7 @@ export async function removeAttendee(attendanceId: number, trainingId: number) {
     const currentUserId = session?.user?.id ? parseInt(session.user.id) : undefined;
 
     try {
-        await prisma.attendance.delete({
+        await (await getTenantPrisma()).attendance.delete({
             where: { attendanceID: attendanceId }
         });
 
@@ -89,7 +89,7 @@ export async function bulkAddAttendees(trainingId: number, entries: BulkAttendee
     // Process sequentially but don't fail all on one error (match Bulk Upload behavior)
     for (const entry of entries) {
         try {
-            await prisma.attendance.create({
+            await (await getTenantPrisma()).attendance.create({
                 data: {
                     trainingID: trainingId,
                     employeeID: entry.employeeId,

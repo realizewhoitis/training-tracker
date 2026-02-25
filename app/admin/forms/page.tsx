@@ -1,11 +1,11 @@
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { FilePlus, Edit, CheckCircle } from 'lucide-react';
 import { createTemplate } from '@/app/actions/form-builder';
 
 export default async function FormsDashboard() {
-    const templates = await prisma.formTemplate.findMany({
+    const templates = await (await getTenantPrisma()).formTemplate.findMany({
         orderBy: { updatedAt: 'desc' }
     });
 

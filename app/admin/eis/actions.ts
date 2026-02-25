@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function scanForFlags() {
@@ -17,7 +17,7 @@ async function checkPerformanceFlags() {
     // If avg < 2.0 (arbitrary threshold from plan), create flag if not exists open.
 
     // 1. Get all employees
-    const employees = await prisma.employee.findMany({
+    const employees = await (await getTenantPrisma()).employee.findMany({
         include: {
             formResponses: {
                 where: {
@@ -63,7 +63,7 @@ async function checkPerformanceFlags() {
         if (avgScore < 2.5) { // Threshold for "Low Performance"
             // Check if open flag exists
             // @ts-ignore - Prisma client not regenerated yet
-            const existing = await prisma.eISFlag.findFirst({
+            const existing = await (await getTenantPrisma()).eISFlag.findFirst({
                 where: {
                     employeeId: emp.empId,
                     type: 'PERFORMANCE',
@@ -73,7 +73,7 @@ async function checkPerformanceFlags() {
 
             if (!existing) {
                 // @ts-ignore
-                await prisma.eISFlag.create({
+                await (await getTenantPrisma()).eISFlag.create({
                     data: {
                         employeeId: emp.empId,
                         type: 'PERFORMANCE',
@@ -90,7 +90,7 @@ async function checkPerformanceFlags() {
 
 async function checkAssetFlags() {
     // Logic: Find assigned assets with condition POOR or DAMAGED
-    const problematicAssets = await prisma.assetAssignment.findMany({
+    const problematicAssets = await (await getTenantPrisma()).assetAssignment.findMany({
         where: {
             returnedAt: null,
             asset: {
@@ -105,7 +105,7 @@ async function checkAssetFlags() {
     let createdCount = 0;
 
     for (const assignment of problematicAssets) {
-        const existing = await prisma.eISFlag.findFirst({
+        const existing = await (await getTenantPrisma()).eISFlag.findFirst({
             where: {
                 employeeId: assignment.employeeId,
                 type: 'ASSET',
@@ -115,7 +115,7 @@ async function checkAssetFlags() {
         });
 
         if (!existing) {
-            await prisma.eISFlag.create({
+            await (await getTenantPrisma()).eISFlag.create({
                 data: {
                     employeeId: assignment.employeeId,
                     type: 'ASSET',
@@ -130,7 +130,7 @@ async function checkAssetFlags() {
 }
 
 export async function resolveFlag(flagId: number, notes: string) {
-    await prisma.eISFlag.update({
+    await (await getTenantPrisma()).eISFlag.update({
         where: { id: flagId },
         data: {
             status: 'RESOLVED',
@@ -142,7 +142,7 @@ export async function resolveFlag(flagId: number, notes: string) {
 }
 
 export async function dismissFlag(flagId: number) {
-    await prisma.eISFlag.update({
+    await (await getTenantPrisma()).eISFlag.update({
         where: { id: flagId },
         data: {
             status: 'DISMISSED',

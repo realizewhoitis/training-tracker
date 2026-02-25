@@ -3,14 +3,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sendEmail, generateDORSubmittedEmail, generateDORSignedEmail } from '@/lib/email';
 
 export async function getDOR(id: number) {
-    return await prisma.formResponse.findUnique({
+    return await (await getTenantPrisma()).formResponse.findUnique({
         where: { id },
         include: {
             template: {
@@ -35,7 +35,7 @@ export async function signDOR(id: number) {
     const session = await auth();
     if (!session?.user?.email) throw new Error("Unauthorized");
 
-    const updatedDor = await prisma.formResponse.update({
+    const updatedDor = await (await getTenantPrisma()).formResponse.update({
         where: { id },
         data: {
             status: 'REVIEWED',
@@ -60,7 +60,7 @@ export async function signDOR(id: number) {
 }
 
 export async function getLatestPublishedTemplate() {
-    return await prisma.formTemplate.findFirst({
+    return await (await getTenantPrisma()).formTemplate.findFirst({
         where: { isPublished: true },
         orderBy: { version: 'desc' },
         include: {
@@ -77,14 +77,14 @@ export async function getLatestPublishedTemplate() {
 }
 
 export async function getTrainees() {
-    return await prisma.employee.findMany({
+    return await (await getTenantPrisma()).employee.findMany({
         where: { departed: false },
         orderBy: { empName: 'asc' }
     });
 }
 
 export async function getTrainers() {
-    return await prisma.user.findMany({
+    return await (await getTenantPrisma()).user.findMany({
         where: {
             role: { in: ['TRAINER', 'SUPERVISOR', 'ADMIN'] }
         },
@@ -103,7 +103,7 @@ export async function submitDOR(formData: FormData) {
     const formTrainerId = formData.get('trainerId') ? parseInt(formData.get('trainerId') as string) : parseInt(session.user.id);
 
     // Fetch Template for Naming Convention
-    const template = await prisma.formTemplate.findUnique({
+    const template = await (await getTenantPrisma()).formTemplate.findUnique({
         where: { id: templateId },
         include: { sections: { include: { fields: true } } }
     });
@@ -130,8 +130,8 @@ export async function submitDOR(formData: FormData) {
 
     let customTitle = null;
     if (template?.namingConvention) {
-        const traineeUser = await prisma.employee.findUnique({ where: { empId: traineeId } });
-        const trainer = await prisma.user.findUnique({ where: { id: formTrainerId } });
+        const traineeUser = await (await getTenantPrisma()).employee.findUnique({ where: { empId: traineeId } });
+        const trainer = await (await getTenantPrisma()).user.findUnique({ where: { id: formTrainerId } });
         const dateStr = new Date().toISOString().split('T')[0];
 
         let title = template.namingConvention;
@@ -152,7 +152,7 @@ export async function submitDOR(formData: FormData) {
         customTitle = title;
     }
 
-    const newDor = await prisma.formResponse.create({
+    const newDor = await (await getTenantPrisma()).formResponse.create({
         data: {
             templateId,
             traineeId,
@@ -165,8 +165,8 @@ export async function submitDOR(formData: FormData) {
 
     // Email Notification
     try {
-        const traineeUser = await prisma.user.findUnique({ where: { empId: traineeId } });
-        const trainer = await prisma.user.findUnique({ where: { id: formTrainerId } });
+        const traineeUser = await (await getTenantPrisma()).user.findUnique({ where: { empId: traineeId } });
+        const trainer = await (await getTenantPrisma()).user.findUnique({ where: { id: formTrainerId } });
 
         if (traineeUser?.email && trainer) {
             await sendEmail({
@@ -201,7 +201,7 @@ export async function updateDOR(formData: FormData) {
         }
     }
 
-    await prisma.formResponse.update({
+    await (await getTenantPrisma()).formResponse.update({
         where: { id: dorId },
         data: {
             traineeId,
@@ -216,11 +216,11 @@ export async function updateDOR(formData: FormData) {
 export async function deleteDOR(id: number) {
     const session = await auth();
     // Strict Admin Check
-    if (session?.user?.role !== 'ADMIN') {
+    if ((session?.user as any)?.role !== 'ADMIN') {
         throw new Error("Unauthorized: Admin Access Required");
     }
 
-    await prisma.formResponse.delete({
+    await (await getTenantPrisma()).formResponse.delete({
         where: { id }
     });
 

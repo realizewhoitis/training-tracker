@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 
@@ -28,7 +28,7 @@ export async function GET() {
 
         // 2. Build Certificate Map (LegacyID -> RealID)
         // We assume Certificates might have new IDs, so we map by Name.
-        const dbCertificates = await prisma.certificate.findMany();
+        const dbCertificates = await (await getTenantPrisma()).certificate.findMany();
         const certMap = new Map<number, number>(); // LegacyID -> RealID
 
         for (const legCert of certificatesData) {
@@ -62,7 +62,7 @@ export async function GET() {
                 // Actually we can just create many, but let's try to be idempotent if possible
                 // Expiration table has no unique constraint on [Cert, Emp], so duplicates possible. 
                 // Let's check first.
-                const exists = await prisma.expiration.findFirst({
+                const exists = await (await getTenantPrisma()).expiration.findFirst({
                     where: {
                         CertificateID: realCertId,
                         EmployeeID: exp.EmployeeID
@@ -70,7 +70,7 @@ export async function GET() {
                 });
 
                 if (!exists) {
-                    await prisma.expiration.create({
+                    await (await getTenantPrisma()).expiration.create({
                         data: {
                             CertificateID: realCertId,
                             EmployeeID: exp.EmployeeID,

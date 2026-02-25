@@ -1,6 +1,6 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { getTraineeProgress, getCategoryStrengths } from '@/app/actions/analytics';
 import ScoreTrendChart from '@/app/components/charts/ScoreTrendChart';
@@ -26,10 +26,10 @@ export default async function EmployeeDetailPage(props: {
     const session = await auth();
     const canManageUsers = (session?.user as any)?.permissions?.includes(PERMISSIONS.MANAGE_USERS) || false;
 
-    const roleTemplates = await prisma.roleTemplate.findMany();
+    const roleTemplates = await (await getTenantPrisma()).roleTemplate.findMany();
     const availableRoles = ['ADMIN', 'SUPERUSER', 'SUPERVISOR', 'TRAINER', 'TRAINEE', ...roleTemplates.map(rt => rt.roleName)].filter((value, index, self) => self.indexOf(value) === index).sort();
 
-    const employee = await prisma.employee.findUnique({
+    const employee = await (await getTenantPrisma()).employee.findUnique({
         where: { empId: employeeId },
         include: {
             attendances: {

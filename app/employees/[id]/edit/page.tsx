@@ -1,5 +1,5 @@
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import EditEmployeeForm from './EditEmployeeForm';
 import { getShifts } from '@/app/actions/shift-actions';
@@ -10,7 +10,7 @@ export default async function EditEmployeePage(props: { params: Promise<{ id: st
     const params = await props.params;
     const employeeId = parseInt(params.id);
 
-    const employee = await prisma.employee.findUnique({
+    const employee = await (await getTenantPrisma()).employee.findUnique({
         where: { empId: employeeId }
     });
 

@@ -1,5 +1,5 @@
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 
@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function SetupPage() {
     // SECURITY: Only run if no superuser exists
-    const existingSuperuser = await prisma.user.findFirst({
+    const existingSuperuser = await (await getTenantPrisma()).user.findFirst({
         where: { role: 'SUPERUSER' }
     });
 
@@ -31,7 +31,7 @@ export default async function SetupPage() {
     const email = 'superuser@orbit911.com';
     const password = await bcrypt.hash('orbit!super', 10);
 
-    await prisma.user.create({
+    await (await getTenantPrisma()).user.create({
         data: {
             email,
             name: 'System Superuser',
@@ -41,7 +41,7 @@ export default async function SetupPage() {
     });
 
     // 2. Create Default License
-    await prisma.issuedLicense.create({
+    await (await getTenantPrisma()).issuedLicense.create({
         data: {
             key: 'ORBIT-SYSTEM-DEFAULT-KEY',
             clientName: 'System Default',
@@ -50,14 +50,14 @@ export default async function SetupPage() {
     });
 
     // 3. Update Settings
-    const settings = await prisma.organizationSettings.findFirst();
+    const settings = await (await getTenantPrisma()).organizationSettings.findFirst();
     if (settings) {
-        await prisma.organizationSettings.update({
+        await (await getTenantPrisma()).organizationSettings.update({
             where: { id: settings.id },
             data: { licenseKey: 'ORBIT-SYSTEM-DEFAULT-KEY' }
         });
     } else {
-        await prisma.organizationSettings.create({
+        await (await getTenantPrisma()).organizationSettings.create({
             data: {
                 orgName: 'Orbit 911 Center',
                 licenseKey: 'ORBIT-SYSTEM-DEFAULT-KEY',

@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { User, Shield, Trash2, Key, RefreshCw, Lock, Unlock, ShieldAlert } from 'lucide-react';
 import { createUser, deleteUser, resetPassword, toggleTwoFactor, toggleForcePasswordReset } from './actions';
 import UserRoleSelect from './UserRoleSelect';
@@ -10,11 +10,11 @@ export default async function UserManagementPage() {
     // @ts-ignore
     const currentUserRole = session?.user?.role;
 
-    const users = await prisma.user.findMany({
+    const users = await (await getTenantPrisma()).user.findMany({
         orderBy: { name: 'asc' }
     });
 
-    const roleTemplates = await prisma.roleTemplate.findMany();
+    const roleTemplates = await (await getTenantPrisma()).roleTemplate.findMany();
     const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
     const databaseRoles = roleTemplates.map(rt => rt.roleName);
     // Combine and ensure unique. Keep ADMIN.

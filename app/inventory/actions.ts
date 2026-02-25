@@ -1,6 +1,6 @@
 'use server';
 
-import prisma from '@/lib/prisma';
+import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function assignAsset(formData: FormData) {
@@ -10,18 +10,18 @@ export async function assignAsset(formData: FormData) {
     if (!employeeId || !assetId) return;
 
     // Check if already assigned to prevent race condition
-    const freshAsset = await prisma.asset.findUnique({ where: { id: assetId } });
+    const freshAsset = await (await getTenantPrisma()).asset.findUnique({ where: { id: assetId } });
     if (freshAsset?.status === 'ASSIGNED') return;
 
-    await prisma.$transaction([
-        prisma.assetAssignment.create({
+    await (await getTenantPrisma()).$transaction([
+        (await getTenantPrisma()).assetAssignment.create({
             data: {
                 assetId: assetId,
                 employeeId: employeeId,
                 notes: formData.get('notes') as string
             }
         }),
-        prisma.asset.update({
+        (await getTenantPrisma()).asset.update({
             where: { id: assetId },
             data: { status: 'ASSIGNED' }
         })
@@ -37,12 +37,12 @@ export async function returnAsset(formData: FormData) {
     const assetId = parseInt(formData.get('assetId') as string);
     const condition = formData.get('condition') as string;
 
-    await prisma.$transaction([
-        prisma.assetAssignment.update({
+    await (await getTenantPrisma()).$transaction([
+        (await getTenantPrisma()).assetAssignment.update({
             where: { id: assignmentId },
             data: { returnedAt: new Date() }
         }),
-        prisma.asset.update({
+        (await getTenantPrisma()).asset.update({
             where: { id: assetId },
             data: {
                 status: 'AVAILABLE',
@@ -59,7 +59,7 @@ export async function returnAsset(formData: FormData) {
 export async function createCategory(name: string) {
     if (!name) return;
 
-    await prisma.assetCategory.create({
+    await (await getTenantPrisma()).assetCategory.create({
         data: { name }
     });
 
