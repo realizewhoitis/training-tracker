@@ -135,7 +135,7 @@ export default async function SuperuserPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {licenses.map(l => (
+                                {licenses.map((l: any) => (
                                     <tr key={l.id}>
                                         <td className="px-3 py-2 font-medium">{l.clientName}</td>
                                         <td className="px-3 py-2 font-mono text-xs select-all bg-slate-50 p-1 rounded border">{l.key}</td>
@@ -186,7 +186,7 @@ export default async function SuperuserPage() {
                             <UserPlus className="mr-2 text-blue-500" /> Existing Admins
                         </h2>
                         <ul className="space-y-2">
-                            {users.map(u => (
+                            {users.map((u: any) => (
                                 <li key={u.id} className="text-sm flex justify-between p-2 bg-slate-50 rounded">
                                     <span>{u.name}</span>
                                     <span className="text-slate-500">{u.email}</span>

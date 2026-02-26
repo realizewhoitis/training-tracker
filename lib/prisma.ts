@@ -27,8 +27,22 @@ export const getTenantPrisma = async () => {
         query: {
             $allModels: {
                 async $allOperations({ model, operation, args, query }) {
-                    // Agency, User, and AuditLog are universally queryable explicitly or handled gracefully.
-                    if (['Agency', 'EmailTemplate', 'IssuedLicense'].includes(model)) {
+                    // Only inject agencyId into models that actually possess the column
+                    const modelsWithAgencyId = [
+                        'Employee',
+                        'Shift',
+                        'AssetCategory',
+                        'Asset',
+                        'User',
+                        'Training',
+                        'Certificate',
+                        'Policy',
+                        'FormTemplate',
+                        'OrganizationSettings',
+                        'AuditLog'
+                    ];
+
+                    if (!modelsWithAgencyId.includes(model)) {
                         return query(args);
                     }
 
