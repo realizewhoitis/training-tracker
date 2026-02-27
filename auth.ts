@@ -122,7 +122,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                 throw new TwoFactorRequiredError();
                             }
 
-                            const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 5 });
+                            const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 20 });
                             if (!result.valid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
                             if (e instanceof TwoFactorRequiredError || e.code === '2FA_REQUIRED' || e.message?.includes('2FA_REQUIRED')) {

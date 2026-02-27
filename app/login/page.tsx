@@ -73,11 +73,14 @@ export default function LoginPage() {
 
                     {is2FA && (
                         <div>
-                            <label className="block text-sm font-medium text-slate-700" htmlFor="twoFactorCode">
-                                Identity Verification Code
-                            </label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium text-slate-700" htmlFor="twoFactorCode">
+                                    Identity Verification Code
+                                </label>
+                                <ResendButton />
+                            </div>
                             <input
-                                className="mt-1 block w-full text-center tracking-widest px-3 py-2 bg-white border border-slate-300 rounded-md text-lg shadow-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                className="block w-full text-center tracking-widest px-3 py-2 bg-white border border-slate-300 rounded-md text-lg shadow-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                 id="twoFactorCode"
                                 type="text"
                                 name="twoFactorCode"
@@ -108,6 +111,25 @@ export default function LoginPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+function ResendButton() {
+    const { pending } = useFormStatus();
+
+    return (
+        <button
+            type="submit"
+            formNoValidate
+            disabled={pending}
+            onClick={() => {
+                const input = document.getElementById('twoFactorCode') as HTMLInputElement;
+                if (input) input.value = '';
+            }}
+            className="text-xs font-semibold text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
+        >
+            Resend Code
+        </button>
     );
 }
 
