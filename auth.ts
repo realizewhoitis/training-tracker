@@ -30,6 +30,14 @@ const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
+// Global debounce tracker for 2FA emails to prevent NextAuth double-sends
+declare global {
+    // eslint-disable-next-line no-var
+    var twoFactorEmailTracker: Map<string, number> | undefined;
+}
+const emailTracker = globalThis.twoFactorEmailTracker ?? new Map<string, number>();
+if (process.env.NODE_ENV !== 'production') globalThis.twoFactorEmailTracker = emailTracker;
+
 function checkRateLimit(ip: string): boolean {
     const now = Date.now();
     const record = rateLimitMap.get(ip);
@@ -114,11 +122,21 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             const { OTP } = await import('otplib');
                             const totp = new OTP();
 
-                            // If code is not provided, send it via email
+                            // If code is not provided, send it via email (debounced globally)
                             if (!twoFactorCode) {
-                                const token = await totp.generate({ secret: user.twoFactorSecret });
-                                const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
-                                await sendTwoFactorTokenEmail(email, token);
+                                const now = Date.now();
+                                const lastSent = emailTracker.get(normalizedEmail) || 0;
+
+                                // Only dispatch email if 30 seconds have passed
+                                if (now - lastSent > 30000) {
+                                    const token = await totp.generate({ secret: user.twoFactorSecret });
+                                    const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
+                                    await sendTwoFactorTokenEmail(email, token);
+                                    emailTracker.set(normalizedEmail, now);
+                                } else {
+                                    console.log(`Skipping duplicate 2FA dispatch for ${email} (debounced)`);
+                                }
+
                                 throw new TwoFactorRequiredError();
                             }
 
