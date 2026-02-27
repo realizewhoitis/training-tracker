@@ -119,8 +119,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     if (user.twoFactorEnabled && user.twoFactorSecret) {
                         try {
-                            const { TOTP } = await import('otplib');
-                            const totp = new TOTP();
+                            const { generate, verify } = await import('otplib');
 
                             // If code is not provided, send it via email (debounced globally)
                             if (!twoFactorCode) {
@@ -129,7 +128,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                                 // Only dispatch email if 30 seconds have passed
                                 if (now - lastSent > 30000) {
-                                    const token = await totp.generate({ secret: user.twoFactorSecret });
+                                    const token = await generate({ secret: user.twoFactorSecret });
                                     const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
                                     await sendTwoFactorTokenEmail(email, token);
                                     emailTracker.set(normalizedEmail, now);
@@ -141,8 +140,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             }
 
                             // We grant a 10-minute validity window (20 steps of 30 seconds)
-                            // @ts-ignore - The otplib type definitions incorrectly assume token is a string, but the JS implementation requires an option object
-                            const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 20 });
+                            // @ts-ignore - The otplib type definitions might complain but verify expects an object
+                            const result = await verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 20 });
                             if (!result.valid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
                             if (e instanceof TwoFactorRequiredError || e.code === '2FA_REQUIRED' || e.message?.includes('2FA_REQUIRED')) {
