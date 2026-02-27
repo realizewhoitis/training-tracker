@@ -6,6 +6,14 @@ export const authConfig = {
         signIn: '/login',
     },
     callbacks: {
+        // Run on Edge middleware to decode token properties into auth object
+        session({ session, token }) {
+            if (session.user && token) {
+                // @ts-ignore
+                session.user.forcePasswordReset = token.forcePasswordReset;
+            }
+            return session;
+        },
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
             const isOnDashboard = nextUrl.pathname.startsWith('/'); // Protect everything for now, can refine later
