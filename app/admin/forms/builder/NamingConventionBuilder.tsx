@@ -204,6 +204,22 @@ export default function NamingConventionBuilder({ defaultValue, fields, onSave }
                     <SortableContext items={tokens} strategy={horizontalListSortingStrategy}>
                         <DroppableZone id="drop-zone" tokens={tokens} onRemove={removeItem} />
                     </SortableContext>
+
+                    {/* Live Preview */}
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+                        <p className="text-xs font-semibold text-blue-800 mb-1">Live Example:</p>
+                        <p className="text-sm font-medium text-slate-700 break-all">
+                            {tokens.length === 0 ? <span className="text-blue-300 italic">Start building to see preview...</span> :
+                                tokens.map(t => {
+                                    if (t.type === 'system' && t.value === '{{trainee}}') return 'Jane Doe';
+                                    if (t.type === 'system' && t.value === '{{trainer}}') return 'John Smith';
+                                    if (t.type === 'system' && t.value === '{{date}}') return new Date().toLocaleDateString();
+                                    if (t.type === 'field') return 'Sample Answer';
+                                    if (t.type === 'text') return t.value;
+                                    return t.value;
+                                }).join('')}
+                        </p>
+                    </div>
                 </div>
 
                 <div className="border-t border-slate-100 pt-4">
