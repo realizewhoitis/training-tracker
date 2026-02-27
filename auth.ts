@@ -119,8 +119,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     if (user.twoFactorEnabled && user.twoFactorSecret) {
                         try {
-                            const { OTP } = await import('otplib');
-                            const totp = new OTP();
+                            const { TOTP } = await import('otplib');
+                            const totp = new TOTP();
 
                             // If code is not provided, send it via email (debounced globally)
                             if (!twoFactorCode) {
@@ -140,6 +140,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                 throw new TwoFactorRequiredError();
                             }
 
+                            // We grant a 10-minute validity window (20 steps of 30 seconds)
+                            // @ts-ignore - The otplib type definitions incorrectly assume token is a string, but the JS implementation requires an option object
                             const result = await totp.verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 20 });
                             if (!result.valid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
