@@ -56,7 +56,8 @@ export async function sendTemplatedEmail(
 
 export async function sendTwoFactorTokenEmail(email: string, token: string) {
     if (!process.env.RESEND_API_KEY) {
-        console.warn('RESEND_API_KEY is not set. Skipping email send.');
+        console.warn('RESEND_API_KEY is not set. Skipping email send and logging token as fallback.');
+        console.log(`\n\n=== 2FA TOKEN FOR ${email} (FALLBACK) ===\n${token}\n=========================================\n\n`);
         return;
     }
 
