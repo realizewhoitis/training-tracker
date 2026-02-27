@@ -8,9 +8,21 @@ import { GripVertical, Pencil, Trash2 } from 'lucide-react';
 
 import { addSection, addField, publishTemplate, updateSection, deleteSection, updateField, deleteField } from '@/app/actions/form-builder';
 import NamingConventionBuilder from './NamingConventionBuilder';
+import RatingScaleEditor from './RatingScaleEditor';
 
 export default function FormBuilder({ template }: { template: any }) {
     const [isPublishing, setIsPublishing] = useState(false);
+
+    // Compute the dynamic rating scale array to use in the preview renderer
+    const standardScale = ["1", "2", "3", "4", "5", "6", "7", "N.O."];
+    let customScale = standardScale;
+    try {
+        if (template.ratingScaleOptions) {
+            customScale = JSON.parse(template.ratingScaleOptions);
+        }
+    } catch (e) {
+        console.error("Failed to parse rating scale from template:", e);
+    }
 
 
 
@@ -103,11 +115,18 @@ export default function FormBuilder({ template }: { template: any }) {
                                 defaultValue={template.namingConvention}
                                 fields={template.sections.flatMap((s: any) => s.fields) || []}
                                 onSave={async (newValue) => {
-                                    // Debouncing could be added here if needed, but since it's driven by drag-drops, 
-                                    // frequent server calls might be okay or we can debounce the action itself.
-                                    // For now, let's just save.
                                     const { updateTemplateMetadata } = await import('@/app/actions/form-builder');
                                     await updateTemplateMetadata(template.id, { namingConvention: newValue, isPublished: false });
+                                }}
+                            />
+                        </div>
+
+                        <div className="mt-8 max-w-2xl mx-auto">
+                            <RatingScaleEditor
+                                defaultValue={template.ratingScaleOptions}
+                                onSave={async (newScaleStr) => {
+                                    const { updateTemplateMetadata } = await import('@/app/actions/form-builder');
+                                    await updateTemplateMetadata(template.id, { ratingScaleOptions: newScaleStr, isPublished: false });
                                 }}
                             />
                         </div>
@@ -174,8 +193,8 @@ export default function FormBuilder({ template }: { template: any }) {
 
                                             {field.type === 'RATING' && (
                                                 <div className="flex space-x-1">
-                                                    {[1, 2, 3, 4, 5, 6, 7, "N.O."].map(n => (
-                                                        <div key={n} className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 bg-white text-xs text-slate-500">
+                                                    {customScale.map((n: string) => (
+                                                        <div key={n} className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 bg-white text-xs text-slate-500 shadow-sm">
                                                             {n}
                                                         </div>
                                                     ))}

@@ -19,6 +19,17 @@ export default function DORForm({ template, trainees, trainers = [], initialData
     // Parse initial scores if they exist
     const initialScores = initialData ? JSON.parse(initialData.responseData) : {};
 
+    // Compute dynamic rating scale
+    const standardScale = ["1", "2", "3", "4", "5", "6", "7", "N.O."];
+    let customScale = standardScale;
+    try {
+        if (template.ratingScaleOptions) {
+            customScale = JSON.parse(template.ratingScaleOptions);
+        }
+    } catch (e) {
+        console.error("Failed to parse rating scale from template:", e);
+    }
+
     return (
         <form
             action={initialData ? updateDOR : submitDOR}
@@ -50,6 +61,8 @@ export default function DORForm({ template, trainees, trainers = [], initialData
                             <label className="block text-sm font-medium text-slate-700 mb-1">Select Trainee</label>
                             <select
                                 name="traineeId"
+                                title="Select Trainee"
+                                aria-label="Select Trainee"
                                 required
                                 defaultValue={initialData ? initialData.traineeId : ""}
                                 className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -70,6 +83,8 @@ export default function DORForm({ template, trainees, trainers = [], initialData
                             <label className="block text-sm font-medium text-slate-700 mb-1">Trainer (Observer)</label>
                             <select
                                 name="trainerId"
+                                title="Select Trainer"
+                                aria-label="Select Trainer"
                                 className="w-full border-slate-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 defaultValue={initialData ? initialData.trainerId : ""}
                             >
@@ -99,34 +114,31 @@ export default function DORForm({ template, trainees, trainers = [], initialData
 
                                 {field.type === 'RATING' && (
                                     <div className="flex flex-wrap gap-2">
-                                        {[1, 2, 3, 4, 5, 6, 7].map(num => (
-                                            <label key={num} className="cursor-pointer">
-                                                <input
-                                                    type="radio"
-                                                    name={`field-${field.id}`}
-                                                    value={num}
-                                                    defaultChecked={parseInt(initialScores[field.id]) === num}
-                                                    className="peer sr-only"
-                                                    required={field.required}
-                                                />
-                                                <div className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 font-medium hover:bg-slate-50 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition-colors">
-                                                    {num}
-                                                </div>
-                                            </label>
-                                        ))}
-                                        {/* Not Observed Option */}
-                                        <label className="cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name={`field-${field.id}`}
-                                                value="N.O."
-                                                defaultChecked={initialScores[field.id] === 'N.O.'}
-                                                className="peer sr-only"
-                                            />
-                                            <div className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400 font-medium hover:bg-slate-50 peer-checked:bg-slate-500 peer-checked:text-white peer-checked:border-slate-500 transition-colors text-xs">
-                                                N.O.
-                                            </div>
-                                        </label>
+                                        {customScale.map((opt: string) => {
+                                            const isNumeric = !isNaN(parseInt(opt));
+
+                                            // Handle special styling for N/A, N.O., etc.
+                                            let badgeStyle = "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-checked:text-white";
+                                            if (!isNumeric) {
+                                                badgeStyle = "bg-white text-slate-400 border-slate-200 hover:bg-slate-50 peer-checked:bg-slate-500 peer-checked:border-slate-500 peer-checked:text-white text-xs";
+                                            }
+
+                                            return (
+                                                <label key={opt} className="cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name={`field-${field.id}`}
+                                                        value={opt}
+                                                        defaultChecked={String(initialScores[field.id]) === String(opt)}
+                                                        className="peer sr-only"
+                                                        required={field.required}
+                                                    />
+                                                    <div className={`w-10 h-10 flex items-center justify-center rounded-lg border font-medium transition-colors ${badgeStyle}`}>
+                                                        {opt}
+                                                    </div>
+                                                </label>
+                                            )
+                                        })}
                                     </div>
                                 )}
 

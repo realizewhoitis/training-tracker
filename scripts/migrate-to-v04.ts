@@ -4,17 +4,16 @@ const prisma = new PrismaClient();
 async function main() {
     console.log('--- Starting Version 0.4 Multi-Tenant Backfill Migration ---');
 
-    console.log('1. Constructing Default Agency...');
-    const defaultAgency = await prisma.agency.upsert({
-        where: { name: 'Orbit 911 Default' },
-        update: {},
-        create: {
-            name: 'Orbit 911 Default',
-            timezone: 'America/Chicago'
-        }
+    console.log('1. Locating Target Agency...');
+    const defaultAgency = await prisma.agency.findFirst({
+        where: { name: 'Metro 911 of Kanawha County' }
     });
-    console.log(`=> Created/Found Default Agency: ${defaultAgency.id}`);
 
+    if (!defaultAgency) {
+        throw new Error('Could not find Metro 911 agency container!');
+    }
+
+    console.log(`=> Found Target Agency: ${defaultAgency.id}`);
     const id = defaultAgency.id;
 
     console.log('\n2. Backfilling Users...');
@@ -101,4 +100,4 @@ main()
         process.exit(1);
     });
 
-export {};
+export { };

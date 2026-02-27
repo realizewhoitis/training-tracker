@@ -28,8 +28,8 @@ export async function getTraineeProgress(traineeId: number) {
             section.fields.forEach(field => {
                 if (field.type === 'RATING') {
                     const val = responseData[field.id.toString()];
-                    // Check if value is a number (1-7) and not "N.O." or empty
-                    if (val && val !== 'N.O.' && !isNaN(parseInt(val))) {
+                    // Safely ignore custom string ratings like N.A., N.O., Bonus, etc.
+                    if (val && !isNaN(parseInt(val)) && val.trim() === parseInt(val).toString()) {
                         totalScore += parseInt(val);
                         scoreCount++;
                     }
@@ -78,7 +78,7 @@ export async function getCategoryStrengths(traineeId: number) {
             section.fields.forEach(field => {
                 if (field.type === 'RATING') {
                     const val = responseData[field.id.toString()];
-                    if (val && val !== 'N.O.' && !isNaN(parseInt(val))) {
+                    if (val && !isNaN(parseInt(val)) && val.trim() === parseInt(val).toString()) {
                         categoryStats[section.title].total += parseInt(val);
                         categoryStats[section.title].count++;
                     }

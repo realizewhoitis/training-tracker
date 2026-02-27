@@ -10,6 +10,7 @@ export async function createTemplate(title: string) {
             title,
             version: 1,
             isPublished: false,
+            ratingScaleOptions: JSON.stringify(["1", "2", "3", "4", "5", "6", "7", "N.O."])
         }
     });
 
@@ -78,12 +79,13 @@ export async function publishTemplate(id: number) {
     revalidatePath('/admin/forms');
 }
 
-export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean }) {
+export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean, ratingScaleOptions?: string }) {
     await (await getTenantPrisma()).formTemplate.update({
         where: { id },
         data: {
             ...(data.title && { title: data.title }),
             ...(data.namingConvention !== undefined && { namingConvention: data.namingConvention }),
+            ...(data.ratingScaleOptions !== undefined && { ratingScaleOptions: data.ratingScaleOptions }),
             ...(data.isPublished !== undefined && { isPublished: data.isPublished })
         }
     });

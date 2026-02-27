@@ -238,6 +238,7 @@ model FormTemplate {
   updatedAt   DateTime @updatedAt
   
   namingConvention String? // e.g., "{{trainee}} - Shift {{field:Shift}}"
+  ratingScaleOptions String? // JSON array of scale labels (e.g. '["1","2","3","4","5","N.A."]')
   
   sections    FormSection[]
   responses   FormResponse[]
