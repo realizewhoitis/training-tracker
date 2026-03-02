@@ -55,7 +55,7 @@ Create new reports from the top navigation. Standardized templates ensure consis
 
 1. **Select Trainee:** Choose the employee you are evaluating.
 2. **Select Trainer:** Identify who is performing the evaluation (defaults to you).
-3. **Rate Performance:** Score all categories (1-7 scale). Use 'N.O.' for Not Observed.
+3. **Rate Performance:** Score all categories based on the custom rating scale designed for this form. Use the appropriate 'Not Observed' or 'N/A' designation (if configured).
 4. **Narrative:** Complete the "Most/Least Satisfactory" and "Incident" text areas.
 5. **Submit:** Click to save. The trainee will be notified to sign.
 
