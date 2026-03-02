@@ -39,7 +39,13 @@ The Employee Detail view is the central hub for an employee's data. It aggregate
 
 ## 3. Daily Observation Reports (DOR)
 
-Trainers use this system to grade trainees. Reports follow a standardized 1-7 scale across multiple categories (Safety, Knowledge, Performance).
+Trainers use this system to grade trainees. Administrators can build and customize the evaluation forms tailored to their agency's needs.
+
+### Form Builder (Admin Only)
+
+Administrators can construct dynamic form templates via the **Admin > Form Builder** portal.
+* **Custom Rating Scales:** Instead of being restricted to a fixed 1-7 scale, administrators can define custom rating buttons (e.g., a 5-point scale, a 10-point scale, or text values like "N/A" and "Bonus"). Simply drag-and-drop the options in the **Custom Rating Scale** editor to reorder, edit, or add new buttons.
+* **Dynamic Naming Conventions:** Set standard naming patterns for submitted reports using variables like `{{trainee}}`, `{{trainer}}`, and `{{date}}`. A **Live Example** preview instantly renders a mock report name directly underneath the drop-zone to verify your formatting in real-time.
 
 ### For Trainers
 

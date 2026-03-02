@@ -31,6 +31,8 @@ export default function Chapter5Page() {
                     <ul className="list-disc pl-5 space-y-2 mt-4 text-slate-700">
                         <li><strong>Creating Sections:</strong> Group conceptually related inputs together (e.g., 'Officer Safety' or 'Radio Communications'). You can drag sections up or down to reorder the final document.</li>
                         <li><strong>Input Categories:</strong> Within a Section, you can nest multiple Field Inputs. Available data types include precise Number Ratings, long-form Text Areas for narratives, or standard abbreviated Text fields.</li>
+                        <li><strong>Custom Rating Scales:</strong> You can define custom rating buttons for your forms (e.g., a 5-point scale, a 10-point scale, or text values like "N/A" and "Bonus") using the drag-and-drop Custom Rating Scale editor.</li>
+                        <li><strong>Dynamic Naming Conventions:</strong> Set standard naming patterns for your submitted reports (e.g. `{"{{trainee}}"}` - `{"{{date}}"}`). A Live Example preview renders a mock report name instantly to verify your formatting.</li>
                         <li><strong>Publishing:</strong> Any modifications to the form schema are saved locally as drafts. When the new template is complete, the Administrator must explicitly click <strong>Publish Schema</strong>. This permanently writes the new template to Cloud Storage, immediately making it the default template for all new Field Training Officers.</li>
                     </ul>
 
@@ -58,8 +60,8 @@ export default function Chapter5Page() {
                         <ol className="list-decimal pl-5 space-y-2 mt-2">
                             <li>Navigate to the <strong>Reports</strong> tab in the main sidebar and click "Create DOR".</li>
                             <li>The evaluator must designate the target <strong>Trainee</strong> from the directory. The <strong>Evaluator</strong> field will automatically pin to the currently authenticated user.</li>
-                            <li>Using the dynamically generated template, the Trainer will parse through the grid and assign standard numeric evaluations (typically scaling from 1 - 7).</li>
-                            <li>If a specific metric was not applicable during a shift, evaluating officers should use the <strong>'N.O.'</strong> (Not Observed) designation.</li>
+                            <li>Using the dynamically generated template, the Trainer will parse through the grid and assign evaluations based on the custom rating scale defined by the administrator for that specific form.</li>
+                            <li>If a specific metric was not applicable during a shift, evaluating officers should use the appropriate 'Not Observed' or 'N/A' designation (if configured).</li>
                             <li>Fill the Narrative sections carefully, as these long-form texts are vital for subsequent administrative overview.</li>
                             <li>Click Submit. The raw scores are immediately processed into the global averages mapped on the main Dashboard.</li>
                         </ol>
