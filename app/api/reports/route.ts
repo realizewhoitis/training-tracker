@@ -1,6 +1,7 @@
 import { getTenantPrisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { getTenant } from '@/lib/tenant';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
+    const agencyId = await getTenant();
 
     try {
         if (type === 'roster') {
@@ -55,6 +57,9 @@ export async function GET(req: NextRequest) {
                 where: {
                     Expiration: {
                         lte: ninetyDays
+                    },
+                    employee: {
+                        agencyId: agencyId || undefined
                     }
                 },
                 include: {
@@ -117,6 +122,33 @@ export async function GET(req: NextRequest) {
                 headers: {
                     'Content-Type': 'text/csv',
                     'Content-Disposition': `attachment; filename="training_summary_${currentYear}.csv"`
+                }
+            });
+        } else if (type === 'shift_roster') {
+            const employees = await (await getTenantPrisma()).employee.findMany({
+                where: { departed: false },
+                include: {
+                    user: true,
+                    shift: true
+                },
+                orderBy: [
+                    { shift: { name: 'asc' } },
+                    { empName: 'asc' }
+                ]
+            });
+
+            let csv = 'Employee ID,Name,Role,Shift Name\n';
+            csv += employees.map(e => {
+                const name = (e.empName || '').replace(/"/g, '""');
+                const role = e.user?.role || 'N/A';
+                const shiftName = e.shift?.name ? `"${e.shift.name.replace(/"/g, '""')}"` : 'Unassigned';
+                return `${e.empId},"${name}",${role},${shiftName}`;
+            }).join('\n');
+
+            return new NextResponse(csv, {
+                headers: {
+                    'Content-Type': 'text/csv',
+                    'Content-Disposition': `attachment; filename="shift_roster_${new Date().toISOString().split('T')[0]}.csv"`
                 }
             });
         }
