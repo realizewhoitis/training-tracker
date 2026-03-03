@@ -1,7 +1,13 @@
-
 import { getTenantPrisma } from '@/lib/prisma';
+import { auth } from '@/auth';
 
 export async function verifyLicense() {
+    const session = await auth();
+    // @ts-ignore
+    if (session?.user && session.user.role === 'SUPERUSER') {
+        return { valid: true, status: "SUPERUSER_OVERRIDE" };
+    }
+
     // 1. Get Settings
     const settings = await (await getTenantPrisma()).organizationSettings.findFirst();
     if (!settings) return { valid: true, status: "NO_SETTINGS_FOUND" }; // Fail open for now or fail closed?
