@@ -65,7 +65,10 @@ export default async function SuperuserPage() {
     async function toggleModule(formData: FormData) {
         'use server';
         const moduleName = formData.get('module') as string;
-        const currentModules = JSON.parse(settings.modules || '[]');
+
+        const prisma = await getTenantPrisma() as any;
+        const currentSettings = await prisma.organizationSettings.findFirst();
+        const currentModules = JSON.parse(currentSettings?.modules || '[]');
 
         let newModules;
         if (currentModules.includes(moduleName)) {
@@ -74,10 +77,16 @@ export default async function SuperuserPage() {
             newModules = [...currentModules, moduleName];
         }
 
-        await ((await getTenantPrisma()) as any).organizationSettings.update({
-            where: { id: settings.id || 1 }, // Assuming ID 1 for singleton settings
-            data: { modules: JSON.stringify(newModules) }
-        });
+        if (currentSettings) {
+            await prisma.organizationSettings.update({
+                where: { id: currentSettings.id },
+                data: { modules: JSON.stringify(newModules) }
+            });
+        } else {
+            await prisma.organizationSettings.create({
+                data: { orgName: 'Not Configured', modules: JSON.stringify(newModules) }
+            });
+        }
         revalidatePath('/superuser');
     }
 
