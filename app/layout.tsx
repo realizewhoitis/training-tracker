@@ -39,7 +39,9 @@ export default async function RootLayout({
   const isAdminPath = pathname.startsWith('/admin') ||
     pathname.startsWith('/setup') ||
     pathname.startsWith('/login') ||
-    pathname.startsWith('/api');
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/superuser') ||
+    pathname.startsWith('/community');
   const showLockScreen = !license.valid && !isAdminPath;
 
   return (
