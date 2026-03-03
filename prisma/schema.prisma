@@ -22,10 +22,13 @@ model Agency {
   assets                Asset[]
   trainings             Training[]
   certificates          Certificate[]
-  policies              Policy[]
+  policyContainers      PolicyContainer[]
   formTemplates         FormTemplate[]
   organizationSettings  OrganizationSettings?
   auditLogs             AuditLog[]
+  accreditationStandards AccreditationStandard[]
+  complianceEvidence    ComplianceEvidence[]
+  globalGateOverride    Boolean @default(false)
 }
 
 model Employee {
@@ -38,7 +41,7 @@ model Employee {
 
   attendances Attendance[]
   expirations Expiration[]
-  policyAcknowledgments PolicyAcknowledgment[]
+  userAttestations UserAttestation[]
   assetAssignments AssetAssignment[]
   formResponses FormResponse[] @relation("Trainee")
   flags       EISFlag[]
@@ -127,6 +130,8 @@ model User {
   empId     Int?     @unique
   authoredTrainerResponses FormResponse[] @relation("Trainer")
   auditLogs AuditLog[]
+  ownedPolicies PolicyContainer[] @relation("PolicyOwner")
+  uploadedEvidence ComplianceEvidence[] @relation("EvidenceUploader")
 }
 
 model RoleTemplate {
@@ -178,29 +183,66 @@ model Certificate {
   expirations Expiration[]
 }
 
-model Policy {
+model PolicyContainer {
   id          Int      @id @default(autoincrement())
   agencyId    String?
   agency      Agency?   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   title       String
-  content     String
-  version     String   @default("1.0")
+  description String?
+  category    String?  // e.g. "SOP", "Training", "Memo"
+
+  reviewCycleMonths Int?
+  nextReviewDate    DateTime?
+  isPublic          Boolean @default(false)
+
+  ownerId     Int?
+  owner       User?    @relation("PolicyOwner", fields: [ownerId], references: [id])
+
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   
-  acknowledgments PolicyAcknowledgment[]
+  versions    PolicyVersion[]
+  evidence    ComplianceEvidence[]
 }
 
-model PolicyAcknowledgment {
-  id          Int      @id @default(autoincrement())
-  policyId    Int
-  employeeId  Int
-  acknowledgedAt DateTime @default(now())
+model PolicyVersion {
+  id               Int      @id @default(autoincrement())
+  containerId      Int
+  container        PolicyContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  
+  versionNumber    String   // e.g., "1.0", "1.1"
+  status           String   @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED
+  title            String   // Can override or match container title
+  content          String   // Rich Text / HTML
+  mediaUrl         String?  // URL to PDF or Video
+  mediaType        String?  // e.g., "application/pdf", "video/mp4"
+  
+  enforcementLevel Int      @default(1) // 1: Info, 2: Required, 3: Gate
+  readingTimer     Int      @default(0) // Seconds to wait before signing
+  targetRoles      String?  // JSON array of roles this applies to (e.g. ["TRAINEE", "SUPERVISOR"])
+  
+  publishedAt      DateTime?
+  archivedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  attestations     UserAttestation[]
+  mappings         PolicyMapping[]
+}
 
-  policy      Policy   @relation(fields: [policyId], references: [id])
-  employee    Employee @relation(fields: [employeeId], references: [empId], onDelete: Cascade, onUpdate: Cascade)
+model UserAttestation {
+  id               Int      @id @default(autoincrement())
+  versionId        Int
+  version          PolicyVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  
+  employeeId       Int
+  employee         Employee @relation(fields: [employeeId], references: [empId], onDelete: Cascade)
+  
+  signedAt         DateTime @default(now())
+  ipAddress        String?
 
-  @@unique([policyId, employeeId])
+  @@unique([versionId, employeeId])
 }
 
 model CertificateTrainingExclusion {
@@ -352,4 +394,68 @@ model EmailTemplate {
   variables   String   // JSON array of available variables (e.g., ["{{name}}", "{{email}}"])
   
   updatedAt   DateTime @updatedAt
+}
+
+// ------------------------------------------------------------------------------------------------ //
+// PHASE 2.0: ACCREDITATION & EVIDENCE MAPPING
+// ------------------------------------------------------------------------------------------------ //
+
+// Represents an external standard/accreditation agency (e.g., CALEA 6th Edition)
+model AccreditationStandard {
+  id          Int      @id @default(autoincrement())
+  agencyId    String?  // If null, it's a global standard. If set, custom to this Orbit911 agency.
+  agency      Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+
+  requirements StandardRequirement[]
+}
+
+// Represents specific chapters/clauses within a Standard (e.g., "1.1.1 Law Enforcement Role")
+model StandardRequirement {
+  id          Int      @id @default(autoincrement())
+  standardId  Int
+  standard    AccreditationStandard @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  
+  clauseNumber String
+  description  String
+  
+  mappings    PolicyMapping[]
+  evidence    ComplianceEvidence[]
+}
+
+// Pivot table linking an active PolicyVersion to a specific requirement.
+// Optional mappedParagraphs helps auditors locate the exact matched text internally.
+model PolicyMapping {
+  id            Int      @id @default(autoincrement())
+  versionId     Int
+  version       PolicyVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  
+  requirementId Int
+  requirement   StandardRequirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  
+  mappedParagraphs String? // Reference lines/sections where compliance is achieved.
+}
+
+// Hard Evidence (Photos, PDFs) proving compliance.
+// Tied to either a PolicyContainer generally, or drilled-down to a specific StandardRequirement.
+model ComplianceEvidence {
+  id            Int      @id @default(autoincrement())
+  agencyId      String?
+  agency        Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  
+  requirementId Int?
+  requirement   StandardRequirement? @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  
+  containerId   Int?
+  container     PolicyContainer? @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  
+  fileUrl       String
+  fileName      String
+  isLocked      Boolean  @default(true) // Immutable lock for auditing
+  
+  uploadedById  Int
+  uploadedBy    User     @relation("EvidenceUploader", fields: [uploadedById], references: [id])
+  uploadedAt    DateTime @default(now())
 }

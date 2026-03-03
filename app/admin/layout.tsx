@@ -19,7 +19,7 @@ export default async function AdminLayout({
     // Ideally, we'd check permissions, but for now:
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userRole = (session.user as any).role;
-    const allowedRoles = ['ADMIN', 'SUPERUSER', 'TRAINER'];
+    const allowedRoles = ['ADMIN', 'SUPERUSER', 'TRAINER', 'AUDITOR'];
 
     if (!allowedRoles.includes(userRole)) {
         redirect('/');

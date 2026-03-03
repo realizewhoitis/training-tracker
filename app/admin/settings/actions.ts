@@ -60,7 +60,7 @@ export async function updateSettings(formData: FormData) {
 export async function getSettings() {
     const settings = await (await getTenantPrisma()).organizationSettings.findFirst();
     // Default to ALL modules enabled for backward compatibility if settings or modules field is missing
-    const defaultModules = JSON.stringify(['INVENTORY', 'EIS', 'DOR', 'REPORTS']);
+    const defaultModules = JSON.stringify(['INVENTORY', 'EIS', 'DOR', 'REPORTS', 'POLICIES']);
 
     if (!settings) {
         return { orgName: 'Orbit 911', logoPath: null, modules: defaultModules };

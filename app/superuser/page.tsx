@@ -167,7 +167,7 @@ export default async function SuperuserPage() {
                         <p className="text-sm text-slate-500 mb-4">Toggle features for this installation.</p>
 
                         <div className="space-y-3">
-                            {['INVENTORY', 'EIS', 'DOR', 'REPORTS'].map((mod) => (
+                            {['INVENTORY', 'EIS', 'DOR', 'REPORTS', 'POLICIES'].map((mod) => (
                                 <form key={mod} action={toggleModule}>
                                     <input type="hidden" name="module" value={mod} />
                                     <button className="w-full flex justify-between items-center p-3 rounded-lg border hover:bg-slate-50 transition-colors">

@@ -61,7 +61,7 @@ export default async function SetupPage() {
             data: {
                 orgName: 'Orbit 911 Center',
                 licenseKey: 'ORBIT-SYSTEM-DEFAULT-KEY',
-                modules: JSON.stringify(['INVENTORY', 'EIS', 'DOR', 'REPORTS'])
+                modules: JSON.stringify(['INVENTORY', 'EIS', 'DOR', 'REPORTS', 'POLICIES'])
             }
         });
     }

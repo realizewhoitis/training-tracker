@@ -22,6 +22,7 @@ import Sidebar from './components/Sidebar';
 import { headers } from 'next/headers';
 import { verifyLicense } from '@/lib/license';
 import LicenseLockScreen from '@/components/LicenseLockScreen';
+import GatekeeperProvider from './components/Gatekeeper';
 
 import { Analytics } from "@vercel/analytics/next";
 
@@ -48,7 +49,11 @@ export default async function RootLayout({
       >
         {!showLockScreen && <Sidebar />}
         <main className={`flex-1 p-8 w-full ${showLockScreen ? 'flex items-center justify-center' : ''}`}>
-          {showLockScreen ? <LicenseLockScreen /> : children}
+          {showLockScreen ? <LicenseLockScreen /> : (
+            <GatekeeperProvider>
+              {children}
+            </GatekeeperProvider>
+          )}
           <Analytics />
         </main>
       </body>

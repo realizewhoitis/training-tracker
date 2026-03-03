@@ -158,3 +158,36 @@ export async function sendDailyDORDigestEmail(email: string, submissions: any[])
         console.error('Exception caught while sending daily digest email:', error);
     }
 }
+
+export async function sendPolicyReviewReminderEmail(email: string, containerTitle: string, daysUntil: number) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('RESEND_API_KEY is not set. Skipping policy review email.');
+        return;
+    }
+
+    try {
+        const { data, error } = await resend.emails.send({
+            from: 'Orbit 911 <system@orbit911.com>',
+            to: email,
+            subject: `Policy Review Required: ${containerTitle} (${daysUntil} Days)`,
+            html: `
+                <div style="font-family: sans-serif; padding: 20px; color: #333;">
+                    <h2 style="color: #4f46e5;">Orbit 911 Lifecycle Alert</h2>
+                    <p>You are receiving this automated alert because you are the designated Owner of <strong>${containerTitle}</strong>.</p>
+                    <p>This policy is scheduled for its periodic review in <strong>${daysUntil} days</strong>.</p>
+                    <p>Please log in to your Orbit 911 dashboard to review the policy, make any necessary revisions, and publish the renewed version to maintain compliance.</p>
+                    <p style="margin-top: 30px; font-size: 12px; color: #888;">This is an automated message from Orbit 911 Platform.</p>
+                </div>
+            `
+        });
+
+        if (error) {
+            console.error('Failed to send policy review email:', error);
+            return;
+        }
+
+        console.log(`Policy review reminder sent to ${email} (ID: ${data?.id})`);
+    } catch (error) {
+        console.error('Exception caught while sending policy email:', error);
+    }
+}
