@@ -14,12 +14,15 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
+    const activeOnly = searchParams.get('activeOnly') !== 'false';
     const agencyId = await getTenant();
+
+    const employeeWhere = activeOnly ? { departed: false } : {};
 
     try {
         if (type === 'roster') {
             const employees = await (await getTenantPrisma()).employee.findMany({
-                where: { departed: false },
+                where: employeeWhere,
                 include: {
                     user: true,
                     assetAssignments: {
@@ -59,7 +62,8 @@ export async function GET(req: NextRequest) {
                         lte: ninetyDays
                     },
                     employee: {
-                        agencyId: agencyId || undefined
+                        agencyId: agencyId || undefined,
+                        ...employeeWhere
                     }
                 },
                 include: {
@@ -97,7 +101,7 @@ export async function GET(req: NextRequest) {
             const endOfYear = new Date(currentYear, 11, 31);
 
             const employees = await (await getTenantPrisma()).employee.findMany({
-                where: { departed: false },
+                where: employeeWhere,
                 include: {
                     attendances: {
                         where: {
@@ -126,7 +130,7 @@ export async function GET(req: NextRequest) {
             });
         } else if (type === 'shift_roster') {
             const employees = await (await getTenantPrisma()).employee.findMany({
-                where: { departed: false },
+                where: employeeWhere,
                 include: {
                     user: true,
                     shift: true
