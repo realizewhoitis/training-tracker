@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -9,6 +10,7 @@ import { auth } from '@/auth';
 import { logAudit } from '@/lib/audit';
 
 export async function createUser(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
     // @ts-ignore
@@ -60,6 +62,7 @@ export async function createUser(formData: FormData) {
 }
 
 export async function deleteUser(id: number) {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
     // @ts-ignore
@@ -84,6 +87,7 @@ export async function deleteUser(id: number) {
 }
 
 export async function updateUserRole(id: number, role: string) {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
     // @ts-ignore
@@ -113,6 +117,7 @@ export async function updateUserRole(id: number, role: string) {
 }
 
 export async function resetPassword(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
     // @ts-ignore
@@ -149,6 +154,7 @@ export async function resetPassword(formData: FormData) {
 }
 
 export async function toggleTwoFactor(userId: number, enabled: boolean) {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
     // @ts-ignore
@@ -197,6 +203,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
 }
 
 export async function toggleForcePasswordReset(userId: number, force: boolean) {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
 
@@ -221,14 +228,13 @@ export async function toggleForcePasswordReset(userId: number, force: boolean) {
         userId: adminId,
         action: 'FORCE_PASSWORD_RESET',
         resource: 'User',
-        details: `${force ? 'Enabled' : 'Disabled'} Force Password Reset for user ID ${userId}`,
+        details: `${force ? 'Forced' : 'Unforced'} password reset for user ID ${userId}`,
         severity: 'WARN'
     });
-
-    revalidatePath('/admin/users');
 }
 
 export async function provisionEmployeeAccount(empId: number, name: string, email: string, role: string, sendWelcomeEmail: boolean): Promise<{ success: boolean; error?: string }> {
+    await enforceWriteAccess();
     const session = await auth();
     const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
     // @ts-ignore

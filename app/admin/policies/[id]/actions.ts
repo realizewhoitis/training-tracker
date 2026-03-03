@@ -1,8 +1,10 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server'
 import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
 export async function createDraftAction(formData: FormData) {
+    await enforceWriteAccess();
     const containerId = parseInt(formData.get('containerId') as string);
     const prisma = await getTenantPrisma();
 

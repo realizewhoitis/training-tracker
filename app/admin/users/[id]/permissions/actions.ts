@@ -1,9 +1,11 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function updateUserPermissions(formData: FormData) {
+    await enforceWriteAccess();
     const userId = parseInt(formData.get('userId') as string);
     const useDefaults = formData.get('useDefaults') === 'on';
     const permissions = formData.getAll('permissions') as string[];

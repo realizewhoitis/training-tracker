@@ -23,6 +23,7 @@ import { headers } from 'next/headers';
 import { verifyLicense } from '@/lib/license';
 import LicenseLockScreen from '@/components/LicenseLockScreen';
 import GatekeeperProvider from './components/Gatekeeper';
+import GracePeriodBanner from './components/GracePeriodBanner';
 
 import { Analytics } from "@vercel/analytics/next";
 
@@ -52,9 +53,12 @@ export default async function RootLayout({
         {!showLockScreen && <Sidebar />}
         <main className={`flex-1 p-8 w-full ${showLockScreen ? 'flex items-center justify-center' : ''}`}>
           {showLockScreen ? <LicenseLockScreen /> : (
-            <GatekeeperProvider>
-              {children}
-            </GatekeeperProvider>
+            <div className="flex flex-col w-full h-full">
+              {license.status === "GRACE" && <GracePeriodBanner daysRemaining={license.daysRemaining!} />}
+              <GatekeeperProvider>
+                {children}
+              </GatekeeperProvider>
+            </div>
           )}
           <Analytics />
         </main>

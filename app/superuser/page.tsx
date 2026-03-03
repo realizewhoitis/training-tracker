@@ -48,6 +48,7 @@ export default async function SuperuserPage() {
     async function generateLicense(formData: FormData) {
         'use server';
         const clientName = formData.get('clientName') as string;
+        const gracePeriodDays = parseInt(formData.get('gracePeriodDays') as string) || 30;
         if (!clientName) return;
 
         const key = `ORBIT-${Math.random().toString(36).substring(2, 10).toUpperCase()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
@@ -56,9 +57,25 @@ export default async function SuperuserPage() {
             data: {
                 key,
                 clientName,
+                gracePeriodDays,
                 isActive: true
             }
         });
+        revalidatePath('/superuser');
+    }
+
+    async function extendGracePeriod(formData: FormData) {
+        'use server';
+        const id = parseInt(formData.get('id') as string);
+        const addDays = parseInt(formData.get('addDays') as string) || 30;
+        const prisma = await getTenantPrisma() as any;
+        const license = await prisma.issuedLicense.findUnique({ where: { id } });
+        if (license) {
+            await prisma.issuedLicense.update({
+                where: { id },
+                data: { gracePeriodDays: license.gracePeriodDays + addDays }
+            });
+        }
         revalidatePath('/superuser');
     }
 
@@ -128,6 +145,13 @@ export default async function SuperuserPage() {
                             className="flex-1 border rounded-lg px-3 py-2 text-sm"
                             required
                         />
+                        <input
+                            name="gracePeriodDays"
+                            type="number"
+                            defaultValue={30}
+                            placeholder="Grace Days"
+                            className="w-24 border rounded-lg px-3 py-2 text-sm"
+                        />
                         <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">
                             Issue Key
                         </button>
@@ -140,7 +164,9 @@ export default async function SuperuserPage() {
                                     <th className="px-3 py-2">Client</th>
                                     <th className="px-3 py-2">Key</th>
                                     <th className="px-3 py-2">Issued</th>
+                                    <th className="px-3 py-2">Grace</th>
                                     <th className="px-3 py-2">Status</th>
+                                    <th className="px-3 py-2">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
@@ -149,10 +175,20 @@ export default async function SuperuserPage() {
                                         <td className="px-3 py-2 font-medium">{l.clientName}</td>
                                         <td className="px-3 py-2 font-mono text-xs select-all bg-slate-50 p-1 rounded border">{l.key}</td>
                                         <td className="px-3 py-2 text-slate-500">{l.issuedAt.toLocaleDateString()}</td>
+                                        <td className="px-3 py-2 text-slate-500">{l.gracePeriodDays} Days</td>
                                         <td className="px-3 py-2">
                                             <span className={`px-2 py-0.5 rounded-full text-xs ${l.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                 {l.isActive ? 'Active' : 'Revoked'}
                                             </span>
+                                        </td>
+                                        <td className="px-3 py-2">
+                                            <form action={extendGracePeriod} className="flex gap-1">
+                                                <input type="hidden" name="id" value={l.id} />
+                                                <input type="hidden" name="addDays" value={30} />
+                                                <button type="submit" className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded">
+                                                    +30 Days
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 ))}

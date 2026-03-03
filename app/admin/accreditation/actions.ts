@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server'
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -6,6 +7,7 @@ import { getTenant } from '@/lib/tenant';
 import { auth } from '@/auth';
 
 export async function createStandard(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     if ((session?.user as any)?.role === 'AUDITOR') throw new Error("Auditors have read-only access.");
 
@@ -27,6 +29,7 @@ export async function createStandard(formData: FormData) {
 }
 
 export async function deleteStandard(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     if ((session?.user as any)?.role === 'AUDITOR') throw new Error("Auditors have read-only access.");
 
@@ -36,6 +39,7 @@ export async function deleteStandard(formData: FormData) {
 }
 
 export async function createRequirement(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     if ((session?.user as any)?.role === 'AUDITOR') throw new Error("Auditors have read-only access.");
 
@@ -56,6 +60,7 @@ export async function createRequirement(formData: FormData) {
 }
 
 export async function deleteRequirement(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     if ((session?.user as any)?.role === 'AUDITOR') throw new Error("Auditors have read-only access.");
 

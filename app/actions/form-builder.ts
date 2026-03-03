@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -5,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function createTemplate(title: string) {
+    await enforceWriteAccess();
     const template = await (await getTenantPrisma()).formTemplate.create({
         data: {
             title,
@@ -34,6 +36,7 @@ export async function getTemplate(id: number) {
 }
 
 export async function addSection(templateId: number, title: string, order: number) {
+    await enforceWriteAccess();
     await (await getTenantPrisma()).formSection.create({
         data: {
             templateId,
@@ -45,6 +48,7 @@ export async function addSection(templateId: number, title: string, order: numbe
 }
 
 export async function addField(sectionId: number, label: string, type: string, order: number) {
+    await enforceWriteAccess();
     await (await getTenantPrisma()).formField.create({
         data: {
             sectionId,
@@ -57,6 +61,7 @@ export async function addField(sectionId: number, label: string, type: string, o
 }
 
 export async function updateSection(sectionId: number, title: string) {
+    await enforceWriteAccess();
     const section = await (await getTenantPrisma()).formSection.update({
         where: { id: sectionId },
         data: { title }
@@ -65,6 +70,7 @@ export async function updateSection(sectionId: number, title: string) {
 }
 
 export async function deleteSection(sectionId: number) {
+    await enforceWriteAccess();
     const section = await (await getTenantPrisma()).formSection.delete({
         where: { id: sectionId }
     });
@@ -72,6 +78,7 @@ export async function deleteSection(sectionId: number) {
 }
 
 export async function publishTemplate(id: number) {
+    await enforceWriteAccess();
     await (await getTenantPrisma()).formTemplate.update({
         where: { id },
         data: { isPublished: true }
@@ -80,6 +87,7 @@ export async function publishTemplate(id: number) {
 }
 
 export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean, ratingScaleOptions?: string }) {
+    await enforceWriteAccess();
     await (await getTenantPrisma()).formTemplate.update({
         where: { id },
         data: {
@@ -93,6 +101,7 @@ export async function updateTemplateMetadata(id: number, data: { title?: string,
 }
 
 export async function updateField(fieldId: number, label: string) {
+    await enforceWriteAccess();
     const field = await (await getTenantPrisma()).formField.update({
         where: { id: fieldId },
         data: { label },
@@ -102,6 +111,7 @@ export async function updateField(fieldId: number, label: string) {
 }
 
 export async function deleteField(fieldId: number) {
+    await enforceWriteAccess();
     const field = await (await getTenantPrisma()).formField.delete({
         where: { id: fieldId },
         include: { section: true }

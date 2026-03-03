@@ -1,9 +1,11 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function scanForFlags() {
+    await enforceWriteAccess();
     const perfCount = await checkPerformanceFlags();
     const assetCount = await checkAssetFlags();
     // compliance check can be added later or now if simple
@@ -130,6 +132,7 @@ async function checkAssetFlags() {
 }
 
 export async function resolveFlag(flagId: number, notes: string) {
+    await enforceWriteAccess();
     await (await getTenantPrisma()).eISFlag.update({
         where: { id: flagId },
         data: {
@@ -142,6 +145,7 @@ export async function resolveFlag(flagId: number, notes: string) {
 }
 
 export async function dismissFlag(flagId: number) {
+    await enforceWriteAccess();
     await (await getTenantPrisma()).eISFlag.update({
         where: { id: flagId },
         data: {

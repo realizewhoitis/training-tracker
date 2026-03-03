@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -5,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { Shift } from '@prisma/client';
 
 export async function createShift(name: string): Promise<{ success: boolean; shift?: Shift; error?: string }> {
+    await enforceWriteAccess();
     if (!name) return { success: false, error: 'Name is required' };
 
     try {
@@ -21,12 +23,14 @@ export async function createShift(name: string): Promise<{ success: boolean; shi
 }
 
 export async function getShifts() {
+    await enforceWriteAccess();
     return await (await getTenantPrisma()).shift.findMany({
         orderBy: { name: 'asc' }
     });
 }
 
 export async function deleteShift(shiftId: number): Promise<{ success: boolean; error?: string }> {
+    await enforceWriteAccess();
     if (!shiftId) return { success: false, error: 'Shift ID is required' };
 
     try {

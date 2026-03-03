@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server'
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -7,6 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 
 export async function uploadEvidence(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
     if ((session?.user as any)?.role === 'AUDITOR') throw new Error("Auditors have read-only access.");

@@ -1,9 +1,11 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server'
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getTenant } from '@/lib/tenant';
 
 export async function createPolicyContainer(formData: FormData) {
+    await enforceWriteAccess();
     const agencyId = await getTenant();
     if (!agencyId) return;
 
@@ -39,6 +41,7 @@ export async function createPolicyContainer(formData: FormData) {
 }
 
 export async function deletePolicyContainer(formData: FormData) {
+    await enforceWriteAccess();
     const id = parseInt(formData.get('id') as string);
     await ((await getTenantPrisma()) as any).policyContainer.delete({ where: { id } });
     revalidatePath('/admin/policies');

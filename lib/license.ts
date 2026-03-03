@@ -25,6 +25,14 @@ export async function verifyLicense() {
 
     // 3. Check Expiry
     if (settings.licenseExpiry && new Date() > settings.licenseExpiry) {
+        const graceEndDate = new Date(settings.licenseExpiry);
+        graceEndDate.setDate(graceEndDate.getDate() + (issuedLicense as any).gracePeriodDays);
+
+        if (new Date() <= graceEndDate) {
+            const msRemaining = graceEndDate.getTime() - new Date().getTime();
+            const daysRemaining = Math.max(1, Math.ceil(msRemaining / (1000 * 3600 * 24)));
+            return { valid: true, status: "GRACE", daysRemaining, graceEndDate };
+        }
         return { valid: false, status: "EXPIRED" };
     }
 

@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -8,6 +9,7 @@ export async function updateEmployee(
     currentEmpId: number,
     formData: FormData
 ) {
+    await enforceWriteAccess();
     const empName = formData.get('empName') as string;
     const newEmpIdRaw = formData.get('empId') as string;
     const departed = formData.get('departed') === 'on';
@@ -41,6 +43,7 @@ export async function updateEmployee(
 }
 
 export async function bulkAssignShift(employeeIds: number[], shiftId: number | null): Promise<{ success: boolean, error?: string }> {
+    await enforceWriteAccess();
     if (!employeeIds || employeeIds.length === 0) {
         return { success: false, error: 'No employees selected' };
     }
@@ -64,6 +67,7 @@ export async function bulkAssignShift(employeeIds: number[], shiftId: number | n
 }
 
 export async function bulkUpdateRole(employeeIds: number[], role: string): Promise<{ success: boolean, error?: string }> {
+    await enforceWriteAccess();
     if (!employeeIds || employeeIds.length === 0) {
         return { success: false, error: 'No employees selected' };
     }
@@ -94,6 +98,7 @@ export async function bulkUpdateRole(employeeIds: number[], role: string): Promi
 }
 
 export async function bulkUpdateStatus(employeeIds: number[], departed: boolean): Promise<{ success: boolean, error?: string }> {
+    await enforceWriteAccess();
     if (!employeeIds || employeeIds.length === 0) {
         return { success: false, error: 'No employees selected' };
     }

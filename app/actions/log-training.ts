@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -13,6 +14,7 @@ export type TrainingLogEntry = {
 };
 
 export async function submitTrainingLogs(entries: TrainingLogEntry[]) {
+    await enforceWriteAccess();
     let successCount = 0;
     const errors: string[] = [];
 
@@ -62,6 +64,7 @@ export async function submitRoster(
     employeeIds: number[],
     note?: string
 ) {
+    await enforceWriteAccess();
     if (!employeeIds.length) {
         return { success: false, error: 'No employees selected.' };
     }

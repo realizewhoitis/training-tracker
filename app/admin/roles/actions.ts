@@ -1,9 +1,11 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function updateRoleTemplate(formData: FormData) {
+    await enforceWriteAccess();
     const roleName = formData.get('roleName') as string;
     const permissions = formData.getAll('permissions') as string[];
 
@@ -34,6 +36,7 @@ export async function updateRoleTemplate(formData: FormData) {
 }
 
 export async function createRole(roleName: string) {
+    await enforceWriteAccess();
     if (!roleName) throw new Error('Role name is required');
 
     // Check if exists

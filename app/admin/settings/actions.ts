@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -7,6 +8,7 @@ import { auth } from '@/auth';
 import { logAudit } from '@/lib/audit';
 
 export async function updateSettings(formData: FormData) {
+    await enforceWriteAccess();
     const session = await auth();
     const userId = session?.user?.id ? parseInt(session.user.id) : undefined;
 

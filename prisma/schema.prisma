@@ -367,6 +367,7 @@ model IssuedLicense {
   
   issuedAt    DateTime @default(now())
   expiresAt   DateTime?
+  gracePeriodDays Int @default(30)
   
   isActive    Boolean  @default(true)
 }

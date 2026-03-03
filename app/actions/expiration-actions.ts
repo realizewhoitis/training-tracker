@@ -1,3 +1,4 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
@@ -6,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 export async function updateExpirationDate(expirationId: number, newDate: string | null) {
+    await enforceWriteAccess();
     try {
         const dateValue = newDate ? new Date(newDate) : null;
 
@@ -23,6 +25,7 @@ export async function updateExpirationDate(expirationId: number, newDate: string
 }
 
 export async function uploadCertificate(formData: FormData) {
+    await enforceWriteAccess();
     const expirationId = parseInt(formData.get('expirationId') as string);
     const file = formData.get('file') as File;
 

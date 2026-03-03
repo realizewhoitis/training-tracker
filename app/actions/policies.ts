@@ -1,9 +1,11 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server'
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 
 export async function signPolicyAction(formData: FormData) {
+    await enforceWriteAccess();
     const versionId = parseInt(formData.get('versionId') as string);
     const employeeId = parseInt(formData.get('employeeId') as string);
 

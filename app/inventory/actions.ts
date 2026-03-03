@@ -1,9 +1,11 @@
+import { enforceWriteAccess } from '@/lib/licenseAccess';
 'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 export async function assignAsset(formData: FormData) {
+    await enforceWriteAccess();
     const assetId = parseInt(formData.get('assetId') as string);
     const employeeId = parseInt(formData.get('employeeId') as string);
 
@@ -33,6 +35,7 @@ export async function assignAsset(formData: FormData) {
 }
 
 export async function returnAsset(formData: FormData) {
+    await enforceWriteAccess();
     const assignmentId = parseInt(formData.get('assignmentId') as string);
     const assetId = parseInt(formData.get('assetId') as string);
     const condition = formData.get('condition') as string;
@@ -57,6 +60,7 @@ export async function returnAsset(formData: FormData) {
 }
 
 export async function createCategory(name: string) {
+    await enforceWriteAccess();
     if (!name) return;
 
     await (await getTenantPrisma()).assetCategory.create({
