@@ -1,3 +1,4 @@
+'use server';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getTenantPrisma } from '@/lib/prisma';
@@ -15,8 +16,7 @@ export default async function NewTrainingPage() {
     });
 
     async function createTraining(formData: FormData) {
-        'use server';
-
+        
         const trainingName = formData.get('trainingName') as string;
         const category = formData.get('category') as string;
         const createCertificate = formData.get('createCertificate') === 'true';

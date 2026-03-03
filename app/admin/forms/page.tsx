@@ -1,3 +1,4 @@
+'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
 import Link from 'next/link';
@@ -10,8 +11,7 @@ export default async function FormsDashboard() {
     });
 
     async function handleCreate(formData: FormData) {
-        'use server';
-        const title = formData.get('title') as string;
+                const title = formData.get('title') as string;
         if (title) {
             await createTemplate(title);
         }

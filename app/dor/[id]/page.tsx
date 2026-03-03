@@ -1,3 +1,4 @@
+'use server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
 import { getDOR, signDOR } from '@/app/actions/dor-submission';
@@ -111,8 +112,7 @@ export default async function DORViewPage(props: { params: Promise<{ id: string 
                         <p className="text-sm text-blue-700">By signing, you acknowledge that you have reviewed this report with your Trainer.</p>
                     </div>
                     <form action={async () => {
-                        'use server';
-                        await signDOR(dor.id);
+                                                await signDOR(dor.id);
                     }}>
                         <button
                             type="submit"

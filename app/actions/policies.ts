@@ -1,5 +1,5 @@
+'use server';
 import { enforceWriteAccess } from '@/lib/licenseAccess';
-'use server'
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
