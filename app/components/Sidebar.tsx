@@ -1,4 +1,3 @@
-'use server';
 import { getSettings } from '@/app/admin/settings/actions';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -174,7 +173,8 @@ const Sidebar = async () => {
                         <span className="font-medium">Help & Manual</span>
                     </Link>
                     <form action={async () => {
-                                                await signOut({ redirectTo: '/login' });
+                        'use server';
+                        await signOut({ redirectTo: '/login' });
                     }}>
                         <button type="submit" className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-900/30 transition-all duration-200 group text-red-400 hover:text-red-300">
                             <LogOut className="w-5 h-5" />

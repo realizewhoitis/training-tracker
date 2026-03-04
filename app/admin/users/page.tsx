@@ -1,4 +1,3 @@
-'use server';
 import { getTenantPrisma } from '@/lib/prisma';
 import { User, Shield, Trash2, Key, RefreshCw, Lock, Unlock, ShieldAlert } from 'lucide-react';
 import { createUser, deleteUser, resetPassword, toggleTwoFactor, toggleForcePasswordReset } from './actions';
@@ -109,7 +108,8 @@ export default async function UserManagementPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                     <form action={async () => {
-                                                                                await toggleTwoFactor(user.id, !user.twoFactorEnabled);
+                                        'use server';
+                                        await toggleTwoFactor(user.id, !user.twoFactorEnabled);
                                     }}>
                                         <button
                                             type="submit"
@@ -148,7 +148,8 @@ export default async function UserManagementPage() {
                                                 </form>
 
                                                 <form action={async () => {
-                                                                                                        await toggleForcePasswordReset(user.id, !user.forcePasswordReset);
+                                                    'use server';
+                                                    await toggleForcePasswordReset(user.id, !user.forcePasswordReset);
                                                 }}>
                                                     <button type="submit" className={`${user.forcePasswordReset ? 'text-red-600 hover:text-red-900 bg-red-100' : 'text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50'} p-1 rounded transition-colors`} title={user.forcePasswordReset ? 'Cancel Forced Reset' : 'Force User to Reset Password'}>
                                                         <ShieldAlert size={16} />
@@ -156,7 +157,8 @@ export default async function UserManagementPage() {
                                                 </form>
 
                                                 <form action={async () => {
-                                                                                                        await deleteUser(user.id);
+                                                    'use server';
+                                                    await deleteUser(user.id);
                                                 }}>
                                                     <button type="submit" className="text-red-600 hover:text-red-900" title="Delete User">
                                                         <Trash2 size={16} />

@@ -1,4 +1,3 @@
-'use server';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getTenantPrisma } from '@/lib/prisma';
@@ -18,7 +17,8 @@ export default async function PoliciesPage() {
     const currentUserId = 1;
 
     async function acknowledgePolicy(formData: FormData) {
-                const policyId = parseInt(formData.get('policyId') as string);
+        'use server';
+        const policyId = parseInt(formData.get('policyId') as string);
         const userId = parseInt(formData.get('userId') as string);
 
         await (await getTenantPrisma()).policyAcknowledgment.create({

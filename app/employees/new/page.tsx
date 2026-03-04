@@ -1,4 +1,3 @@
-'use server';
 
 import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -12,7 +11,8 @@ export default async function NewEmployeePage() {
     const shifts = await getShifts();
 
     async function createEmployee(formData: FormData) {
-        
+        'use server';
+
         const empName = formData.get('empName') as string;
         const empIdRaw = formData.get('empId') as string;
         const empId = empIdRaw ? parseInt(empIdRaw) : undefined;

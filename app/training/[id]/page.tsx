@@ -1,4 +1,3 @@
-'use server';
 import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Clock, UserPlus, Trash2, Users } from 'lucide-react';
@@ -101,7 +100,8 @@ export default async function TrainingDetailPage(props: { params: Promise<{ id: 
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <form action={async () => {
-                                                                                                        await removeAttendee(att.attendanceID, trainingId);
+                                                    'use server';
+                                                    await removeAttendee(att.attendanceID, trainingId);
                                                 }}>
                                                     <button className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1" title="Delete Attendance">
                                                         <Trash2 size={16} />

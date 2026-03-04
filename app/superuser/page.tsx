@@ -1,4 +1,3 @@
-'use server';
 import { auth } from '@/auth';
 import { getTenantPrisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -27,7 +26,8 @@ export default async function SuperuserPage() {
 
     // Actions
     async function createAgency(formData: FormData) {
-                const name = formData.get('name') as string;
+        'use server';
+        const name = formData.get('name') as string;
         const timezone = formData.get('timezone') as string;
         if (!name) return;
         await ((await getTenantPrisma()) as any).agency.create({ data: { name, timezone } });
@@ -35,7 +35,8 @@ export default async function SuperuserPage() {
     }
 
     async function setOverride(id: string | null) {
-                const cookieStore = await cookies();
+        'use server';
+        const cookieStore = await cookies();
         if (id) {
             cookieStore.set('super_agency_override', id, { path: '/' });
         } else {
@@ -45,7 +46,8 @@ export default async function SuperuserPage() {
     }
 
     async function generateLicense(formData: FormData) {
-                const clientName = formData.get('clientName') as string;
+        'use server';
+        const clientName = formData.get('clientName') as string;
         const gracePeriodDays = parseInt(formData.get('gracePeriodDays') as string) || 30;
         if (!clientName) return;
 
@@ -63,7 +65,8 @@ export default async function SuperuserPage() {
     }
 
     async function extendGracePeriod(formData: FormData) {
-                const id = parseInt(formData.get('id') as string);
+        'use server';
+        const id = parseInt(formData.get('id') as string);
         const addDays = parseInt(formData.get('addDays') as string) || 30;
         const prisma = await getTenantPrisma() as any;
         const license = await prisma.issuedLicense.findUnique({ where: { id } });
@@ -77,7 +80,8 @@ export default async function SuperuserPage() {
     }
 
     async function toggleModule(formData: FormData) {
-                const moduleName = formData.get('module') as string;
+        'use server';
+        const moduleName = formData.get('module') as string;
 
         const prisma = await getTenantPrisma() as any;
         const currentSettings = await prisma.organizationSettings.findFirst();

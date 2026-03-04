@@ -1,4 +1,3 @@
-'use server';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getTenantPrisma } from '@/lib/prisma';
@@ -19,7 +18,8 @@ export default async function NewAssetPage() {
     });
 
     async function createAsset(formData: FormData) {
-        
+        'use server';
+
         const name = formData.get('name') as string;
         const categoryId = parseInt(formData.get('categoryId') as string);
         const serialNumber = formData.get('serialNumber') as string;

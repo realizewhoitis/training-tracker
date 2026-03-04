@@ -1,4 +1,3 @@
-'use server';
 import { getTenantPrisma } from '@/lib/prisma';
 import { scanForFlags, resolveFlag, dismissFlag } from './actions';
 import { AlertTriangle, CheckCircle, ShieldAlert, BadgeCheck, XCircle, Search, RefreshCw } from 'lucide-react';
@@ -34,7 +33,8 @@ export default async function EISAdminPage({ searchParams }: { searchParams: { q
     });
 
     async function runScan() {
-                await scanForFlags();
+        'use server';
+        await scanForFlags();
         revalidatePath('/admin/eis');
     }
 
@@ -106,7 +106,8 @@ export default async function EISAdminPage({ searchParams }: { searchParams: { q
 
                                             <div className="flex items-center space-x-2 ml-4">
                                                 <form action={async () => {
-                                                                                                        await resolveFlag(flag.id, "Manually resolved via dashboard");
+                                                    'use server';
+                                                    await resolveFlag(flag.id, "Manually resolved via dashboard");
                                                 }}>
                                                     <button
                                                         className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg tooltip"
@@ -116,7 +117,8 @@ export default async function EISAdminPage({ searchParams }: { searchParams: { q
                                                     </button>
                                                 </form>
                                                 <form action={async () => {
-                                                                                                        await dismissFlag(flag.id);
+                                                    'use server';
+                                                    await dismissFlag(flag.id);
                                                 }}>
                                                     <button
                                                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
