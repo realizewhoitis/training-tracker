@@ -75,9 +75,29 @@ export default async function PoliciesPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50 p-4 rounded-lg mb-4 text-slate-700 text-sm leading-relaxed border border-slate-100">
-                                {policy.content}
-                            </div>
+                            {policy.mediaUrl ? (
+                                <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                    <h4 className="px-4 py-3 bg-slate-50 border-b border-slate-200 font-semibold text-slate-700 text-sm flex items-center justify-between">
+                                        <div className="flex items-center">
+                                            <FileText size={16} className="mr-2 text-indigo-500" />
+                                            Primary Policy Document
+                                        </div>
+                                        <a href={policy.mediaUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-md border border-indigo-200 transition-colors">Open in New Tab</a>
+                                    </h4>
+                                    <iframe
+                                        src={policy.mediaUrl}
+                                        className="w-full h-[600px] bg-zinc-100"
+                                        title="Core Policy Document"
+                                    />
+                                </div>
+                            ) : null}
+
+                            {policy.content && policy.content.trim() !== '<p><br></p>' && (
+                                <div
+                                    className="bg-slate-50 p-4 rounded-lg mb-4 text-slate-700 text-sm leading-relaxed border border-slate-100"
+                                    dangerouslySetInnerHTML={{ __html: policy.content }}
+                                />
+                            )}
 
                             {!isAcknowledged && (
                                 <div className="flex justify-end">

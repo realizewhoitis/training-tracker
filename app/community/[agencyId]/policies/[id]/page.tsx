@@ -80,9 +80,28 @@ export default async function CommunityPolicyViewer({ params }: { params: Promis
                         </div>
                     </div>
 
-                    <div className="p-8 md:p-12 prose prose-slate max-w-none font-sans text-slate-700 text-base leading-loose whitespace-pre-wrap">
-                        <div dangerouslySetInnerHTML={{ __html: publishedVersion.content }} />
-                    </div>
+                    {publishedVersion.mediaUrl && (
+                        <div className="mx-8 md:mx-12 mt-8 mb-4 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                            <h4 className="px-4 py-3 bg-slate-50 border-b border-slate-200 font-semibold text-slate-700 text-sm flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <FileText size={16} className="mr-2 text-indigo-500" />
+                                    Primary Policy Document
+                                </div>
+                                <a href={publishedVersion.mediaUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-md border border-indigo-200 transition-colors">Open in New Tab</a>
+                            </h4>
+                            <iframe
+                                src={publishedVersion.mediaUrl}
+                                className="w-full h-[800px] bg-zinc-100"
+                                title="Core Policy Document"
+                            />
+                        </div>
+                    )}
+
+                    {publishedVersion.content && publishedVersion.content.trim() !== '<p><br></p>' && (
+                        <div className="p-8 md:p-12 prose prose-slate max-w-none font-sans text-slate-700 text-base leading-loose whitespace-pre-wrap">
+                            <div dangerouslySetInnerHTML={{ __html: publishedVersion.content }} />
+                        </div>
+                    )}
                 </div>
 
                 {container.evidence && container.evidence.length > 0 && (

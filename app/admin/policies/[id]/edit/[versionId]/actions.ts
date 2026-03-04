@@ -5,6 +5,7 @@ import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
+import { saveFile } from '@/lib/storage';
 
 export async function saveDraftAction(formData: FormData) {
     await enforceWriteAccess();
@@ -24,6 +25,16 @@ export async function saveDraftAction(formData: FormData) {
         targetRoles = JSON.stringify(rolesForm);
     }
 
+    const pdfFile = formData.get('pdfFile') as File | null;
+    let mediaUrl = undefined;
+    let mediaType = undefined;
+
+    if (pdfFile && pdfFile.size > 0) {
+        const savedPath = await saveFile(pdfFile, 'policies');
+        mediaUrl = `/api/files/${savedPath}`;
+        mediaType = pdfFile.type;
+    }
+
     await prisma.policyVersion.update({
         where: { id: versionId },
         data: {
@@ -32,6 +43,7 @@ export async function saveDraftAction(formData: FormData) {
             enforcementLevel: parseInt(formData.get('enforcementLevel') as string) || 1,
             readingTimer: parseInt(formData.get('readingTimer') as string) || 0,
             targetRoles: targetRoles,
+            ...(mediaUrl ? { mediaUrl, mediaType } : {})
         }
     });
 

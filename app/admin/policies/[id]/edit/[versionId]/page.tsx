@@ -4,6 +4,7 @@ import { FilePenLine, ArrowLeft, Clock, ShieldAlert, CheckCircle } from 'lucide-
 import Link from 'next/link';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 import { EditorActionButtons } from './EditorActionButtons';
+import RichTextEditor from '@/app/components/RichTextEditor';
 
 export default async function VersionEditorPage({ params }: { params: Promise<{ id: string, versionId: string }> }) {
     const p = await params;
@@ -61,8 +62,20 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
                     </div>
 
                     <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-1">Upload Core Document (PDF Optional)</label>
+                        {version.mediaUrl && (
+                            <div className="mb-2 flex items-center bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm">
+                                <span className="font-medium mr-2">Current Attachment:</span>
+                                <a href={version.mediaUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 font-bold truncate block max-w-xs">{version.mediaUrl.split('/').pop()}</a>
+                            </div>
+                        )}
+                        <input name="pdfFile" type="file" accept="application/pdf" disabled={!isDraft} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-500" />
+                        <p className="text-xs text-slate-500 mt-1">If provided, this PDF will override the rich text content as the primary document policy.</p>
+                    </div>
+
+                    <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-1">Document Content (HTML/Rich-Text)</label>
-                        <textarea name="content" defaultValue={version.content} disabled={!isDraft} rows={12} className="w-full rounded-lg border-slate-300 font-mono text-sm disabled:bg-slate-50 disabled:text-slate-500"></textarea>
+                        <RichTextEditor name="content" defaultValue={version.content || ''} readOnly={!isDraft} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

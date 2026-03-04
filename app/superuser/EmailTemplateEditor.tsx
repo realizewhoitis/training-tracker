@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Mail, Save, AlertCircle } from 'lucide-react';
 import { saveEmailTemplate } from './actions';
+import RichTextEditor from '@/app/components/RichTextEditor';
 
 interface EmailTemplate {
     id: number;
@@ -115,14 +116,11 @@ export default function EmailTemplateEditor({
                                 </span>
                             )}
                         </div>
-                        <textarea
+                        <RichTextEditor
                             name="body"
-                            rows={6}
                             value={body}
-                            onChange={(e) => setBody(e.target.value)}
-                            className="w-full border-slate-300 rounded-lg text-sm font-mono bg-slate-50 p-3 border"
+                            onChange={setBody}
                             placeholder="<p>Hello {{name}}, here is your password: {{password}}</p>"
-                            required
                         />
                     </div>
 
