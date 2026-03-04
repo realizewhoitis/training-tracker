@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Book, Users, GraduationCap, PackageOpen, FileSpreadsheet, ShieldCheck } from 'lucide-react';
+import { Book, Users, GraduationCap, PackageOpen, FileSpreadsheet, ShieldCheck, FileSignature } from 'lucide-react';
 
 const CHAPTERS = [
     { name: 'Introduction', path: '/help', icon: Book },
@@ -12,6 +12,7 @@ const CHAPTERS = [
     { name: 'Chapter 4: Inventory Logistics', path: '/help/inventory', icon: PackageOpen },
     { name: 'Chapter 5: Forms & Reporting', path: '/help/forms', icon: FileSpreadsheet },
     { name: 'Chapter 6: Administration', path: '/help/administration', icon: ShieldCheck },
+    { name: 'Chapter 7: Policies & Compliance', path: '/help/compliance', icon: FileSignature },
 ];
 
 export default function HelpSidebar() {
