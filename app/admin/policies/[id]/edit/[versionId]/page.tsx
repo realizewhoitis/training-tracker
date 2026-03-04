@@ -71,6 +71,7 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
                         )}
                         <input name="pdfFile" type="file" accept="application/pdf" disabled={!isDraft} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-500" />
                         <p className="text-xs text-slate-500 mt-1">If provided, this PDF will override the rich text content as the primary document policy.</p>
+                        <p className="text-xs text-amber-600 font-medium mt-1">Note: Word documents (.doc/.docx) must be saved as PDF before uploading.</p>
                     </div>
 
                     <div>
