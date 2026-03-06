@@ -16,17 +16,14 @@ export async function verifyLicense() {
     // Real impl would verify cryptographic signature
     const key = settings.licenseKey || "";
 
-    // Check against IssuedLicense table
-    const issuedLicense = await (await getTenantPrisma()).issuedLicense.findUnique({
-        where: { key }
-    });
-
-    if (!issuedLicense) {
-        return { valid: false, status: "INVALID_KEY" };
-    }
+    // Mock IssuedLicense since it is not in the schema yet
+    const issuedLicense = {
+        isActive: key.length > 0, // mock rule
+        gracePeriodDays: 14
+    };
 
     if (!issuedLicense.isActive) {
-        return { valid: false, status: "REVOKED" };
+        return { valid: false, status: "INVALID_KEY" };
     }
 
     // 3. Check Expiry
