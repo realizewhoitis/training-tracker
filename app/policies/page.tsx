@@ -1,7 +1,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getTenantPrisma } from '@/lib/prisma';
-import { FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import PolicyListClient from './PolicyListClient';
 import { revalidatePath } from 'next/cache';
 
 export default async function PoliciesPage() {
@@ -41,82 +41,11 @@ export default async function PoliciesPage() {
             </div>
 
             <div className="grid gap-6">
-                {policies.length === 0 ? (
-                    <div className="p-8 text-center bg-white rounded-xl border border-dashed border-slate-300">
-                        <p className="text-slate-500">No policies found.</p>
-                    </div>
-                ) : policies.map((policy: any) => {
-                    const isAcknowledged = policy.acknowledgments.some((ack: any) => ack.employeeId === currentUserId);
-
-                    return (
-                        <div key={policy.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center space-x-3">
-                                    <div className={`p-2 rounded-lg ${isAcknowledged ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                                        <FileText size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-slate-800">{policy.title}</h3>
-                                        <p className="text-sm text-slate-500">Version {policy.version} • Posted {policy.createdAt.toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    {isAcknowledged ? (
-                                        <span className="flex items-center text-green-600 text-sm font-medium px-3 py-1 bg-green-50 rounded-full">
-                                            <CheckCircle size={16} className="mr-1" />
-                                            Acknowledged
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center text-amber-600 text-sm font-medium px-3 py-1 bg-amber-50 rounded-full">
-                                            <AlertCircle size={16} className="mr-1" />
-                                            Action Required
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {policy.mediaUrl ? (
-                                <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
-                                    <h4 className="px-4 py-3 bg-slate-50 border-b border-slate-200 font-semibold text-slate-700 text-sm flex items-center justify-between">
-                                        <div className="flex items-center">
-                                            <FileText size={16} className="mr-2 text-indigo-500" />
-                                            Primary Policy Document
-                                        </div>
-                                        <a href={policy.mediaUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 text-xs font-semibold px-3 py-1.5 rounded-md border border-indigo-200 transition-colors">Open in New Tab</a>
-                                    </h4>
-                                    <iframe
-                                        src={policy.mediaUrl}
-                                        className="w-full h-[600px] bg-zinc-100"
-                                        title="Core Policy Document"
-                                    />
-                                </div>
-                            ) : null}
-
-                            {policy.content && policy.content.trim() !== '<p><br></p>' && (
-                                <div
-                                    className="bg-slate-50 p-4 rounded-lg mb-4 text-slate-700 text-sm leading-relaxed border border-slate-100"
-                                    dangerouslySetInnerHTML={{ __html: policy.content }}
-                                />
-                            )}
-
-                            {!isAcknowledged && (
-                                <div className="flex justify-end">
-                                    <form action={acknowledgePolicy}>
-                                        <input type="hidden" name="policyId" value={policy.id} />
-                                        <input type="hidden" name="userId" value={currentUserId} />
-                                        <button
-                                            type="submit"
-                                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
-                                        >
-                                            <CheckCircle size={16} className="mr-2" />
-                                            I have read and understand this policy
-                                        </button>
-                                    </form>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                <PolicyListClient
+                    initialPolicies={policies}
+                    currentUserId={currentUserId}
+                    acknowledgePolicyAction={acknowledgePolicy}
+                />
             </div>
         </div>
     );

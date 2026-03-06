@@ -1,7 +1,7 @@
 import { getTenantPrisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { ShieldCheck, FileText } from 'lucide-react';
-import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
+import CommunityPolicyListClient from './CommunityPolicyListClient';
 
 // No auth required! Public page.
 export default async function CommunityPoliciesPage({ params }: { params: Promise<{ agencyId: string }> }) {
@@ -48,41 +48,10 @@ export default async function CommunityPoliciesPage({ params }: { params: Promis
                     <p>We believe in full transparency and accountability with our community. Below you will find our publicly available policies, directives, and operational guidelines.</p>
                 </div>
 
-                <div className="space-y-6">
-                    {publicContainers.length === 0 ? (
-                        <div className="p-12 border-2 border-dashed border-slate-300 rounded-3xl text-center text-slate-500 bg-white shadow-sm">
-                            <FileText size={48} className="mx-auto text-slate-300 mb-4" />
-                            <p className="text-lg">No public policies have been published yet.</p>
-                        </div>
-                    ) : publicContainers.map((container: any) => {
-                        const publishedVersion = container.versions[0];
-                        if (!publishedVersion) return null;
-
-                        return (
-                            <div key={container.id} className="bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all transform hover:-translate-y-1 overflow-hidden group">
-                                <Link href={`/community/${agency.id}/policies/${container.id}`} className="block p-8">
-                                    <div className="flex justify-between items-start mb-6">
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-slate-800 group-hover:text-indigo-700 transition-colors">{container.title}</h2>
-                                            <p className="text-slate-500 mt-2 text-base">{container.description}</p>
-                                        </div>
-                                        <span className="bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider shrink-0 ml-4">
-                                            {container.category || 'POLICY'}
-                                        </span>
-                                    </div>
-                                    <div className="pt-5 border-t border-slate-100 flex items-center justify-between">
-                                        <div className="text-sm font-medium text-slate-400">
-                                            Effective Date: {new Date(publishedVersion.publishedAt).toLocaleDateString()}
-                                        </div>
-                                        <div className="text-indigo-600 font-bold flex items-center text-sm uppercase tracking-wide group-hover:text-indigo-800">
-                                            <FileText size={18} className="mr-2" /> Read Full Document
-                                        </div>
-                                    </div>
-                                </Link>
-                            </div>
-                        );
-                    })}
-                </div>
+                <CommunityPolicyListClient
+                    initialContainers={publicContainers}
+                    agency={agency}
+                />
             </main>
         </div>
     );
