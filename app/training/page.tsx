@@ -7,13 +7,12 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import ExportCsvButton from '@/app/components/ExportCsvButton';
 
-export default async function TrainingPage({
-    searchParams,
-}: {
-    searchParams?: {
+export default async function TrainingPage(props: {
+    searchParams?: Promise<{
         roster_success?: string;
-    };
+    }>;
 }) {
+    const searchParams = await props.searchParams;
     const trainings = await (await getTenantPrisma()).training.findMany({
         orderBy: { TrainingName: 'asc' },
         include: {

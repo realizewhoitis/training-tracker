@@ -4,7 +4,8 @@ import { AlertTriangle, CheckCircle, ShieldAlert, BadgeCheck, XCircle, Search, R
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 
-export default async function EISAdminPage({ searchParams }: { searchParams: { q?: string } }) {
+export default async function EISAdminPage(props: { searchParams: Promise<{ q?: string }> }) {
+    const searchParams = await props.searchParams;
     const query = searchParams.q || '';
 
     const flags = await (await getTenantPrisma()).eISFlag.findMany({

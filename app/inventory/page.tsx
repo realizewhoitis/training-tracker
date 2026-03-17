@@ -5,11 +5,10 @@ import { Package, Search, Plus, Filter } from 'lucide-react';
 import Link from 'next/link';
 import ExportCsvButton from '@/app/components/ExportCsvButton';
 
-export default async function InventoryPage({
-    searchParams
-}: {
-    searchParams: { q?: string; status?: string }
+export default async function InventoryPage(props: {
+    searchParams: Promise<{ q?: string; status?: string }>
 }) {
+    const searchParams = await props.searchParams;
     const query = searchParams.q || '';
     const statusFilter = searchParams.status || '';
 

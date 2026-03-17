@@ -7,12 +7,14 @@ import mime from 'mime';
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { path: string[] } }
+    props: { params: Promise<{ path: string[] }> }
 ) {
     const session = await auth();
     if (!session?.user) {
         return new NextResponse('Unauthorized', { status: 401 });
     }
+
+    const params = await props.params;
 
     // Reconstruct the file path from the catch-all param
     const relativePath = params.path.join('/');
