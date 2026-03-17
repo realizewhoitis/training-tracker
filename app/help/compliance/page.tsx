@@ -63,6 +63,18 @@ export default function ComplianceHelpPage() {
                         </ul>
                     </div>
                 </div>
+
+                <h2 className="text-2xl font-bold flex items-center text-slate-800 mt-10 mb-6">
+                    <FileText className="mr-3 text-indigo-600" /> Policy Search & Discovery
+                </h2>
+                <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                    <p>Finding the exact procedure you need during a critical incident is paramount. The system provides powerful discovery tools tailored for each role:</p>
+                    <ul className="list-disc pl-6 space-y-2 mt-4">
+                        <li><strong>Employee Hub:</strong> General users navigate an instant text-search portal with smart category tabs. They can quickly toggle "Action Required" to find policies awaiting their mandatory digital signature.</li>
+                        <li><strong>Admin Directory:</strong> Administrators have access to an enhanced data table allowing them to filter by Policy Owner, Category, and precise draft status.</li>
+                        <li><strong>Public Search:</strong> The Community Transparency Portal mirrors this instant-search capability, ensuring residents can find specific directives without navigating complex nested folders.</li>
+                    </ul>
+                </div>
             </div>
         </div>
     );

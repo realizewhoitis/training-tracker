@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 import { EditorActionButtons } from './EditorActionButtons';
 import RichTextEditor from '@/app/components/RichTextEditor';
+import { SplitScreenMapper } from './SplitScreenMapper';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export default async function VersionEditorPage({ params }: { params: Promise<{ id: string, versionId: string }> }) {
     const p = await params;
@@ -13,7 +16,9 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
 
     if (isNaN(containerId) || isNaN(versionId)) return notFound();
 
-    const version = await (await getTenantPrisma()).policyVersion.findUnique({
+    const prisma = await getTenantPrisma() as any;
+
+    const version = await prisma.policyVersion.findUnique({
         where: { id: versionId },
         include: { container: true }
     });
@@ -21,6 +26,15 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
     if (!version || version.containerId !== containerId) return notFound();
 
     const isDraft = version.status === 'DRAFT';
+
+    const standards = await prisma.accreditationStandard.findMany({
+        orderBy: { name: 'asc' },
+        include: { requirements: true }
+    });
+
+    const existingMappings = await prisma.policyMapping.findMany({
+        where: { versionId }
+    });
 
     const roleTemplates = await (await getTenantPrisma()).roleTemplate.findMany();
     const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
@@ -39,6 +53,7 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
             <div className="flex items-center space-x-4 mb-4">
                 <Link href={`/admin/policies/${containerId}`} className="text-slate-500 hover:text-slate-800 transition-colors">
                     <ArrowLeft size={24} />
+                    <span className="sr-only">Back</span>
                 </Link>
                 <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center">
                     <FilePenLine className="mr-3 text-indigo-600 truncate" />
@@ -57,19 +72,19 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
 
                 <div className="grid grid-cols-1 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1">Document Title</label>
-                        <input name="title" type="text" defaultValue={version.title} disabled={!isDraft} required className="w-full rounded-lg border-slate-300 disabled:bg-slate-50 disabled:text-slate-500" />
+                        <label htmlFor="title" className="block text-sm font-semibold text-slate-700 mb-1">Document Title</label>
+                        <input id="title" name="title" type="text" defaultValue={version.title} disabled={!isDraft} required title="Document Title" placeholder="Enter title" className="w-full rounded-lg border-slate-300 disabled:bg-slate-50 disabled:text-slate-500" />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1">Upload Core Document (PDF Optional)</label>
+                        <label htmlFor="pdfFile" className="block text-sm font-semibold text-slate-700 mb-1">Upload Core Document (PDF Optional)</label>
                         {version.mediaUrl && (
                             <div className="mb-2 flex items-center bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm">
                                 <span className="font-medium mr-2">Current Attachment:</span>
                                 <a href={version.mediaUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 font-bold truncate block max-w-xs">{version.mediaUrl.split('/').pop()}</a>
                             </div>
                         )}
-                        <input name="pdfFile" type="file" accept="application/pdf" disabled={!isDraft} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-500" />
+                        <input id="pdfFile" name="pdfFile" type="file" accept="application/pdf" disabled={!isDraft} title="Upload Core Document PDF" className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm disabled:bg-slate-50 disabled:text-slate-500" />
                         <p className="text-xs text-slate-500 mt-1">If provided, this PDF will override the rich text content as the primary document policy.</p>
                         <p className="text-xs text-amber-600 font-medium mt-1">Note: Word documents (.doc/.docx) must be saved as PDF before uploading.</p>
                     </div>
@@ -86,20 +101,20 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
                                 Enforcement Settings
                             </h3>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1 flex items-center">
+                                <label htmlFor="enforcementLevel" className="block text-xs font-medium text-slate-500 mb-1 flex items-center">
                                     Enforcement Level
                                 </label>
-                                <select name="enforcementLevel" defaultValue={version.enforcementLevel} disabled={!isDraft} className="w-full rounded-md border-slate-300 text-sm disabled:bg-slate-100 disabled:text-slate-500">
+                                <select id="enforcementLevel" name="enforcementLevel" defaultValue={version.enforcementLevel} disabled={!isDraft} title="Enforcement Level" className="w-full rounded-md border-slate-300 text-sm disabled:bg-slate-100 disabled:text-slate-500">
                                     <option value="1">Level 1 - Informational Only</option>
                                     <option value="2">Level 2 - Requires Signature (Passive)</option>
                                     <option value="3">Level 3 - Mandatory Gate (Blocks Application)</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1 flex items-center">
+                                <label htmlFor="readingTimer" className="block text-xs font-medium text-slate-500 mb-1 flex items-center">
                                     <Clock size={14} className="mr-1" /> Reading Timer (Seconds)
                                 </label>
-                                <input name="readingTimer" type="number" min="0" defaultValue={version.readingTimer} disabled={!isDraft} className="w-full rounded-md border-slate-300 text-sm disabled:bg-slate-100 disabled:text-slate-500" />
+                                <input id="readingTimer" name="readingTimer" type="number" min="0" defaultValue={version.readingTimer} disabled={!isDraft} title="Reading Timer" placeholder="0" className="w-full rounded-md border-slate-300 text-sm disabled:bg-slate-100 disabled:text-slate-500" />
                                 <p className="text-xs text-slate-400 mt-1">Time users must wait before signing.</p>
                             </div>
                         </div>
@@ -127,6 +142,11 @@ export default async function VersionEditorPage({ params }: { params: Promise<{ 
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Split Screen Mapping Tool */}
+                <div className="pt-6 border-t border-slate-200">
+                    <SplitScreenMapper standards={standards} existingMappings={existingMappings} />
                 </div>
 
                 {isDraft && <EditorActionButtons versionNumber={version.versionNumber} versionId={version.id} containerId={containerId} />}

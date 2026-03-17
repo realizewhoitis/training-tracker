@@ -61,6 +61,9 @@ export default function Chapter6Page() {
                             <p className="text-sm">
                                 As Orbit 911 requires an active verification license to legally operate commercially, this section allows root managers to rapidly conjure cryptographically secure, payload-driven License Keys determining platform module toggles (like toggling off Inventory) and absolute seat-limits.
                             </p>
+                            <p className="text-sm mt-3">
+                                <strong>Grace Periods:</strong> Superusers can configure a <code>gracePeriodDays</code> value on generated licenses. If a license expires, the system will enter a temporary Read-Only Grace Period, showing a global warning banner to prevent sudden workflow lockouts while a contract is renewed. Superusers can dynamically extend this grace period on active licenses directly from the dashboard.
+                            </p>
                         </div>
                         <div className="border border-slate-200 p-6 rounded-lg bg-white shadow-sm">
                             <h4 className="font-bold text-slate-800 mb-2 flex items-center">

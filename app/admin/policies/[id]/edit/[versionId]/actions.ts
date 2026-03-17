@@ -47,6 +47,31 @@ export async function saveDraftAction(formData: FormData) {
         }
     });
 
+    // Handle Accreditation Mappings
+    const mappedReqStr = formData.get('mappedRequirements') as string;
+    if (mappedReqStr) {
+        try {
+            const requirementIds: number[] = JSON.parse(mappedReqStr);
+
+            // Delete old mappings for this version
+            await prisma.policyMapping.deleteMany({
+                where: { versionId }
+            });
+
+            // Insert new mappings
+            if (requirementIds.length > 0) {
+                await prisma.policyMapping.createMany({
+                    data: requirementIds.map(reqId => ({
+                        versionId,
+                        requirementId: reqId
+                    }))
+                });
+            }
+        } catch (e) {
+            console.error("Failed to map requirements", e);
+        }
+    }
+
     revalidatePath(`/admin/policies/${containerId}`);
 }
 

@@ -61,6 +61,8 @@ const calculateAnalytics = (resList: any[]) => {
   return { daily: dailyScores, radar: radarData };
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const totalEmployees = await (await getTenantPrisma()).employee.count({
     where: { departed: false }

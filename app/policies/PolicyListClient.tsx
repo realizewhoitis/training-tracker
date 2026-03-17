@@ -62,6 +62,7 @@ export default function PolicyListClient({
                     <Filter className="text-slate-400" size={18} />
                     <span className="text-sm font-medium text-slate-600 whitespace-nowrap">Filter:</span>
                     <select
+                        title="Filter Category"
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value as any)}
                         className="w-full md:w-48 rounded-md border-slate-300 text-sm py-2 pl-3 pr-8 focus:ring-indigo-500 focus:border-indigo-500"

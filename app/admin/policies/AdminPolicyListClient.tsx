@@ -55,6 +55,7 @@ export default function AdminPolicyListClient({
                     <div className="flex items-center space-x-2 w-full sm:w-auto">
                         <Filter className="text-slate-400 shrink-0" size={18} />
                         <select
+                            title="Filter by Category"
                             value={filterCategory}
                             onChange={(e) => setFilterCategory(e.target.value)}
                             className="w-full sm:w-40 rounded-md border-slate-300 text-sm py-2 pl-3 pr-8 focus:ring-indigo-500 focus:border-indigo-500"
@@ -69,6 +70,7 @@ export default function AdminPolicyListClient({
 
                     <div className="flex items-center space-x-2 w-full sm:w-auto">
                         <select
+                            title="Filter by Owner"
                             value={filterOwner}
                             onChange={(e) => setFilterOwner(e.target.value)}
                             className="w-full sm:w-48 rounded-md border-slate-300 text-sm py-2 pl-3 pr-8 focus:ring-indigo-500 focus:border-indigo-500"

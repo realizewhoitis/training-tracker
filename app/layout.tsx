@@ -27,6 +27,8 @@ import GracePeriodBanner from './components/GracePeriodBanner';
 
 import { Analytics } from "@vercel/analytics/next";
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: Readonly<{

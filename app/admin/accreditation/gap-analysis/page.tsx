@@ -9,8 +9,7 @@ export default async function GapAnalysisPage() {
         include: {
             requirements: {
                 include: {
-                    mappings: true,
-                    evidence: true
+                    policyMappings: true
                 },
                 orderBy: { clauseNumber: 'asc' }
             }
@@ -44,11 +43,11 @@ export default async function GapAnalysisPage() {
                 {standards.map((standard: any) => {
                     const totalRequirements = standard.requirements.length;
                     const uncoveredRequirements = standard.requirements.filter(
-                        (req: any) => req.mappings.length === 0 && req.evidence.length === 0
+                        (req: any) => req.policyMappings.length === 0 && req.evidence.length === 0
                     );
                     const uncoveredCount = uncoveredRequirements.length;
                     const coveredCount = totalRequirements - uncoveredCount;
-                    const percentage = totalRequirements === 0 ? 100 : Math.round((coveredCount / totalRequirements) * 100);
+                    const percentage = totalRequirements === 0 ? 0 : Math.round((coveredCount / totalRequirements) * 100);
 
                     return (
                         <div key={standard.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -75,25 +74,79 @@ export default async function GapAnalysisPage() {
                                     </div>
                                 ) : (
                                     <table className="min-w-full divide-y divide-slate-200">
-                                        <thead className="bg-red-50/50">
+                                        <thead className="bg-slate-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider w-1/4">Uncovered Clause</th>
-                                                <th className="px-6 py-3 text-left text-xs font-bold text-red-800 uppercase tracking-wider">Description</th>
+                                                <th className="py-3 px-6 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-[10%]">Clause</th>
+                                                <th className="py-3 px-6 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-[45%]">Description</th>
+                                                <th className="py-3 px-6 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-[45%]">Compliance Coverage</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-slate-100">
-                                            {uncoveredRequirements.map((req: any) => (
-                                                <tr key={req.id} className="hover:bg-red-50/30 transition-colors">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                            {req.clauseNumber}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-slate-700">
-                                                        {req.description}
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {standard.requirements.map((req: any) => {
+                                                const hasMappings = req.policyMappings.length > 0;
+                                                const hasEvidence = req.evidence?.length > 0;
+                                                const isMapped = hasMappings || hasEvidence;
+                                                return (
+                                                    <tr key={req.id} className={isMapped ? 'bg-white' : 'bg-amber-50/30'}>
+                                                        <td className="py-4 px-6 align-top whitespace-nowrap">
+                                                            <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded">
+                                                                {req.clauseNumber}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-4 px-6 align-top">
+                                                            <p className="text-slate-600 line-clamp-3 leading-relaxed max-w-xl">{req.description}</p>
+                                                        </td>
+                                                        <td className="py-4 px-6 align-top min-w-[250px]">
+                                                            {isMapped ? (
+                                                                <div className="space-y-4">
+                                                                    {hasMappings && (
+                                                                        <div className="space-y-2">
+                                                                            <div className="flex items-center text-green-600 text-xs font-bold uppercase tracking-wider mb-2">
+                                                                                <CheckCircle2 size={14} className="mr-1" />
+                                                                                Draft/Policy Mapped
+                                                                            </div>
+                                                                            {req.policyMappings.map((mapping: any) => (
+                                                                                <Link
+                                                                                    key={mapping.id}
+                                                                                    href={`/admin/policies/${mapping.version.containerId}`}
+                                                                                    className="block bg-green-50 border border-green-200 p-2 rounded hover:shadow-sm transition-shadow"
+                                                                                >
+                                                                                    <div className="font-medium text-green-900 truncate">
+                                                                                        {mapping.version.title || 'Untitled Policy'}
+                                                                                    </div>
+                                                                                    <div className="text-xs text-green-700 mt-1 flex justify-between">
+                                                                                        <span>v{mapping.version.versionNumber}</span>
+                                                                                        <span className="uppercase">{mapping.version.status}</span>
+                                                                                    </div>
+                                                                                </Link>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                    {hasEvidence && (
+                                                                        <div className="space-y-2">
+                                                                            <div className="flex items-center text-indigo-600 text-xs font-bold uppercase tracking-wider mb-2 pt-1 border-t border-slate-100">
+                                                                                <CheckCircle2 size={14} className="mr-1" />
+                                                                                Evidence Discovered
+                                                                            </div>
+                                                                            <div className="text-sm font-medium text-slate-700">
+                                                                                {req.evidence?.length} Proof Document{req.evidence?.length === 1 ? '' : 's'}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-start text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
+                                                                    <AlertTriangle size={16} className="mt-0.5 mr-2 shrink-0" />
+                                                                    <div>
+                                                                        <div className="font-bold text-sm">Gap Detected</div>
+                                                                        <p className="text-xs mt-1 text-amber-700 opacity-90">No policy or evidence addresses this requirement.</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 )}

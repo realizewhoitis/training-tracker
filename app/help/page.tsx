@@ -44,6 +44,10 @@ export default function HelpIntroPage() {
                         <span>High-level administrators who can provision user accounts, manage the inventory catalog, and delete system records.</span>
                     </li>
                     <li className="flex items-start">
+                        <span className="font-bold min-w-[120px] text-slate-800">Auditor:</span>
+                        <span>External inspectors with read-only access strictly limited to the Accreditation Workbench, Policies, and Evidence Lockers for compliance verification.</span>
+                    </li>
+                    <li className="flex items-start">
                         <span className="font-bold min-w-[120px] text-slate-800">Superuser:</span>
                         <span>Root-level platform managers who configure database connections, licensing, branding, and automated email templates.</span>
                     </li>

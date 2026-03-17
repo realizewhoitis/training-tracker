@@ -5,10 +5,14 @@ import PolicyListClient from './PolicyListClient';
 import { revalidatePath } from 'next/cache';
 
 export default async function PoliciesPage() {
-    const policies = await (await getTenantPrisma()).policy.findMany({
-        orderBy: { createdAt: 'desc' },
+    const policies = await (await getTenantPrisma()).policyVersion.findMany({
+        where: {
+            status: 'PUBLISHED'
+        },
+        orderBy: { publishedAt: 'desc' },
         include: {
-            acknowledgments: true
+            container: true,
+            attestations: true
         }
     });
 
@@ -18,12 +22,12 @@ export default async function PoliciesPage() {
 
     async function acknowledgePolicy(formData: FormData) {
         'use server';
-        const policyId = parseInt(formData.get('policyId') as string);
+        const versionId = parseInt(formData.get('versionId') as string);
         const userId = parseInt(formData.get('userId') as string);
 
-        await (await getTenantPrisma()).policyAcknowledgment.create({
+        await (await getTenantPrisma()).userAttestation.create({
             data: {
-                policyId: policyId,
+                versionId: versionId,
                 employeeId: userId
             }
         });
