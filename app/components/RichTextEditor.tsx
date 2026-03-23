@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
+import 'react-quill-new/dist/quill.snow.css';
 
 // Dynamically import ReactQuill to prevent SSR hydration errors
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(() => import('react-quill-new'), {
     ssr: false,
     loading: () => <div className="h-64 w-full bg-slate-100 animate-pulse rounded-lg border border-slate-200 flex flex-col justify-center items-center text-slate-400">Loading Editor...</div>
 });
