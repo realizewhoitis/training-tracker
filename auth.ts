@@ -141,7 +141,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                             // We grant a 10-minute validity window (20 steps of 30 seconds)
                             // @ts-ignore - The otplib type definitions might complain but verify expects an object
-                            const result = await verify({ token: twoFactorCode, secret: user.twoFactorSecret, epochTolerance: 20 });
+                            const result = await verify({ token: twoFactorCode, secret: user.twoFactorSecret, window: 20 });
                             if (!result.valid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
                             if (e instanceof TwoFactorRequiredError || e.code === '2FA_REQUIRED' || e.message?.includes('2FA_REQUIRED')) {
