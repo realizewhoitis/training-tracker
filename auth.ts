@@ -119,7 +119,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     if (user.twoFactorEnabled && user.twoFactorSecret) {
                         try {
-                            const { generate, verify } = await import('otplib');
+                            const { authenticator } = await import('otplib');
 
                             // If code is not provided, send it via email (debounced globally)
                             if (!twoFactorCode) {
@@ -128,7 +128,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                                 // Only dispatch email if 30 seconds have passed
                                 if (now - lastSent > 30000) {
-                                    const token = await generate({ secret: user.twoFactorSecret });
+                                    const token = authenticator.generate(user.twoFactorSecret);
                                     const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
                                     await sendTwoFactorTokenEmail(email, token);
                                     emailTracker.set(normalizedEmail, now);
@@ -139,10 +139,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                 throw new TwoFactorRequiredError();
                             }
 
-                            // We grant a 10-minute validity window (20 steps of 30 seconds)
-                            // @ts-ignore - The otplib type definitions might complain but verify expects an object
-                            const result = await verify({ token: twoFactorCode, secret: user.twoFactorSecret, window: 20 });
-                            if (!result.valid) throw new TwoFactorInvalidError();
+                            // Grant a 10-minute validity window (20 steps of 30 seconds each)
+                            authenticator.options = { window: 20 };
+                            const isValid = authenticator.check(twoFactorCode, user.twoFactorSecret);
+                            if (!isValid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
                             if (e instanceof TwoFactorRequiredError || e.code === '2FA_REQUIRED' || e.message?.includes('2FA_REQUIRED')) {
                                 throw new TwoFactorRequiredError();
