@@ -168,7 +168,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
     }
 
     // If enabling and they don't have a secret yet, generate one
-    const { authenticator } = await import('otplib');
+    const { authenticator } = (await import('otplib')) as any;
     const newSecret = enabled && !targetUser.twoFactorSecret
         ? authenticator.generateSecret()
         : targetUser.twoFactorSecret;

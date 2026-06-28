@@ -35,7 +35,7 @@ const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 let twoFactorAuthenticator: any = null;
 async function getTwoFactorAuthenticator() {
     if (!twoFactorAuthenticator) {
-        const { authenticator } = await import('otplib');
+        const { authenticator } = (await import('otplib')) as any;
         twoFactorAuthenticator = authenticator.clone({ window: 20 });
     }
     return twoFactorAuthenticator;
