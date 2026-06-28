@@ -2,17 +2,35 @@ import { auth } from '@/auth';
 import { getTenantPrisma } from '@/lib/prisma';
 import { Shield, CheckCircle, AlertTriangle } from 'lucide-react';
 import MFA_Setup from './MFA_Setup';
+import DORHistoryWithAggregates from '@/app/components/employee/DORHistoryWithAggregates';
 import { redirect } from 'next/navigation';
 
 export default async function ProfilePage() {
     const session = await auth();
     if (!session?.user?.email) redirect('/login');
 
-    const user = await (await getTenantPrisma()).user.findUnique({
-        where: { email: session.user.email }
+    const prisma = await getTenantPrisma();
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+            authoredTrainerResponses: {
+                orderBy: { date: 'desc' },
+                include: { template: true, trainee: true }
+            }
+        }
     });
 
     if (!user) redirect('/login');
+
+    // DORs received — only available if user is linked to an employee record
+    const receivedDORs = user.empId
+        ? await prisma.formResponse.findMany({
+            where: { traineeId: user.empId },
+            orderBy: { date: 'desc' },
+            include: { template: true, trainer: true }
+        })
+        : [];
 
     return (
         <div className="p-8 space-y-8 max-w-4xl mx-auto">
@@ -56,6 +74,22 @@ export default async function ProfilePage() {
                     </div>
                 </div>
             </div>
+        </div>
+
+            {(receivedDORs.length > 0 || user.authoredTrainerResponses.length > 0) && (
+                <DORHistoryWithAggregates
+                    employeeName={user.name}
+                    receivedDORs={receivedDORs as any}
+                    authoredDORs={user.authoredTrainerResponses as any}
+                />
+            )}
+
+            {receivedDORs.length === 0 && user.authoredTrainerResponses.length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center text-slate-400">
+                    <p className="font-medium">No DOR history yet.</p>
+                    <p className="text-sm mt-1">DORs you write or receive will appear here.</p>
+                </div>
+            )}
         </div>
     );
 }
