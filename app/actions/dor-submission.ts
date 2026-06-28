@@ -31,24 +31,25 @@ export async function getDOR(id: number) {
     });
 }
 
-export async function signDOR(id: number) {
+export async function signDOR(formData: FormData) {
     const session = await auth();
     if (!session?.user?.email) throw new Error("Unauthorized");
+
+    const id = parseInt(formData.get('dorId') as string);
+    const comment = (formData.get('traineeComment') as string)?.trim() || null;
 
     const updatedDor = await (await getTenantPrisma()).formResponse.update({
         where: { id },
         data: {
-            status: 'REVIEWED',
-            traineeSignatureAt: new Date()
+            status: 'SIGNED',
+            traineeSignatureAt: new Date(),
+            traineeComment: comment,
+            traineeDisputed: false,
         },
-        include: {
-            trainer: true,
-            trainee: true
-        }
+        include: { trainer: true, trainee: true }
     });
 
     if (updatedDor.trainer.email) {
-        // Fire and forget email to avoid blocking UI
         sendEmail({
             to: updatedDor.trainer.email,
             subject: `DOR Signed: #${updatedDor.id}`,
@@ -57,6 +58,61 @@ export async function signDOR(id: number) {
     }
 
     revalidatePath(`/dor/${id}`);
+}
+
+export async function disputeDOR(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.email) throw new Error("Unauthorized");
+
+    const id = parseInt(formData.get('dorId') as string);
+    const note = (formData.get('disputeNote') as string)?.trim();
+    if (!note) throw new Error("A dispute reason is required.");
+
+    const updatedDor = await (await getTenantPrisma()).formResponse.update({
+        where: { id },
+        data: {
+            status: 'DISPUTED',
+            traineeSignatureAt: new Date(),
+            traineeDisputed: true,
+            traineeDisputeNote: note,
+        },
+        include: { trainer: true, trainee: true }
+    });
+
+    if (updatedDor.trainer.email) {
+        sendEmail({
+            to: updatedDor.trainer.email,
+            subject: `DOR Disputed: #${updatedDor.id}`,
+            html: `<p>${updatedDor.trainee.empName || 'Trainee'} has disputed DOR #${updatedDor.id}.</p><p><strong>Reason:</strong> ${note}</p>`
+        }).catch(e => console.error("Failed to send dispute email", e));
+    }
+
+    revalidatePath(`/dor/${id}`);
+}
+
+export async function approveDOR(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const sessionUser = session.user as any;
+    const canApprove = sessionUser.permissions?.includes('dors.approve');
+    if (!canApprove) throw new Error("You do not have permission to approve DORs.");
+
+    const id = parseInt(formData.get('dorId') as string);
+    const notes = (formData.get('approvalNotes') as string)?.trim() || null;
+
+    await (await getTenantPrisma()).formResponse.update({
+        where: { id },
+        data: {
+            status: 'APPROVED',
+            approvedByUserId: parseInt(session.user.id),
+            approvedAt: new Date(),
+            approvalNotes: notes,
+        }
+    });
+
+    revalidatePath(`/dor/${id}`);
+    revalidatePath('/admin/forms/submissions');
 }
 
 export async function getLatestPublishedTemplate() {

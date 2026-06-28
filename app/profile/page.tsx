@@ -74,7 +74,6 @@ export default async function ProfilePage() {
                     </div>
                 </div>
             </div>
-        </div>
 
             {(receivedDORs.length > 0 || user.authoredTrainerResponses.length > 0) && (
                 <DORHistoryWithAggregates

@@ -325,8 +325,15 @@ model FormResponse {
   responseData String // JSON string storing { fieldId: value }
   customTitle  String? // Generated title based on namingConvention
   
-  status      String   @default("DRAFT") // DRAFT, SUBMITTED, REVIEWED
-  traineeSignatureAt DateTime?
+  status      String   @default("DRAFT") // DRAFT, SUBMITTED, SIGNED, DISPUTED, APPROVED
+  traineeSignatureAt  DateTime?
+  traineeComment      String?
+  traineeDisputed     Boolean  @default(false)
+  traineeDisputeNote  String?
+
+  approvedByUserId    Int?
+  approvedAt          DateTime?
+  approvalNotes       String?
 }
 
 model EISFlag {

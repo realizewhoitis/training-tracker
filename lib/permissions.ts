@@ -24,6 +24,9 @@ export const PERMISSIONS = {
     // Branding
     MANAGE_BRANDING: 'branding.manage', // Settings page
 
+    // DOR Approval
+    APPROVE_DORS: 'dors.approve', // Review, approve, or flag DORs as official records
+
     // SaaS Management
     MANAGE_SAAS: 'saas.manage', // License generation, module toggles
 } as const;
@@ -42,6 +45,7 @@ export const PERMISSION_LABELS: Record<Permission, { label: string; description:
     [PERMISSIONS.VIEW_EIS]: { label: 'View EIS', description: 'View Early Intervention System flags' },
     [PERMISSIONS.MANAGE_EIS]: { label: 'Manage EIS', description: 'Resolve and dismiss EIS alerts' },
     [PERMISSIONS.MANAGE_BRANDING]: { label: 'Manage Branding', description: 'Update logos and organization name' },
+    [PERMISSIONS.APPROVE_DORS]: { label: 'Approve DORs', description: 'Review, approve, or dispute DORs as official records' },
     [PERMISSIONS.MANAGE_SAAS]: { label: 'Manage SaaS', description: 'Global organization and licensing configuration' },
 };
 
@@ -55,7 +59,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Permission[]> = {
         PERMISSIONS.EXPORT_REPORTS,
         PERMISSIONS.VIEW_EIS,
         PERMISSIONS.MANAGE_INVENTORY,
-        PERMISSIONS.RECEIVE_DAILY_REPORTS
+        PERMISSIONS.RECEIVE_DAILY_REPORTS,
+        PERMISSIONS.APPROVE_DORS
     ],
     'TRAINER': [
         PERMISSIONS.VIEW_REPORTS,
