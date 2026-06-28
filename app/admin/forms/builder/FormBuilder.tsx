@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
 
@@ -13,7 +12,6 @@ import RatingScaleEditor from './RatingScaleEditor';
 
 export default function FormBuilder({ template }: { template: any }) {
     const [isPublishing, setIsPublishing] = useState(false);
-    const router = useRouter();
 
     // Compute the dynamic rating scale array to use in the preview renderer
     const standardScale = ["1", "2", "3", "4", "5", "6", "7", "N.O."];
@@ -53,8 +51,7 @@ export default function FormBuilder({ template }: { template: any }) {
             setIsPublishing(true);
             try {
                 await publishTemplate(template.id);
-                router.refresh();
-                router.push('/admin/forms');
+                window.location.href = '/admin/forms';
             } catch (err: any) {
                 alert(`Publish failed: ${err?.message ?? 'Unknown error'}`);
                 setIsPublishing(false);
