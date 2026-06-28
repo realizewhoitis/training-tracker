@@ -84,6 +84,7 @@ export async function publishTemplate(id: number) {
         data: { isPublished: true }
     });
     revalidatePath('/admin/forms');
+    revalidatePath(`/admin/forms/builder/${id}`);
 }
 
 export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean, ratingScaleOptions?: string }) {
