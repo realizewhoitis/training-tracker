@@ -3,6 +3,7 @@ import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import { sendTwoFactorTokenEmail } from '@/lib/mail';
+import { generateTOTP, verifyTOTP } from '@/lib/totp';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { DEFAULT_ROLE_PERMISSIONS, Permission } from '@/lib/permissions';
@@ -30,16 +31,6 @@ const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
-// Lazy-loaded authenticator with a 10-minute window — dynamic import required
-// because otplib's ESM bundle does not expose named exports for static bundlers
-let twoFactorAuthenticator: any = null;
-async function getTwoFactorAuthenticator() {
-    if (!twoFactorAuthenticator) {
-        const { authenticator } = (await import('otplib')) as any;
-        twoFactorAuthenticator = authenticator.clone({ window: 20 });
-    }
-    return twoFactorAuthenticator;
-}
 
 function checkRateLimit(ip: string): boolean {
     const now = Date.now();
@@ -122,8 +113,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     if (user.twoFactorEnabled && user.twoFactorSecret) {
                         try {
-                            const auth2fa = await getTwoFactorAuthenticator();
-
                             if (!twoFactorCode) {
                                 // Debounce via DB so it works across all Vercel instances
                                 const now = new Date();
@@ -133,7 +122,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                     : Infinity;
 
                                 if (secondsSinceLast > 30) {
-                                    const token = auth2fa.generate(user.twoFactorSecret);
+                                    const token = generateTOTP(user.twoFactorSecret);
                                     await sendTwoFactorTokenEmail(email, token);
                                     await prisma.user.update({
                                         where: { id: user.id },
@@ -146,7 +135,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                 throw new TwoFactorRequiredError();
                             }
 
-                            const isValid = auth2fa.check(twoFactorCode, user.twoFactorSecret);
+                            // windowSteps=20 → ±10 minute tolerance for email delivery
+                            const isValid = verifyTOTP(twoFactorCode, user.twoFactorSecret, 20);
                             if (!isValid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
                             if (e instanceof TwoFactorRequiredError) throw e;

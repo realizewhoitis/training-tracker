@@ -3,20 +3,16 @@
 import { auth } from '@/auth';
 import { getTenantPrisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-
-// Dynamic imports to handle optional dependency during dev
-async function getAuthenticator() {
-    const { authenticator } = (await import('otplib')) as any;
-    return authenticator;
-}
+import { generateTOTPSecret, verifyTOTP } from '@/lib/totp';
 
 export async function generateTwoFactorSecret() {
     const session = await auth();
     if (!session?.user?.email) throw new Error('Not authenticated');
 
-    const authenticator = await getAuthenticator();
-    const secret = authenticator.generateSecret();
-    const otpauth = authenticator.keyuri(session.user.email, 'Orbit 911', secret);
+    const secret = generateTOTPSecret();
+    const label = encodeURIComponent(`Orbit 911:${session.user.email}`);
+    const issuer = encodeURIComponent('Orbit 911');
+    const otpauth = `otpauth://totp/${label}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
 
     return { secret, otpauth };
 }
@@ -25,8 +21,7 @@ export async function enableTwoFactor(secret: string, token: string) {
     const session = await auth();
     if (!session?.user?.email) throw new Error('Not authenticated');
 
-    const authenticator = await getAuthenticator();
-    const isValid = authenticator.check(token, secret);
+    const isValid = verifyTOTP(token, secret, 2);
 
     if (!isValid) {
         return { success: false, message: 'Invalid code. Please try again.' };
