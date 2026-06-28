@@ -22,7 +22,7 @@ export default async function GatekeeperProvider({ children }: { children: React
 
     // Find the employee record
     const dbUser = await prisma.user.findUnique({
-        where: { id: (user as any).id },
+        where: { id: parseInt((user as any).id) },
         include: { employee: true } as any
     }) as any;
     const employee = dbUser?.employee;
