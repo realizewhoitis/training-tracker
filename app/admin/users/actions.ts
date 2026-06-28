@@ -5,7 +5,6 @@ import { getTenantPrisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { sendTemplatedEmail } from '@/lib/mail';
-import { authenticator } from 'otplib';
 
 import { auth } from '@/auth';
 import { logAudit } from '@/lib/audit';
@@ -169,6 +168,7 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
     }
 
     // If enabling and they don't have a secret yet, generate one
+    const { authenticator } = await import('otplib');
     const newSecret = enabled && !targetUser.twoFactorSecret
         ? authenticator.generateSecret()
         : targetUser.twoFactorSecret;
