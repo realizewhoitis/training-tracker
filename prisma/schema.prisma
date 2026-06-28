@@ -124,6 +124,7 @@ model User {
   
   twoFactorSecret String?
   twoFactorEnabled Boolean @default(false)
+  twoFactorLastEmailSent DateTime?
   forcePasswordReset Boolean @default(false)
 
   employee  Employee? @relation(fields: [empId], references: [empId], onDelete: SetNull, onUpdate: Cascade)

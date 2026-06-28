@@ -5,6 +5,7 @@ import { getTenantPrisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { sendTemplatedEmail } from '@/lib/mail';
+import { authenticator } from 'otplib';
 
 import { auth } from '@/auth';
 import { logAudit } from '@/lib/audit';
@@ -167,20 +168,9 @@ export async function toggleTwoFactor(userId: number, enabled: boolean) {
         throw new Error('Unauthorized to modify Superuser 2FA settings');
     }
 
-    const generateBase32Secret = (length: number = 32) => {
-        const base32chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        let secret = '';
-        const crypto = require('crypto');
-        const bytes = crypto.randomBytes(length);
-        for (let i = 0; i < length; i++) {
-            secret += base32chars[bytes[i] % 32];
-        }
-        return secret;
-    };
-
     // If enabling and they don't have a secret yet, generate one
     const newSecret = enabled && !targetUser.twoFactorSecret
-        ? generateBase32Secret(32)
+        ? authenticator.generateSecret()
         : targetUser.twoFactorSecret;
 
     await (await getTenantPrisma()).user.update({

@@ -1,6 +1,13 @@
 import NextAuth, { CredentialsSignin } from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
+import { z } from 'zod';
+import { authenticator } from 'otplib';
+import { sendTwoFactorTokenEmail } from '@/lib/mail';
+import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { DEFAULT_ROLE_PERMISSIONS, Permission } from '@/lib/permissions';
+import { logAudit } from '@/lib/audit';
 
 class TwoFactorRequiredError extends CredentialsSignin {
     code = '2FA_REQUIRED';
@@ -17,12 +24,6 @@ class TwoFactorInvalidError extends CredentialsSignin {
         this.name = 'TwoFactorInvalidError';
     }
 }
-import { z } from 'zod';
-import prisma from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-
-import { DEFAULT_ROLE_PERMISSIONS, Permission } from '@/lib/permissions';
-import { logAudit } from '@/lib/audit';
 
 // In-Memory Rate Limiting Dictionary
 // For production scale with multiple instances, use Redis. For standard/single-instance, global Map is sufficient.
@@ -30,13 +31,9 @@ const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const MAX_ATTEMPTS = 10;
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
-// Global debounce tracker for 2FA emails to prevent NextAuth double-sends
-declare global {
-    // eslint-disable-next-line no-var
-    var twoFactorEmailTracker: Map<string, number> | undefined;
-}
-const emailTracker = globalThis.twoFactorEmailTracker ?? new Map<string, number>();
-if (process.env.NODE_ENV !== 'production') globalThis.twoFactorEmailTracker = emailTracker;
+// Authenticator instance with a 10-minute window (20 steps × 30 seconds)
+// Using clone() to avoid mutating the shared singleton
+const twoFactorAuthenticator = authenticator.clone({ window: 20 });
 
 function checkRateLimit(ip: string): boolean {
     const now = Date.now();
@@ -119,19 +116,21 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                     if (user.twoFactorEnabled && user.twoFactorSecret) {
                         try {
-                            const { authenticator } = await import('otplib');
-
-                            // If code is not provided, send it via email (debounced globally)
                             if (!twoFactorCode) {
-                                const now = Date.now();
-                                const lastSent = emailTracker.get(normalizedEmail) || 0;
+                                // Debounce via DB so it works across all Vercel instances
+                                const now = new Date();
+                                const lastSent = user.twoFactorLastEmailSent;
+                                const secondsSinceLast = lastSent
+                                    ? (now.getTime() - lastSent.getTime()) / 1000
+                                    : Infinity;
 
-                                // Only dispatch email if 30 seconds have passed
-                                if (now - lastSent > 30000) {
-                                    const token = authenticator.generate(user.twoFactorSecret);
-                                    const { sendTwoFactorTokenEmail } = await import('@/lib/mail');
+                                if (secondsSinceLast > 30) {
+                                    const token = twoFactorAuthenticator.generate(user.twoFactorSecret);
                                     await sendTwoFactorTokenEmail(email, token);
-                                    emailTracker.set(normalizedEmail, now);
+                                    await prisma.user.update({
+                                        where: { id: user.id },
+                                        data: { twoFactorLastEmailSent: now }
+                                    });
                                 } else {
                                     console.log(`Skipping duplicate 2FA dispatch for ${email} (debounced)`);
                                 }
@@ -139,17 +138,11 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                                 throw new TwoFactorRequiredError();
                             }
 
-                            // Grant a 10-minute validity window (20 steps of 30 seconds each)
-                            authenticator.options = { window: 20 };
-                            const isValid = authenticator.check(twoFactorCode, user.twoFactorSecret);
+                            const isValid = twoFactorAuthenticator.check(twoFactorCode, user.twoFactorSecret);
                             if (!isValid) throw new TwoFactorInvalidError();
                         } catch (e: any) {
-                            if (e instanceof TwoFactorRequiredError || e.code === '2FA_REQUIRED' || e.message?.includes('2FA_REQUIRED')) {
-                                throw new TwoFactorRequiredError();
-                            }
-                            if (e instanceof TwoFactorInvalidError || e.code === '2FA_INVALID' || e.message?.includes('2FA_INVALID')) {
-                                throw new TwoFactorInvalidError();
-                            }
+                            if (e instanceof TwoFactorRequiredError) throw e;
+                            if (e instanceof TwoFactorInvalidError) throw e;
                             console.error('2FA Error', e);
                             throw e;
                         }
@@ -201,8 +194,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         async signIn({ user }) {
             if (user.id) {
                 try {
+                    const fullUser = await prisma.user.findUnique({ where: { id: parseInt(user.id) } });
                     await logAudit({
                         userId: parseInt(user.id),
+                        agencyId: fullUser?.agencyId,
                         action: 'LOGIN',
                         resource: 'Auth',
                         details: 'User logged in',
@@ -219,6 +214,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 try {
                     await logAudit({
                         userId: parseInt(token.id as string),
+                        agencyId: token.agencyId as string | null,
                         action: 'LOGOUT',
                         resource: 'Auth',
                         details: 'User logged out',

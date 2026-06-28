@@ -2,12 +2,14 @@ import { getTenantPrisma } from '@/lib/prisma';
 
 export async function logAudit({
     userId,
+    agencyId,
     action,
     resource,
     details = "",
     severity = "INFO"
 }: {
     userId?: number;
+    agencyId?: string | null;
     action: string;
     resource: string;
     details?: string;
@@ -17,6 +19,7 @@ export async function logAudit({
         await (await getTenantPrisma()).auditLog.create({
             data: {
                 userId,
+                agencyId: agencyId ?? undefined,
                 action,
                 resource,
                 details,
