@@ -87,6 +87,16 @@ export async function publishTemplate(id: number) {
     revalidatePath(`/admin/forms/builder/${id}`);
 }
 
+export async function unpublishTemplate(id: number) {
+    await enforceWriteAccess();
+    await (await getTenantPrisma()).formTemplate.update({
+        where: { id },
+        data: { isPublished: false }
+    });
+    revalidatePath('/admin/forms');
+    revalidatePath(`/admin/forms/builder/${id}`);
+}
+
 export async function updateTemplateMetadata(id: number, data: { title?: string, namingConvention?: string, isPublished?: boolean, ratingScaleOptions?: string }) {
     await enforceWriteAccess();
     await (await getTenantPrisma()).formTemplate.update({

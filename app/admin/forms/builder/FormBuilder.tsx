@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import { GripVertical, Pencil, Trash2 } from 'lucide-react';
 
-import { addSection, addField, publishTemplate, updateSection, deleteSection, updateField, deleteField } from '@/app/actions/form-builder';
+import { addSection, addField, publishTemplate, unpublishTemplate, updateSection, deleteSection, updateField, deleteField } from '@/app/actions/form-builder';
 import NamingConventionBuilder from './NamingConventionBuilder';
 import RatingScaleEditor from './RatingScaleEditor';
 
@@ -45,6 +45,17 @@ export default function FormBuilder({ template }: { template: any }) {
             await addField(sectionId, label, type, maxOrder + 1);
         }
     }
+
+    const handleRevertToDraft = async () => {
+        if (confirm("Revert to draft? Trainees will no longer see this form until it is published again.")) {
+            try {
+                await unpublishTemplate(template.id);
+                window.location.reload();
+            } catch (err: any) {
+                alert(`Failed: ${err?.message ?? 'Unknown error'}`);
+            }
+        }
+    };
 
     const handlePublish = async () => {
         if (confirm("Are you sure? Once published, trainees will see this form.")) {
@@ -95,13 +106,22 @@ export default function FormBuilder({ template }: { template: any }) {
                     <button onClick={handleAddSection} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-medium text-sm">
                         + Add Section
                     </button>
-                    <button
-                        onClick={handlePublish}
-                        disabled={template.isPublished || isPublishing}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm disabled:opacity-50"
-                    >
-                        {template.isPublished ? 'Published' : 'Publish Template'}
-                    </button>
+                    {template.isPublished ? (
+                        <button
+                            onClick={handleRevertToDraft}
+                            className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-medium text-sm"
+                        >
+                            Revert to Draft
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handlePublish}
+                            disabled={isPublishing}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm disabled:opacity-50"
+                        >
+                            {isPublishing ? 'Publishing…' : 'Publish Template'}
+                        </button>
+                    )}
                 </div>
             </div>
 

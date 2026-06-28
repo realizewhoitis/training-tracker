@@ -70,7 +70,7 @@ export default async function FormsDashboard() {
                         >
                             <span className="flex items-center justify-center">
                                 <Edit size={16} className="mr-2" />
-                                {template.isPublished ? 'View Template' : 'Edit Builder'}
+                                {template.isPublished ? 'Edit / View Template' : 'Edit Builder'}
                             </span>
                         </Link>
                     </div>
