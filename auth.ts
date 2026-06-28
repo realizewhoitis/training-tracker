@@ -102,8 +102,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     })
                     .safeParse(credentials);
 
+                console.log('[auth] raw credentials keys:', Object.keys(credentials || {}));
+                console.log('[auth] twoFactorCode raw:', (credentials as any)?.twoFactorCode);
+
                 if (parsedCredentials.success) {
                     const { email, password, twoFactorCode } = parsedCredentials.data;
+                    console.log('[auth] parsed twoFactorCode:', twoFactorCode, 'truthy:', !!twoFactorCode);
                     const normalizedEmail = email.toLowerCase();
                     const user = await getUser(normalizedEmail);
                     if (!user) return null;
