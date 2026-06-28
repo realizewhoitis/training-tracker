@@ -53,6 +53,7 @@ export default function FormBuilder({ template }: { template: any }) {
             setIsPublishing(true);
             try {
                 await publishTemplate(template.id);
+                router.refresh();
                 router.push('/admin/forms');
             } catch (err: any) {
                 alert(`Publish failed: ${err?.message ?? 'Unknown error'}`);

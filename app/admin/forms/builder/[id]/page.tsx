@@ -1,4 +1,6 @@
 
+export const dynamic = 'force-dynamic';
+
 import { getTemplate } from '@/app/actions/form-builder';
 import FormBuilder from '../FormBuilder';
 import { notFound } from 'next/navigation';
