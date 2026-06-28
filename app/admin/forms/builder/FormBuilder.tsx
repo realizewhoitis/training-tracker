@@ -120,7 +120,7 @@ export default function FormBuilder({ template }: { template: any }) {
                                 fields={template.sections.flatMap((s: any) => s.fields) || []}
                                 onSave={async (newValue) => {
                                     const { updateTemplateMetadata } = await import('@/app/actions/form-builder');
-                                    await updateTemplateMetadata(template.id, { namingConvention: newValue, isPublished: false });
+                                    await updateTemplateMetadata(template.id, { namingConvention: newValue });
                                 }}
                             />
                         </div>
@@ -130,7 +130,7 @@ export default function FormBuilder({ template }: { template: any }) {
                                 defaultValue={template.ratingScaleOptions}
                                 onSave={async (newScaleStr) => {
                                     const { updateTemplateMetadata } = await import('@/app/actions/form-builder');
-                                    await updateTemplateMetadata(template.id, { ratingScaleOptions: newScaleStr, isPublished: false });
+                                    await updateTemplateMetadata(template.id, { ratingScaleOptions: newScaleStr });
                                 }}
                             />
                         </div>
