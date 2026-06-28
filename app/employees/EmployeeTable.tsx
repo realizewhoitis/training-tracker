@@ -283,7 +283,7 @@ export default function EmployeeTable({
                                             employee.user?.role === 'TRAINER' ? 'bg-teal-100 text-teal-800' :
                                                 'bg-slate-100 text-slate-600'
                                         }`}>
-                                        {employee.user?.role || 'TRAINEE'}
+                                        {employee.user?.role || 'No Login'}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-sm">

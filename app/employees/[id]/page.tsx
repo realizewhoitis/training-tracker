@@ -40,8 +40,8 @@ export default async function EmployeeDetailPage(props: {
             expirations: {
                 include: { certificate: true }
             },
-            policyAcknowledgments: {
-                include: { policy: true }
+            userAttestations: {
+                include: { version: { include: { container: true } } }
             },
             assetAssignments: {
                 where: { returnedAt: null },
@@ -210,13 +210,13 @@ export default async function EmployeeDetailPage(props: {
                             <CheckCircle size={18} className="mr-2 text-green-500" /> Policy Status
                         </h3>
                         <div className="space-y-3">
-                            {employee.policyAcknowledgments.length === 0 ? (
+                            {employee.userAttestations.length === 0 ? (
                                 <p className="text-sm text-slate-500 italic">No policies acknowledged.</p>
                             ) : (
-                                employee.policyAcknowledgments.map((ack: any) => (
+                                (employee.userAttestations as any[]).map((ack: any) => (
                                     <div key={ack.id} className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-700 truncate w-32">{ack.policy.title}</span>
-                                        <span className="text-green-600 text-xs">{ack.acknowledgedAt.toLocaleDateString()}</span>
+                                        <span className="text-slate-700 truncate w-32">{ack.version?.container?.title ?? 'Unknown Policy'}</span>
+                                        <span className="text-green-600 text-xs">{new Date(ack.signedAt).toLocaleDateString()}</span>
                                     </div>
                                 ))
                             )}
