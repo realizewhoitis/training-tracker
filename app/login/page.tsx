@@ -119,12 +119,16 @@ function ResendButton() {
 
     return (
         <button
-            type="submit"
-            formNoValidate
+            type="button"
             disabled={pending}
             onClick={() => {
                 const input = document.getElementById('twoFactorCode') as HTMLInputElement;
-                if (input) input.value = '';
+                if (input) {
+                    input.value = '';
+                    // Submit the form without a code so the server sends a fresh email
+                    const form = input.closest('form');
+                    if (form) form.requestSubmit();
+                }
             }}
             className="text-xs font-semibold text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
         >
