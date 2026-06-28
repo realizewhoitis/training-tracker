@@ -115,6 +115,59 @@ export async function approveDOR(formData: FormData) {
     revalidatePath('/admin/forms/submissions');
 }
 
+export async function remindTrainee(formData: FormData) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const sessionUser = session.user as any;
+    const isAdminOrSupervisor = ['ADMIN', 'SUPERUSER', 'SUPERVISOR'].includes(sessionUser.role);
+    if (!isAdminOrSupervisor) throw new Error("You do not have permission to send reminders.");
+
+    const id = parseInt(formData.get('dorId') as string);
+    const prisma = await getTenantPrisma();
+
+    const dor = await prisma.formResponse.findUnique({
+        where: { id },
+        include: { trainee: true, trainer: true, template: true }
+    });
+    if (!dor) throw new Error("DOR not found.");
+    if (dor.traineeSignatureAt) throw new Error("Trainee has already signed this DOR.");
+
+    // 24-hour cooldown
+    if (dor.lastReminderSentAt) {
+        const hoursSince = (Date.now() - new Date(dor.lastReminderSentAt).getTime()) / 1000 / 60 / 60;
+        if (hoursSince < 24) {
+            const hoursLeft = Math.ceil(24 - hoursSince);
+            throw new Error(`A reminder was already sent recently. Please wait ${hoursLeft} more hour${hoursLeft === 1 ? '' : 's'} before sending another.`);
+        }
+    }
+
+    // Find the trainee's user account to get their email
+    const traineeUser = await prisma.user.findFirst({ where: { empId: dor.traineeId } });
+    if (!traineeUser?.email) throw new Error("Trainee does not have a linked user account with an email address.");
+
+    const dorUrl = `${process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? 'https://www.orbit911.com'}/dor/${id}`;
+    const reportName = dor.customTitle ?? `DOR #${id} — ${new Date(dor.date).toLocaleDateString()}`;
+
+    await sendEmail({
+        to: traineeUser.email,
+        subject: `Reminder: Please sign your Daily Observation Report`,
+        html: `
+            <p>Hi ${dor.trainee.empName ?? 'there'},</p>
+            <p>This is a reminder that your Daily Observation Report <strong>${reportName}</strong> written by ${dor.trainer.name} on ${new Date(dor.date).toLocaleDateString()} is awaiting your signature.</p>
+            <p><a href="${dorUrl}" style="background:#2563eb;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px;">Review &amp; Sign DOR</a></p>
+            <p style="color:#6b7280;font-size:12px;margin-top:16px;">If you believe this is an error, please contact your supervisor.</p>
+        `
+    });
+
+    await prisma.formResponse.update({
+        where: { id },
+        data: { lastReminderSentAt: new Date() }
+    });
+
+    revalidatePath(`/dor/${id}`);
+}
+
 export async function getLatestPublishedTemplate() {
     return await (await getTenantPrisma()).formTemplate.findFirst({
         where: { isPublished: true },

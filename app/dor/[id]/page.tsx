@@ -1,8 +1,8 @@
 import { auth } from '@/auth';
-import { getDOR, signDOR, disputeDOR, approveDOR } from '@/app/actions/dor-submission';
+import { getDOR, signDOR, disputeDOR, approveDOR, remindTrainee } from '@/app/actions/dor-submission';
 import ExportDORButton from '@/app/components/ExportDORButton';
 import { notFound, redirect } from 'next/navigation';
-import { CheckCircle, Clock, Edit, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Clock, Edit, AlertTriangle, ShieldCheck, Bell } from 'lucide-react';
 import { getSettings } from '@/app/admin/settings/actions';
 import Link from 'next/link';
 import { PERMISSIONS } from '@/lib/permissions';
@@ -30,6 +30,10 @@ export default async function DORViewPage(props: { params: Promise<{ id: string 
     const sessionUser = session.user as any;
     const isAdmin = sessionUser.role === 'ADMIN' || sessionUser.role === 'SUPERUSER';
     const canApprove = sessionUser.permissions?.includes(PERMISSIONS.APPROVE_DORS);
+    const canRemind = ['ADMIN', 'SUPERUSER', 'SUPERVISOR'].includes(sessionUser.role);
+    const reminderEligible = canRemind && dor.status === 'SUBMITTED' && !dor.traineeSignatureAt;
+    const reminderCooldownActive = dor.lastReminderSentAt &&
+        (Date.now() - new Date(dor.lastReminderSentAt).getTime()) / 1000 / 60 / 60 < 24;
 
     // Trainee can sign/dispute if they are the subject and the DOR is awaiting acknowledgement
     const pendingTraineeAction = dor.status === 'SUBMITTED' || dor.status === 'DRAFT';
@@ -58,6 +62,20 @@ export default async function DORViewPage(props: { params: Promise<{ id: string 
                                 <Edit size={16} />
                                 <span>Edit Report</span>
                             </Link>
+                        )}
+                        {reminderEligible && (
+                            <form action={remindTrainee}>
+                                <input type="hidden" name="dorId" value={dor.id} />
+                                <button
+                                    type="submit"
+                                    disabled={!!reminderCooldownActive}
+                                    title={reminderCooldownActive ? 'Reminder already sent in the last 24 hours' : 'Send email reminder to trainee'}
+                                    className="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg hover:bg-indigo-200 transition-colors shadow-sm text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <Bell size={16} />
+                                    <span>{reminderCooldownActive ? 'Reminder Sent' : 'Remind Trainee'}</span>
+                                </button>
+                            </form>
                         )}
                     </div>
                 </div>

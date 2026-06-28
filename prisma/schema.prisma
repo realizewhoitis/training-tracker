@@ -334,6 +334,8 @@ model FormResponse {
   approvedByUserId    Int?
   approvedAt          DateTime?
   approvalNotes       String?
+
+  lastReminderSentAt  DateTime?
 }
 
 model EISFlag {
