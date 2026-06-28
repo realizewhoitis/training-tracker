@@ -1,6 +1,6 @@
 import { getTenantPrisma } from '@/lib/prisma';
 import { User, Shield, Trash2, Key, RefreshCw, Lock, Unlock, ShieldAlert } from 'lucide-react';
-import { createUser, deleteUser, resetPassword, toggleTwoFactor, toggleForcePasswordReset } from './actions';
+import { createUser, deleteUser, resetPassword, toggleTwoFactor, toggleForcePasswordReset, linkUserToEmployee } from './actions';
 import UserRoleSelect from './UserRoleSelect';
 import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions';
 import { auth } from '@/auth';
@@ -10,9 +10,14 @@ export default async function UserManagementPage() {
     // @ts-ignore
     const currentUserRole = session?.user?.role;
 
-    const users = await (await getTenantPrisma()).user.findMany({
-        orderBy: { name: 'asc' }
-    });
+    const [users, employees] = await Promise.all([
+        (await getTenantPrisma()).user.findMany({ orderBy: { name: 'asc' } }),
+        (await getTenantPrisma()).employee.findMany({
+            where: { departed: false },
+            orderBy: { empName: 'asc' },
+            select: { empId: true, empName: true }
+        }),
+    ]);
 
     const roleTemplates = await (await getTenantPrisma()).roleTemplate.findMany();
     const knownRoles = Object.keys(DEFAULT_ROLE_PERMISSIONS);
@@ -45,7 +50,7 @@ export default async function UserManagementPage() {
                     <Shield className="w-5 h-5 mr-2 text-indigo-500" />
                     Create New User
                 </h3>
-                <form action={createUser} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <form action={createUser} className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                     <div className="md:col-span-1">
                         <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
                         <input name="name" type="text" placeholder="John Doe" required className="w-full rounded-md border-gray-300 text-sm" />
@@ -66,13 +71,22 @@ export default async function UserManagementPage() {
                         <label className="block text-xs font-medium text-gray-500 mb-1">Password</label>
                         <input name="password" type="password" placeholder="******" required minLength={6} className="w-full rounded-md border-gray-300 text-sm" />
                     </div>
+                    <div className="md:col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Link to Employee <span className="text-gray-400">(optional)</span></label>
+                        <select name="empId" className="w-full rounded-md border-gray-300 text-sm" aria-label="Link to employee">
+                            <option value="">— None —</option>
+                            {employees.map(e => (
+                                <option key={e.empId} value={e.empId}>{e.empName}</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="md:col-span-1 flex items-center h-10 space-x-2">
                         <input type="checkbox" name="sendEmail" id="sendEmail" className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                         <label htmlFor="sendEmail" className="text-xs font-medium text-gray-700 cursor-pointer">
                             Send Welcome Email
                         </label>
                     </div>
-                    <div className="md:col-span-5 lg:col-span-1">
+                    <div className="md:col-span-6 lg:col-span-1">
                         <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors">
                             Add User
                         </button>
@@ -88,6 +102,7 @@ export default async function UserManagementPage() {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Link</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">2FA</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -105,6 +120,23 @@ export default async function UserManagementPage() {
                                     ) : (
                                         <UserRoleSelect userId={user.id} currentRole={user.role} availableRoles={availableRoles} />
                                     )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <form action={linkUserToEmployee} className="flex items-center gap-1">
+                                        <input type="hidden" name="userId" value={user.id} />
+                                        <select
+                                            name="empId"
+                                            defaultValue={user.empId ?? ''}
+                                            className="text-xs rounded border-gray-300 py-1 px-2 w-36"
+                                            aria-label="Link employee"
+                                        >
+                                            <option value="">— None —</option>
+                                            {employees.map(e => (
+                                                <option key={e.empId} value={e.empId}>{e.empName}</option>
+                                            ))}
+                                        </select>
+                                        <button type="submit" className="text-xs text-indigo-600 hover:text-indigo-900 font-medium px-1">Save</button>
+                                    </form>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                     <form action={async () => {

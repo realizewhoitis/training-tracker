@@ -108,7 +108,7 @@ export default function DORHistoryWithAggregates({ employeeName, receivedDORs, a
                                             </p>
                                         </div>
                                     </div>
-                                    <Link href={`/dor/${dor.id}`} className="p-2 text-slate-400 hover:text-blue-600 bg-white rounded-full transition-colors shadow-sm opacity-0 group-hover:opacity-100">
+                                    <Link href={`/dor/${dor.id}`} className="p-2 text-slate-400 hover:text-blue-600 bg-white rounded-full transition-colors shadow-sm">
                                         <ChevronRight size={16} />
                                     </Link>
                                 </div>
@@ -135,7 +135,7 @@ export default function DORHistoryWithAggregates({ employeeName, receivedDORs, a
                                             </p>
                                         </div>
                                     </div>
-                                    <Link href={`/dor/${dor.id}`} className="p-2 text-slate-400 hover:text-blue-600 bg-white rounded-full transition-colors shadow-sm opacity-0 group-hover:opacity-100">
+                                    <Link href={`/dor/${dor.id}`} className="p-2 text-slate-400 hover:text-blue-600 bg-white rounded-full transition-colors shadow-sm">
                                         <ChevronRight size={16} />
                                     </Link>
                                 </div>

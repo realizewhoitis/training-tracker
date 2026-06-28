@@ -21,6 +21,8 @@ export async function createUser(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const role = formData.get('role') as string;
+    const empIdRaw = formData.get('empId') as string;
+    const empId = empIdRaw ? parseInt(empIdRaw) : null;
 
     if (!name || !email || !password || !role) {
         throw new Error('Missing required fields');
@@ -37,7 +39,8 @@ export async function createUser(formData: FormData) {
             name,
             email,
             password: hashedPassword,
-            role
+            role,
+            ...(empId && { empId })
         }
     });
 
@@ -221,6 +224,32 @@ export async function toggleForcePasswordReset(userId: number, force: boolean) {
         details: `${force ? 'Forced' : 'Unforced'} password reset for user ID ${userId}`,
         severity: 'WARN'
     });
+}
+
+export async function linkUserToEmployee(formData: FormData) {
+    await enforceWriteAccess();
+    const session = await auth();
+    const adminId = session?.user?.id ? parseInt(session.user.id) : undefined;
+
+    const userId = parseInt(formData.get('userId') as string);
+    const empIdRaw = formData.get('empId') as string;
+    const empId = empIdRaw ? parseInt(empIdRaw) : null;
+
+    await (await getTenantPrisma()).user.update({
+        where: { id: userId },
+        data: { empId }
+    });
+
+    await logAudit({
+        userId: adminId,
+        action: 'UPDATE',
+        resource: 'User',
+        details: `Linked user ID ${userId} to employee ID ${empId ?? 'none'}`,
+        severity: 'INFO'
+    });
+
+    revalidatePath('/admin/users');
+    revalidatePath('/employees');
 }
 
 export async function provisionEmployeeAccount(empId: number, name: string, email: string, role: string, sendWelcomeEmail: boolean): Promise<{ success: boolean; error?: string }> {
